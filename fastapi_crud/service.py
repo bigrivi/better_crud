@@ -15,7 +15,7 @@ from sqlmodel import SQLModel, select
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
 
-FILTERS_KEY = "filters"
+SEARCH_KEY = "filters"
 CUSTOM_QUERY_PARSE_KEY = "custom_query_parse"
 SORT_KEY = "sorts"
 OPTIONS_KEY = "options"
@@ -105,7 +105,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
         return stmt
 
     async def build_query(self, **kwargs):
-        filters = kwargs.get(FILTERS_KEY)
+        search = kwargs.get(SEARCH_KEY)
         custom_parse = kwargs.get(CUSTOM_QUERY_PARSE_KEY)
         include_deleted = kwargs.get(INCLUDE_DELETED_KEY)
         selects = kwargs.get(SELECT_KEY)
@@ -114,35 +114,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
         options = kwargs.get(OPTIONS_KEY) or []
         joins = kwargs.get(JOIN_KEY) or []
         distincts = kwargs.get(DISTINCTS_KEY)
-        aliased = kwargs.get(ALIASED_KEY)
-        search = {
-            "$and": [
-                {
-                    "is_active": {
-                        "$gte": 1
-                    }
-                },
-                {
-                    "company_id": {
-                        "$eq": 1
-                    }
-                }
-            ],
-            "is_active": {
-                "$eq": 1
-            },
-            "is_superuser": {
-                "$eq": 0,
-                "$or": {
-                    "$isnull": True,
-                    "$eq": 0
-                }
-            },
-            "email": {
-                "$cont":"qq.com"
-            }
-        }
-        wheres = self.create_search_condition(search)
+        wheres = []
+        if search:
+            wheres = self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
             if not include_deleted:
                 wheres.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
