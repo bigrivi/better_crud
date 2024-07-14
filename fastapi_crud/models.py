@@ -9,6 +9,12 @@ class NodeDict(TypedDict):
     value: int
     parent: 'NodeDict | None'
 
+class QueryCriterion(TypedDict):
+    field: str
+    value: str
+    operator: str
+
+
 class DtoModel(BaseModel):
     create: Any = None
     update: Any = None
