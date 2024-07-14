@@ -1,7 +1,7 @@
 import inspect
 import json
-from typing import Any,Optional, Callable, List,Literal, Type, TypeVar, Union, get_type_hints, Literal,Dict,Annotated
-from fastapi import APIRouter, status, Body, Depends, Security, Request, Path,HTTPException,Query
+from typing import Any,Optional, Callable, List,Literal, Type, TypeVar, get_type_hints, Literal,Dict,Annotated
+from fastapi import APIRouter, status, Body, Depends, Request, Path,HTTPException,Query
 from fastapi_pagination import  Page
 from functools import wraps
 from .enums import RoutesEnum,CrudActions
@@ -90,24 +90,24 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_many(
         request: Request,
         self=Depends(cls),
-        filters: str = None,
+        search: str = None,
         page:int=1,
         size:int=30,
         include_deleted:Optional[int]=0,
         sort: List[str] = Query(None),
         session=Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        if filters:
+        if search:
             try:
-                filters = json.loads(filters)
+                search = json.loads(search)
             except:
-                filters = None
+                search = None
         res = await self.service.get_many(
                 request,
                 page=page,
                 size=size,
                 joins=options.query.join,
-                filters=filters,
+                search=search,
                 session=session,
                 sorts=sort,
                 soft_delete = options.query.soft_delete,
