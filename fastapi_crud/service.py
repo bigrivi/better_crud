@@ -1,11 +1,11 @@
-from typing import Any,Dict
+from typing import Any, Dict
 from fastapi import Request
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
 from typing import TypeVar, Generic, Optional
 from sqlalchemy.orm import contains_eager
-from sqlalchemy import or_, update, delete,and_,func
+from sqlalchemy import or_, update, delete, and_, func
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlmodel import paginate
 from fastapi_async_sqlalchemy import db
@@ -57,7 +57,6 @@ class SqlalchemyCrudService(Generic[ModelType]):
         query = query.order_by(*order_bys)
         return query
 
-
     def create_search_field_object_condition(self, logical_operator: str, field: str, obj: Any):
         logical_operator = logical_operator or LOGICAL_OPERATOR_AND
         if isinstance(obj, dict):
@@ -82,26 +81,33 @@ class SqlalchemyCrudService(Generic[ModelType]):
                                 model_field, operator, obj[operator]))
                     return and_(*clauses)
 
-
     def create_search_condition(self, search: Dict):
         stmt = []
         if isinstance(search, dict):
-            # keys = list(search.keys())
-            for key, value in search.items():
-                if key == LOGICAL_OPERATOR_OR and isinstance(value,list):
-                    if len(value) == 1:
-                        stmt.append(and_(*self.create_search_condition(value[0])))
-                    else:
-                        stmt.append(or_(*(and_(*self.create_search_condition(or_value)) for or_value in value)))
-                elif key == LOGICAL_OPERATOR_AND and isinstance(value,list):
-                    if len(value) == 1:
-                        stmt.append(and_(*self.create_search_condition(value[0])))
-                    else:
-                        stmt.append(and_(*(and_(*self.create_search_condition(and_value)) for and_value in value)))
-                elif isinstance(value, Dict):
-                    stmt.append(self.create_search_field_object_condition( LOGICAL_OPERATOR_AND, key, value))
+            keys = list(search.keys())
+            if len(keys) > 0:
+                if LOGICAL_OPERATOR_AND in search:  # {$and: [...], ...}
+                    and_values = search.get(LOGICAL_OPERATOR_AND)
+                    if len(and_values) == 1:  # {$and: [{}]}
+                        stmt.append(
+                            and_(*self.create_search_condition(and_values[0])))
+                    else:  # {$and: [{},{},...]}
+                        stmt.append(
+                            and_(*(and_(*self.create_search_condition(and_value)) for and_value in and_values)))
                 else:
-                    stmt.append(self.get_model_field(key) == value)
+                    for field, value in search.items():
+                        if field == LOGICAL_OPERATOR_OR and isinstance(value, list):
+                            if len(value) == 1:
+                                stmt.append(
+                                    and_(*self.create_search_condition(value[0])))
+                            else:
+                                stmt.append(
+                                    or_(*(and_(*self.create_search_condition(or_value)) for or_value in value)))
+                        elif isinstance(value, Dict):
+                            stmt.append(self.create_search_field_object_condition(
+                                LOGICAL_OPERATOR_AND, field, value))
+                        else:
+                            stmt.append(self.get_model_field(field) == value)
         return stmt
 
     async def build_query(self, **kwargs):
@@ -116,7 +122,6 @@ class SqlalchemyCrudService(Generic[ModelType]):
         distincts = kwargs.get(DISTINCTS_KEY)
         wheres = []
         if search:
-            print(search)
             wheres = self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
             if not include_deleted:
@@ -245,9 +250,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
     async def on_after_delete(self, id_list: list) -> None:
         pass
 
-
-
-    def build_query_expression(self,field, operator, value):
+    def build_query_expression(self, field, operator, value):
         if operator == "$eq":
             return field == value
         elif operator == "$ne":
@@ -274,14 +277,14 @@ class SqlalchemyCrudService(Generic[ModelType]):
             return field.notlike('%{}'.format(value))
         elif operator == "$isnull":
             return field.is_(None)
-        elif operator == "notNull":
+        elif operator == "$notnull":
             return field.isnot(None)
         elif operator == "in":
             return field.in_(value.split(","))
         elif operator == "notIn":
             return field.notin_(value.split(","))
-        elif operator == "between":
-            return field.between(*value.split(","))
+        elif operator == "$between":
+            return field.between(*value)
         elif operator == "notBetween":
             return ~field.between(*value.split(","))
         elif operator == "length":
@@ -289,7 +292,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
         else:
             raise Exception("unknow operator "+operator)
 
-    def get_model_field(self,field):
+    def get_model_field(self, field):
         field_parts = field.split(".")
         relationships = self.entity.__mapper__.relationships
         model_field = None
