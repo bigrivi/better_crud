@@ -15,7 +15,7 @@ from sqlmodel import SQLModel, select
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
 
-SEARCH_KEY = "filters"
+SEARCH_KEY = "search"
 CUSTOM_QUERY_PARSE_KEY = "custom_query_parse"
 SORT_KEY = "sorts"
 OPTIONS_KEY = "options"
@@ -86,7 +86,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
     def create_search_condition(self, search: Dict):
         stmt = []
         if isinstance(search, dict):
-            keys = list(search.keys())
+            # keys = list(search.keys())
             for key, value in search.items():
                 if key == LOGICAL_OPERATOR_OR and isinstance(value,list):
                     if len(value) == 1:
@@ -116,6 +116,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
         distincts = kwargs.get(DISTINCTS_KEY)
         wheres = []
         if search:
+            print(search)
             wheres = self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
             if not include_deleted:
