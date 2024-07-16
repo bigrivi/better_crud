@@ -267,9 +267,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
             return field.like('%{}%'.format(value))
         elif operator == "exclude":
             return field.notlike('%{}%'.format(value))
-        elif operator == "beginsWith":
+        elif operator == "$starts":
             return field.startswith(value)
-        elif operator == "endsWith":
+        elif operator == "$ends":
             return field.endswith(value)
         elif operator == "doesNotBeginWith":
             return field.notlike('{}%'.format(value))
@@ -279,13 +279,13 @@ class SqlalchemyCrudService(Generic[ModelType]):
             return field.is_(None)
         elif operator == "$notnull":
             return field.isnot(None)
-        elif operator == "in":
+        elif operator == "$in":
             return field.in_(value.split(","))
-        elif operator == "notIn":
+        elif operator == "$notin":
             return field.notin_(value.split(","))
         elif operator == "$between":
             return field.between(*value)
-        elif operator == "notBetween":
+        elif operator == "$notbetween":
             return ~field.between(*value.split(","))
         elif operator == "length":
             return func.length(field) == int(value)

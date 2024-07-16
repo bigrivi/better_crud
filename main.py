@@ -27,7 +27,7 @@ FastAPICrudGlobalConfig.init(
     interceptor=acl,
     query={
         "soft_delete": True
-    },
+    }
     # routes={"only":["get_many"]},
 )
 

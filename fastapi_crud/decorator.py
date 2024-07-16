@@ -105,11 +105,15 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         if search_json:
             try:
                 search = json.loads(search_json)
+                search = [search]
             except:
                 search = None
-        elif filters:
-            search = dict([filter_to_search(filter_item)
-                          for filter_item in filters])
+        elif filters and len(filters)>0:
+            search = [filter_to_search(filter_item,delim=FastAPICrudGlobalConfig.delim_config.delim)
+                          for filter_item in filters]
+
+        if search:
+            search = { "$and": search};
         res = await self.service.get_many(
             request,
             page=page,

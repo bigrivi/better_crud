@@ -48,3 +48,7 @@ class GlobalQueryOptions(BaseModel):
     soft_delete: Optional[bool] = False
     pagination : Optional[bool] = True
 
+
+class QueryDelimOptions(BaseModel):
+    delim: Optional[str] = "||"
+    delim_str : Optional[str] = ","
