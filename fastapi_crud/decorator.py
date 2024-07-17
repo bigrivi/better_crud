@@ -99,6 +99,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
         filters: List[str] = Query(None, alias="filter"),
+        ors: List[str] = Query(None, alias="or"),
         session=Depends(FastAPICrudGlobalConfig.get_session)
     ):
         search = None
@@ -108,12 +109,46 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                 search = [search]
             except:
                 search = None
-        elif filters and len(filters)>0:
-            search = [filter_to_search(filter_item,delim=FastAPICrudGlobalConfig.delim_config.delim)
-                          for filter_item in filters]
+        elif filters and ors:
+            if len(filters) == 1 and len(ors) == 1:
+                search = [{
+                    "$or": [
+                        {
+                            filter_to_search(
+                                filters[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
+                        },
+                        {
+                            filter_to_search(
+                                ors[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
+                        }
+                    ]
+                }]
+            else:
+                search = [{
+                    "$or": [
+                        {
+                            "$and": list(map(filter_to_search, filters))
+                        },
+                        {
+                            "$and": list(map(filter_to_search, ors))
+                        }
+                    ]
+                }]
 
+        elif filters and len(filters) > 0:
+            search = list(map(filter_to_search, filters))
+        elif ors and len(ors) > 0:
+            if len(ors) == 1:
+                search = [filter_to_search(
+                    ors[0])]
+            else:
+                search = [{
+                    "$or": list(map(filter_to_search, ors))
+                }]
         if search:
-            search = { "$and": search};
+            search = {"$and": search}
+        print("search")
+        print(search)
         res = await self.service.get_many(
             request,
             page=page,
