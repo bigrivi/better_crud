@@ -44,8 +44,7 @@ router = APIRouter(route_class=Route)
 class UserController():
     service: UserService = Depends(UserService)
 
-    # @router.get("/xxxxx")
-    # async def override_get_many(self,request:Request):
-    #     print(self.service)
-    #     return []
+    @router.get("/xxxxx")
+    async def override_get_many(self,request:Request):
+        return []
 

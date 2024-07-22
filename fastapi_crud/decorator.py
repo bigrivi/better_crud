@@ -147,8 +147,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                 }]
         if search:
             search = {"$and": search}
-        print("search")
-        print(search)
         res = await self.service.get_many(
             request,
             page=page,
