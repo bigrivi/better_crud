@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict,List
 from fastapi import Request
 from fastapi.exceptions import HTTPException
 from datetime import datetime
@@ -10,24 +10,9 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlmodel import paginate
 from fastapi_async_sqlalchemy import db
 from sqlmodel import SQLModel, select
-
-
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
-
-SEARCH_KEY = "search"
-CUSTOM_QUERY_PARSE_KEY = "custom_query_parse"
-SORT_KEY = "sorts"
-OPTIONS_KEY = "options"
-JOIN_KEY = "joins"
-ALIASED_KEY = "aliased"
-SELECT_KEY = "selects"
-ORDER_KEY = "orders"
-DISTINCTS_KEY = "distincts"
-INCLUDE_DELETED_KEY = "include_deleted"
 SOFT_DELETED_FIELD_KEY = "deleted_at"
-SOFT_DELETED_KEY = "soft_delete"
-
 LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
 
@@ -92,8 +77,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
                         stmt.append(
                             and_(*self.create_search_condition(and_values[0])))
                     else:  # {$and: [{},{},...]}
-                        stmt.append(
-                            and_(*(and_(*self.create_search_condition(and_value)) for and_value in and_values)))
+                        clauses = [and_(*self.create_search_condition(and_value)) for and_value in and_values]
+                        stmt.append(and_(*clauses))
                 else:
                     for field, value in search.items():
                         if field == LOGICAL_OPERATOR_OR and isinstance(value, list):
@@ -101,8 +86,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
                                 stmt.append(
                                     and_(*self.create_search_condition(value[0])))
                             else:
-                                stmt.append(
-                                    or_(*(and_(*self.create_search_condition(or_value)) for or_value in value)))
+                                clauses = [and_(*self.create_search_condition(or_value)) for or_value in value]
+                                stmt.append(or_(*clauses))
                         elif isinstance(value, Dict):
                             stmt.append(self.create_search_field_object_condition(
                                 LOGICAL_OPERATOR_AND, field, value))
@@ -110,16 +95,15 @@ class SqlalchemyCrudService(Generic[ModelType]):
                             stmt.append(self.get_model_field(field) == value)
         return stmt
 
-    async def build_query(self, **kwargs):
-        search = kwargs.get(SEARCH_KEY)
-        custom_parse = kwargs.get(CUSTOM_QUERY_PARSE_KEY)
-        include_deleted = kwargs.get(INCLUDE_DELETED_KEY)
-        selects = kwargs.get(SELECT_KEY)
-        soft_delete = kwargs.get(SOFT_DELETED_KEY)
-        sorts = kwargs.get(SORT_KEY)
-        options = kwargs.get(OPTIONS_KEY) or []
-        joins = kwargs.get(JOIN_KEY) or []
-        distincts = kwargs.get(DISTINCTS_KEY)
+    async def build_query(
+        self,
+        search:Dict,
+        include_deleted:Optional[bool] = False,
+        soft_delete:Optional[bool] = False,
+        joins:Optional[List] = None,
+        options:Optional[List] = None,
+        sorts: List[str] = None
+    ):
         wheres = []
         if search:
             wheres = self.create_search_condition(search)
@@ -127,10 +111,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
             if not include_deleted:
                 wheres.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
                                   getattr(self.entity, SOFT_DELETED_FIELD_KEY) == None))
-        if selects:
-            query = select(self.entity, *selects)
-        else:
-            query = select(self.entity)
+        query = select(self.entity)
         if joins and len(joins) > 0:
             for join_item in joins:
                 if isinstance(join_item, tuple):
@@ -143,12 +124,23 @@ class SqlalchemyCrudService(Generic[ModelType]):
                 query = query.options(option)
         query = query.where(*wheres)
         query = self.prepare_order(query, sorts)
-        if distincts:
-            query = query.distinct(*distincts)
         return query
 
-    async def get_many(self, request: Request, page: int, size: int, session=None, pagination=True, **kwargs):
-        query = await self.build_query(**kwargs)
+    async def get_many(
+        self,
+        request: Request,
+        page: int,
+        size: int,
+        search:Dict,
+        include_deleted:Optional[bool] = False,
+        soft_delete:Optional[bool] = False,
+        joins:Optional[List] = None,
+        options:Optional[List] = None,
+        sorts: List[str] = None,
+        session=None,
+        pagination:Optional[bool]=True,
+    ):
+        query = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
         if pagination:
             result = await paginate(session, query, params=Params(page=page, size=size))
             return result
@@ -156,8 +148,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
             result = await session.execute(query)
             return result.unique().scalars().all()
 
-    async def get_by_id(self, id: int, **kwargs) -> ModelType:
-        options = kwargs.get(OPTIONS_KEY)
+    async def get_by_id(self, id: int,options:Optional[List]) -> ModelType:
         query = select(self.entity)
         if options:
             for option_item in options:
