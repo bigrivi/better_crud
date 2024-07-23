@@ -105,6 +105,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
         sorts: List[str] = None
     ):
         wheres = []
+        options = options or []
         if search:
             wheres = self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
@@ -148,11 +149,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
             result = await session.execute(query)
             return result.unique().scalars().all()
 
-    async def get_by_id(self, id: int,options:Optional[List]) -> ModelType:
+    async def get_by_id(self, id: int) -> ModelType:
         query = select(self.entity)
-        if options:
-            for option_item in options:
-                query = query.options(option_item)
         query = query.where(getattr(self.entity, self.primary_key) == id)
         result = await db.session.execute(query)
         return result.unique().scalar_one_or_none()

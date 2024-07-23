@@ -34,6 +34,7 @@ class QueryOptions(BaseModel):
     join: Optional[List[Any]] = None
     soft_delete: Optional[bool] = None
     pagination : Optional[bool] = True
+    filter:Optional[Dict] = None
 
 class CrudOptions(BaseModel):
     dto: DtoModel = None

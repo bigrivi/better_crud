@@ -103,15 +103,17 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         session=Depends(FastAPICrudGlobalConfig.get_session)
     ):
         search = None
+        filters = None
+        search_list = []
         if search_json:
             try:
                 search = json.loads(search_json)
-                search = [search]
+                search_list = [search]
             except:
-                search = None
+                search_list = None
         elif filters and ors:
             if len(filters) == 1 and len(ors) == 1:
-                search = [{
+                search_list = [{
                     "$or": [
                         {
                             filter_to_search(
@@ -124,7 +126,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                     ]
                 }]
             else:
-                search = [{
+                search_list = [{
                     "$or": [
                         {
                             "$and": list(map(filter_to_search, filters))
@@ -136,17 +138,19 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                 }]
 
         elif filters and len(filters) > 0:
-            search = list(map(filter_to_search, filters))
+            search_list = list(map(filter_to_search, filters))
         elif ors and len(ors) > 0:
             if len(ors) == 1:
-                search = [filter_to_search(
+                search_list = [filter_to_search(
                     ors[0])]
             else:
-                search = [{
+                search_list = [{
                     "$or": list(map(filter_to_search, ors))
                 }]
-        if search:
-            search = {"$and": search}
+        if options.query.filter:
+            search_list.append(options.query.filter)
+        if len(search_list)>0:
+            search = {"$and": search_list}
         res = await self.service.get_many(
             request,
             page=page,
