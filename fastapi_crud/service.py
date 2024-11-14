@@ -1,16 +1,19 @@
 from typing import Any, Dict,List
-from fastapi import Request
+from fastapi import Request,BackgroundTasks
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
 from typing import TypeVar, Generic, Optional
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager,joinedload,MANYTOMANY,MANYTOONE,ONETOMANY
+from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlmodel import paginate
 from fastapi_async_sqlalchemy import db
 from sqlmodel import SQLModel, select
+
 ModelType = TypeVar("ModelType", bound=SQLModel)
+Selectable = TypeVar("Selectable", bound=Select[Any])
 
 SOFT_DELETED_FIELD_KEY = "deleted_at"
 LOGICAL_OPERATOR_AND = "$and"
@@ -67,33 +70,33 @@ class SqlalchemyCrudService(Generic[ModelType]):
                     return and_(*clauses)
 
     def create_search_condition(self, search: Dict):
-        stmt = []
+        conds = []
         if isinstance(search, dict):
             keys = list(search.keys())
             if len(keys) > 0:
                 if LOGICAL_OPERATOR_AND in search:  # {$and: [...], ...}
                     and_values = search.get(LOGICAL_OPERATOR_AND)
                     if len(and_values) == 1:  # {$and: [{}]}
-                        stmt.append(
+                        conds.append(
                             and_(*self.create_search_condition(and_values[0])))
                     else:  # {$and: [{},{},...]}
                         clauses = [and_(*self.create_search_condition(and_value)) for and_value in and_values]
-                        stmt.append(and_(*clauses))
+                        conds.append(and_(*clauses))
                 else:
                     for field, value in search.items():
                         if field == LOGICAL_OPERATOR_OR and isinstance(value, list):
                             if len(value) == 1:
-                                stmt.append(
+                                conds.append(
                                     and_(*self.create_search_condition(value[0])))
                             else:
                                 clauses = [and_(*self.create_search_condition(or_value)) for or_value in value]
-                                stmt.append(or_(*clauses))
+                                conds.append(or_(*clauses))
                         elif isinstance(value, Dict):
-                            stmt.append(self.create_search_field_object_condition(
+                            conds.append(self.create_search_field_object_condition(
                                 LOGICAL_OPERATOR_AND, field, value))
                         else:
-                            stmt.append(self.get_model_field(field) == value)
-        return stmt
+                            conds.append(self.get_model_field(field) == value)
+        return conds
 
     async def build_query(
         self,
@@ -102,30 +105,33 @@ class SqlalchemyCrudService(Generic[ModelType]):
         soft_delete:Optional[bool] = False,
         joins:Optional[List] = None,
         options:Optional[List] = None,
-        sorts: List[str] = None
-    ):
-        wheres = []
+        sorts: List[str] = None,
+        implanted_cond:Optional[List[Any]] = None
+    )->Selectable:
+        cond = []
+        if implanted_cond:
+            cond = cond+implanted_cond
         options = options or []
         if search:
-            wheres = self.create_search_condition(search)
+            cond = self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
             if not include_deleted:
-                wheres.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
+                cond.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
                                   getattr(self.entity, SOFT_DELETED_FIELD_KEY) == None))
-        query = select(self.entity)
+        stmt = select(self.entity)
         if joins and len(joins) > 0:
             for join_item in joins:
                 if isinstance(join_item, tuple):
-                    query = query.join(*join_item, isouter=True)
+                    stmt = stmt.join(*join_item, isouter=True)
                 else:
-                    query = query.join(join_item, isouter=True)
+                    stmt = stmt.join(join_item, isouter=True)
                     options.append(contains_eager(join_item))
         if options:
             for option in options:
-                query = query.options(option)
-        query = query.where(*wheres)
-        query = self.prepare_order(query, sorts)
-        return query
+                stmt = stmt.options(option)
+        stmt = stmt.where(*cond)
+        stmt = self.prepare_order(stmt, sorts)
+        return stmt
 
     async def get_many(
         self,
@@ -141,72 +147,114 @@ class SqlalchemyCrudService(Generic[ModelType]):
         session=None,
         pagination:Optional[bool]=True,
     ):
-        query = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
+        if hasattr(request.state,"auth_filter"):
+            if search:
+                search = {
+                    "$and": [request.state.auth_filter,*search["$and"]]
+                }
+            else:
+                search = {
+                    "$and": [request.state.auth_filter]
+                }
+        stmt = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
         if pagination:
-            result = await paginate(session, query, params=Params(page=page, size=size))
+            result = await paginate(session, stmt, params=Params(page=page, size=size))
             return result
         else:
-            result = await session.execute(query)
+            result = await session.execute(stmt)
             return result.unique().scalars().all()
 
-    async def get_by_id(self, id: int) -> ModelType:
-        query = select(self.entity)
-        query = query.where(getattr(self.entity, self.primary_key) == id)
-        result = await db.session.execute(query)
+    async def get_by_id(self, id: int,joins:Optional[List[Any]] = None) -> ModelType:
+        stmt = select(self.entity)
+        if joins and len(joins) > 0:
+            for join_item in joins:
+                stmt = stmt.options(joinedload(join_item))
+        stmt = stmt.where(getattr(self.entity, self.primary_key) == id)
+        result = await db.session.execute(stmt)
         return result.unique().scalar_one_or_none()
 
-    async def create_one(self, request: Request, model: BaseModel):
-        extra_data = await self.on_before_create(model)
+
+    async def create_one(self, request: Request, model: BaseModel,background_tasks:BackgroundTasks
+):
+        extra_data = await self.on_before_create(model,background_tasks=background_tasks)
         relationships = self.entity.__mapper__.relationships
         model_data = model.model_dump()
         if extra_data:
             model_data.update(extra_data)
-        for key, val in model_data.items():
+        if hasattr(request.state,"auth_persist"):
+            model_data.update(request.state.auth_persist)
+        for key, value in model_data.items():
             if key in relationships:
-                relation_dir = relationships[key].direction.name
+                relation_dir = relationships[key].direction
                 relation_cls = relationships[key].mapper.entity
-                if relation_dir == "MANYTOMANY":
-                    if len(val) > 0 and isinstance(val[0], dict):
-                        val = [elem.get("id") for elem in val]
+                if relation_dir == MANYTOMANY:
                     primary_key = relation_cls.__mapper__.primary_key[0].name
-                    instances = [(await db.session.execute(select(relation_cls).where(getattr(relation_cls, primary_key) == elem))).scalar_one_or_none() for elem in val]
+                    if len(value) > 0 and isinstance(value[0], dict):
+                        value = [elem.primary_key for elem in value]
+                    instances = [(await db.session.execute(select(relation_cls).where(getattr(relation_cls, primary_key) == elem))).scalar_one_or_none() for elem in value]
                     model_data[key] = instances
-                elif relation_dir == "ONETOMANY":
-                    instances = [relation_cls(**elem) for elem in val]
+                elif relation_dir == ONETOMANY:
+                    instances = [relation_cls(**elem) for elem in value]
                     model_data[key] = instances
-                elif relation_dir == "MANYTOONE":
-                    instance = relation_cls(**val)
+                elif relation_dir == MANYTOONE:
+                    instance = relation_cls(**value)
                     model_data[key] = instance
         entity = self.entity(**model_data)
         db.session.add(entity)
         await db.session.flush()
-        await self.on_after_create(entity)
+        await self.on_after_create(entity,background_tasks=background_tasks)
         await db.session.commit()
         await db.session.refresh(entity)
         return entity
 
-    async def update_one(self, request: Request, id, model: BaseModel):
-        update_values = model.model_dump()
-        entity = await self.get_by_id(id)
+    async def update_one(self,
+        request: Request,
+        id:int,
+        model: BaseModel,
+        joins:Optional[List] = None,
+        background_tasks:BackgroundTasks = None
+    ):
+        model_data = model.model_dump()
+        entity = await self.get_by_id(id,joins=joins)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
-        for key, value in update_values.items():
-            if value is not None:
-                setattr(entity, key, value)
-        await self.on_before_update(entity)
+        await self.assign_entity_update_attrs(entity, model_data)
+        relationships = self.entity.__mapper__.relationships
+        for key, value in model_data.items():
+            if value is None:
+                continue
+            if key in relationships:
+                relation_dir = relationships[key].direction
+                relation_cls = relationships[key].mapper.entity
+                if relation_dir == MANYTOMANY:
+                    primary_key = relation_cls.__mapper__.primary_key[0].name
+                    if len(value) > 0 and isinstance(value[0], dict):
+                        value = [elem.primary_key for elem in value]
+                    instances = [(await db.session.execute(select(relation_cls).where(getattr(relation_cls, primary_key) == elem))).scalar_one_or_none() for elem in value]
+                    value = instances
+                elif relation_dir == MANYTOONE:
+                    if getattr(entity,key) is None:
+                        instance = relation_cls(**value)
+                    else:
+                        instance = getattr(entity,key)
+                        for sub_key, sub_value in value.items():
+                            setattr(instance, sub_key, sub_value)
+                    value = instance
+            setattr(entity, key, value)
+        await self.on_before_update(entity,background_tasks=background_tasks)
         db.session.add(entity)
         await db.session.flush()
         await db.session.commit()
-        await db.refresh(entity)
-        await self.on_after_update(entity)
+        await db.session.refresh(entity)
+        await self.on_after_update(entity,background_tasks=background_tasks)
 
-    async def delete_many(self, request: Request, id_list: list, soft_delete: Optional[bool] = False):
-        await self.on_before_delete(id_list)
+    async def delete_many(self, request: Request, id_list: list, soft_delete: Optional[bool] = False,background_tasks:BackgroundTasks=None):
+        await self.on_before_delete(id_list,background_tasks=background_tasks)
         if soft_delete:
             await self.soft_delete(id_list)
         else:
             await self.batch_delete(getattr(self.entity, self.primary_key).in_(id_list))
-        await self.on_after_delete(id_list)
+        await self.on_after_delete(id_list,background_tasks=background_tasks)
 
     async def batch_delete(self, stmt):
         if not isinstance(stmt, list):
@@ -221,23 +269,27 @@ class SqlalchemyCrudService(Generic[ModelType]):
         await db.session.execute(stmt)
         await db.session.commit()
 
-    async def on_before_create(self, model: Optional[BaseModel]) -> None:
+    async def on_before_create(self, model: Optional[BaseModel],background_tasks:Optional[BackgroundTasks]=None) -> None:
         pass
 
-    async def on_after_create(self, entity: ModelType) -> None:
+    async def on_after_create(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
         pass
 
-    async def on_before_update(self, entity: ModelType) -> None:
+    async def on_before_update(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
         pass
 
-    async def on_after_update(self, entity: ModelType) -> None:
+    async def on_after_update(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
         pass
 
-    async def on_before_delete(self, id_list: list) -> None:
+    async def on_before_delete(self, id_list: list,background_tasks:BackgroundTasks) -> None:
         pass
 
-    async def on_after_delete(self, id_list: list) -> None:
+    async def on_after_delete(self, id_list: list,background_tasks:BackgroundTasks) -> None:
         pass
+
+    async def assign_entity_update_attrs(self, entity_data: ModelType, update_data: dict) -> None:
+        pass
+
 
     def build_query_expression(self, field, operator, value):
         if operator == "$eq":

@@ -1,22 +1,24 @@
-from typing import Callable,Any,Dict,Optional
+from typing import Callable,Any,Dict,Optional,ClassVar,Generator
 from typing_extensions import Annotated
-from fastapi import Depends,Request,FastAPI
-from fastapi_pagination import add_pagination
+from fastapi import Request
+from sqlmodel.ext.asyncio.session import AsyncSession
 from .models import GlobalQueryOptions,RoutesModel,QueryDelimOptions
+
+DBSessionFunc = Callable[...,Generator[AsyncSession, None, None]]
 
 
 class FastAPICrudGlobalConfig:
-    get_db_session_fn = None
-    interceptor:Callable[[Request,str,str], Any] = None
-    query:GlobalQueryOptions = None
-    routes: Optional[RoutesModel] = None
-    delim_config:Optional[QueryDelimOptions] = None
+    get_db_session_fn:ClassVar[DBSessionFunc] = None
+    interceptor:ClassVar[Callable[[Request], None]] = None
+    query:ClassVar[GlobalQueryOptions] = None
+    routes: ClassVar[Optional[RoutesModel]] = None
+    delim_config:ClassVar[Optional[QueryDelimOptions]] = None
 
     @classmethod
     def init(
         cls,
-        get_db_session,
-        interceptor = None,
+        get_db_session:DBSessionFunc,
+        interceptor:Callable[[Request], None] = None,
         query:Optional[GlobalQueryOptions] = {},
         routes:Optional[RoutesModel] = {},
         delim_config:Optional[QueryDelimOptions] = {}
@@ -33,5 +35,3 @@ class FastAPICrudGlobalConfig:
         session_gen = cls.get_db_session_fn()
         session = await anext(session_gen)
         yield session
-
-

@@ -1,39 +1,66 @@
 import inspect
-import json
-from typing import Any, Optional, Callable, List, Literal, Type, TypeVar, get_type_hints, Literal, Dict, Annotated
-from fastapi import APIRouter, status, Body, Depends, Request, Path, HTTPException, Query
+from typing import (
+    Any,
+    Optional,
+    Callable,
+    List,
+    Type,
+    TypeVar,
+    get_type_hints,
+    Literal,
+    Dict,
+    Annotated,
+    cast
+)
+from fastapi import (
+    APIRouter,
+    status,
+    Body,
+    Depends,
+    Request,
+    Path,
+    HTTPException,
+    Query,
+    BackgroundTasks
+)
 from fastapi_pagination import Page
+from pydantic import BaseModel
 from functools import wraps
 from .enums import RoutesEnum, CrudActions
 from .models import CrudOptions, QueryOptions, RoutesModel
 from .config import FastAPICrudGlobalConfig
-from .helper import filter_to_search
+from .depends import GetFilterParameters
+
+
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+
 
 RoutesSchema = [
     {
         "name": RoutesEnum.get_many,
         "path": '/',
-        "method": "get"
+        "method": "GET"
     },
     {
         "name": RoutesEnum.create_one,
         "path": '/',
-        "method": "post"
+        "method": "POST"
     },
     {
         "name": RoutesEnum.get_one,
         "path": '/{id}',
-        "method": "get"
+        "method": "GET"
     },
     {
         "name": RoutesEnum.update_one,
         "path": '/{id}',
-        "method": "put"
+        "method": "PUT"
     },
     {
         "name": RoutesEnum.delete_many,
         "path": '/{ids}',
-        "method": "delete"
+        "method": "DELETE"
     }
 ]
 
@@ -65,21 +92,20 @@ def crud(
         Literal["get_many", "get_one"],
         Any,
     ]] = None,
+    auth:Optional[Dict] = None,
     query: Optional[QueryOptions] = {}
 ) -> Callable[[Type[T]], Type[T]]:
     def decorator(cls: Type[T]) -> Type[T]:
-        return _crud(router, cls,
-                     CrudOptions(
-                         name=name,
-                         feature=feature,
-                         dto=dto,
-                         serialize=serialize,
-                         routes={
-                             **FastAPICrudGlobalConfig.routes.model_dump(), **routes},
-                         query={**FastAPICrudGlobalConfig.query.model_dump(),
-                                **query}
-                     )
-                     )
+        options = CrudOptions(
+            name=name,
+            feature=feature,
+            dto=dto,
+            auth=auth,
+            serialize=serialize,
+            routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
+            query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
+        )
+        return _crud(router, cls, options)
     return decorator
 
 
@@ -90,68 +116,22 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     for func in functions_set:
         _update_route_endpoint_signature(cls, func)
 
+    create_schema_type = cast(CreateSchemaType, options.dto.create)
+    update_schema_type = cast(UpdateSchemaType, options.dto.update)
+    serialize = options.serialize
+
     async def get_many(
         request: Request,
         self=Depends(cls),
-        search_json: Optional[str] = Query(None, alias="s"),
         page: int = 1,
         size: int = 30,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
-        filters: List[str] = Query(None, alias="filter"),
-        ors: List[str] = Query(None, alias="or"),
+        search: dict = Depends(GetFilterParameters(
+            options_filter=options.query.filter)),
         session=Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        search = None
-        filters = None
-        search_list = []
-        if search_json:
-            try:
-                search = json.loads(search_json)
-                search_list = [search]
-            except:
-                search_list = None
-        elif filters and ors:
-            if len(filters) == 1 and len(ors) == 1:
-                search_list = [{
-                    "$or": [
-                        {
-                            filter_to_search(
-                                filters[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
-                        },
-                        {
-                            filter_to_search(
-                                ors[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
-                        }
-                    ]
-                }]
-            else:
-                search_list = [{
-                    "$or": [
-                        {
-                            "$and": list(map(filter_to_search, filters))
-                        },
-                        {
-                            "$and": list(map(filter_to_search, ors))
-                        }
-                    ]
-                }]
-
-        elif filters and len(filters) > 0:
-            search_list = list(map(filter_to_search, filters))
-        elif ors and len(ors) > 0:
-            if len(ors) == 1:
-                search_list = [filter_to_search(
-                    ors[0])]
-            else:
-                search_list = [{
-                    "$or": list(map(filter_to_search, ors))
-                }]
-        if options.query.filter:
-            search_list.append(options.query.filter)
-        if len(search_list)>0:
-            search = {"$and": search_list}
-        res = await self.service.get_many(
+        return await self.service.get_many(
             request,
             page=page,
             size=size,
@@ -163,49 +143,69 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             include_deleted=include_deleted,
             pagination=options.query.pagination
         )
-        return res
 
-    async def get_one(request: Request, self=Depends(cls), id: int = Path(..., title="The ID of the item to get")):
+    async def get_one(
+        request: Request,
+        self=Depends(cls),
+        id: int = Path(..., title="The ID of the item to get")
+    ):
         entity = await self.service.get_by_id(id)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
 
-    async def delete_many(request: Request, self=Depends(cls), ids: str = Path(..., title="The ID of the item to get")):
+    async def create_one(
+        model: Annotated[create_schema_type, Body()],
+        request: Request,
+        background_tasks:BackgroundTasks,
+        self=Depends(cls)
+    ):
+        entity = await self.service.create_one(request, model,background_tasks = background_tasks)
+        return entity
+
+    async def update_one(
+        model: Annotated[update_schema_type, Body()],
+        request: Request,
+        background_tasks:BackgroundTasks,
+        self=Depends(cls),
+        id: int = Path(..., title="The ID of the item to get")
+    ):
+        return await self.service.update_one(request, id, model,joins=options.query.join,background_tasks=background_tasks)
+
+    async def delete_many(
+        request: Request,
+        background_tasks:BackgroundTasks,
+        self=Depends(cls),
+        ids: str = Path(..., title="The ID of the item to get")
+    ):
         id_list = ids.split(",")
-        return await self.service.delete_many(request, id_list, soft_delete=options.query.soft_delete)
+        return await self.service.delete_many(
+            request,
+            id_list,
+            soft_delete = options.query.soft_delete,
+            background_tasks = background_tasks
+        )
 
     cls.get_many = get_many
-    if options.dto and options.dto.create:
-        async def create_one(model: Annotated[options.dto.create, Body()], request: Request, self=Depends(cls)):
-            entity = await self.service.create_one(request, model)
-            return entity
-        cls.create_one = create_one
-
-    if options.dto and options.dto.update:
-        async def update_one(model: Annotated[options.dto.update, Body()], request: Request, self=Depends(cls), id: int = Path(..., title="The ID of the item to get")):
-            return await self.service.update_one(request, id, model)
-        cls.update_one = update_one
+    cls.create_one = create_one
+    cls.update_one = update_one
     cls.delete_many = delete_many
     cls.get_one = get_one
 
     for schema_item in RoutesSchema:
         router_name = schema_item["name"].value
+        path = schema_item["path"]
+        method = schema_item["method"]
         if options.routes and options.routes.only:
             if router_name not in options.routes.only:
                 continue
         if options.routes and options.routes.exclude:
             if router_name in options.routes.exclude:
                 continue
-        exist_overrides = list(filter(lambda route: route.path ==
-                               schema_item["path"] and schema_item["method"].upper() in route.methods, router.routes))
-        if exist_overrides:
+        overrides = list(filter(lambda route: route.path ==
+                         path and method in route.methods, router.routes))
+        if overrides:
             continue
-        if schema_item.get("summary"):
-            summary = schema_item["summary"].replace(
-                "{name}", options.name if options.name else "")
-        else:
-            summary = None
         endpoint = getattr(cls, router_name)
 
         def decorator(func: Callable, inner_router_name) -> Callable:
@@ -214,6 +214,12 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                 request = kwargs.get("request")
                 request.state.feature = options.feature
                 request.state.action = action_map.get(inner_router_name).value
+                auth = options.auth
+                if auth:
+                    if auth.persist and isinstance(auth.persist, Callable):
+                        request.state.auth_persist = auth.persist(request)
+                    if auth.filter_ and isinstance(auth.filter_, Callable):
+                        request.state.auth_filter = auth.filter_(request)
                 if FastAPICrudGlobalConfig.interceptor:
                     await FastAPICrudGlobalConfig.interceptor(request)
                 endpoint_output = await func(*args, **kwargs)
@@ -223,17 +229,32 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
 
         if router_name == RoutesEnum.get_many:
             if options.query.pagination:
-                router.add_api_route(schema_item["path"], endpoint_wrapper, summary=summary, methods=[
-                    schema_item["method"]], response_model=Page[options.serialize.get_many])
+                router.add_api_route(
+                    schema_item["path"],
+                    endpoint_wrapper,
+                    methods=[schema_item["method"]],
+                    response_model=Page[serialize.get_many]
+                )
             else:
-                router.add_api_route(schema_item["path"], endpoint_wrapper, summary=summary, methods=[
-                                     schema_item["method"]], response_model=List[options.serialize.get_many])
+                router.add_api_route(
+                    schema_item["path"],
+                    endpoint_wrapper,
+                    methods=[schema_item["method"]],
+                    response_model=List[serialize.get_many]
+                )
         elif router_name == RoutesEnum.get_one:
-            router.add_api_route(schema_item["path"], endpoint_wrapper, summary=summary, methods=[
-                                 schema_item["method"]], response_model=options.serialize.get_one or options.serialize.get_many)
+            router.add_api_route(
+                schema_item["path"],
+                endpoint_wrapper,
+                methods=[schema_item["method"]],
+                response_model=serialize.get_one or serialize.get_many
+            )
         else:
             router.add_api_route(
-                schema_item["path"], endpoint_wrapper, summary=summary, methods=[schema_item["method"]])
+                schema_item["path"],
+                endpoint_wrapper,
+                methods=[schema_item["method"]]
+            )
     for route in router.routes:
         if route.path == "/":
             route.path = route.path.lstrip('/')
