@@ -9,6 +9,7 @@ from app.core.schema import Route
 from fastapi.routing import APIRoute
 from fastapi_pagination import  Page
 
+
 auth_scheme = HTTPBearer()
 
 # router = APIRouter(dependencies=[Depends(auth_scheme)])
@@ -16,14 +17,13 @@ auth_scheme = HTTPBearer()
 
 router = APIRouter(route_class=Route)
 
-# @crudauth({
-#   property: 'user',
-# persist?: (req: any) => ObjectLiteral;
-#   filter: (user: User) => ({
-#     id: user.id,
-#     isActive: true,
-#   })
-# })
+def persist_fn(request:Request):
+    return {}
+
+def filter_fn(request:Request):
+    return {
+        # "id":1
+    }
 
 @crud(router,
     name="user",
@@ -31,8 +31,15 @@ router = APIRouter(route_class=Route)
     # routes={"only":["get_many"]},
     dto={"create":UserCreate,"update":UserUpdate},
     serialize={"get_many":UserPublic},
+    auth = {
+        "filter":filter_fn,
+        "persist":persist_fn
+    },
     query={
         "soft_delete":True,
+        # "filter":{
+        #     "id":1
+        # },
         "pagination":True,
         "join":[
             User.profile,
@@ -44,7 +51,7 @@ router = APIRouter(route_class=Route)
 class UserController():
     service: UserService = Depends(UserService)
 
-    @router.get("/xxxxx")
-    async def override_get_many(self,request:Request):
-        return []
+    # @router.get("/xxxxx")
+    # async def override_get_many(self,request:Request):
+    #     return []
 

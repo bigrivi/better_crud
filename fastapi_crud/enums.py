@@ -13,3 +13,8 @@ class CrudActions(str, Enum):
     CreateOne = 'CreateOne',
     UpdateOne = 'UpdateOne',
     DeleteMany = 'DeleteMany'
+
+class relationshipsTypes(str,Enum):
+    MANYTOMANY = "MANYTOMANY",
+    ONETOMANY = "ONETOMANY",
+    MANYTOONE = "MANYTOONE"

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request,status,HTTPException
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import gc
@@ -20,7 +20,7 @@ async def acl(request: Request):
     action = get_action(request)
     print(feature)
     print(action)
-    # raise HTTPException(status.HTTP_401_UNAUTHORIZED,"Permission Denied")
+    # raise HTTPException(status.HTTP_403_FORBIDDEN,"Permission Denied")
 
 FastAPICrudGlobalConfig.init(
     get_db_session=get_session,

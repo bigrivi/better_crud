@@ -6,7 +6,7 @@ class UserService(SqlalchemyCrudService[User]):
     def __init__(self):
         super().__init__(User)
 
-    async def on_before_create(self,user:UserCreate):
+    async def on_before_create(self,user:UserCreate,**kwargs):
         hashed_password = get_hashed_password(user.password)
         return {"hashed_password":hashed_password}
 

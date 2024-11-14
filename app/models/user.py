@@ -12,13 +12,14 @@ class UserBase(SQLModel):
     is_active: bool = Field(default=True)
     is_superuser: Optional[bool] = Field(default=False)
     company_id: Optional[int] = Field(default=None, foreign_key="company.id")
-    profile_id: Optional[int] = Field(
-        default=None, foreign_key="user_profile.id")
+
 
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     hashed_password: str
+    profile_id: Optional[int] = Field(
+        default=None, foreign_key="user_profile.id")
     profile: UserProfile = Relationship(
         sa_relationship_kwargs={"uselist": False, "lazy": "joined"})
     company: Company = Relationship(
@@ -32,10 +33,11 @@ class User(UserBase, table=True):
 
 class UserPublic(UserBase):
     id: int
-    profile: UserProfileList = None
+    profile: Optional[UserProfileList] = None
     roles: List[RolePublic] = None
-    company: CompanyPublic = None
-
+    company: Optional[CompanyPublic] = None
+    profile_id: Optional[int] = Field(
+        default=None, foreign_key="user_profile.id")
 
 class UserCreate(UserBase):
     password: str
@@ -44,6 +46,5 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(UserBase):
-    password: str = None
     profile: UserProfileCreate = None
     roles: List[int] = None
