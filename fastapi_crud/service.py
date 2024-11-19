@@ -164,11 +164,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
             result = await session.execute(stmt)
             return result.unique().scalars().all()
 
-    async def get_by_id(self, id: int,joins:Optional[List[Any]] = None) -> ModelType:
+    async def get_by_id(self, id: int) -> ModelType:
         stmt = select(self.entity)
-        # if joins and len(joins) > 0:
-        #     for join_item in joins:
-        #         stmt = stmt.options(joinedload(join_item))
         stmt = stmt.where(getattr(self.entity, self.primary_key) == id)
         result = await db.session.execute(stmt)
         return result.unique().scalar_one_or_none()
@@ -211,11 +208,10 @@ class SqlalchemyCrudService(Generic[ModelType]):
         request: Request,
         id:int,
         model: BaseModel,
-        joins:Optional[List] = None,
         background_tasks:BackgroundTasks = None
     ):
         model_data = model.model_dump()
-        entity = await self.get_by_id(id,joins=joins)
+        entity = await self.get_by_id(id)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
         await self.assign_entity_update_attrs(entity, model_data)
@@ -238,7 +234,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
                     else:
                         instance = getattr(entity,key)
                         for sub_key, sub_value in value.items():
-                            setattr(instance, sub_key, sub_value)
+                            if sub_value is not None:
+                                setattr(instance, sub_key, sub_value)
                     value = instance
             setattr(entity, key, value)
         await self.on_before_update(entity,background_tasks=background_tasks)

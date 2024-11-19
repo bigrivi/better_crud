@@ -174,7 +174,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         self=Depends(cls),
         id: int = Path(..., title="The ID of the item to get")
     ):
-        return await self.service.update_one(request, id, model,joins=options.query.join,background_tasks=background_tasks)
+        return await self.service.update_one(request, id, model,background_tasks=background_tasks)
 
     async def delete_many(
         request: Request,
