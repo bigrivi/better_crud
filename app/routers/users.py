@@ -10,7 +10,6 @@ from fastapi.routing import APIRoute
 from fastapi_pagination import  Page
 
 
-auth_scheme = HTTPBearer()
 
 # router = APIRouter(dependencies=[Depends(auth_scheme)])
 # {"rules":[{"field":"email","operator":"contains","value":"孙"}],"combinator":"and","not":false}
@@ -28,7 +27,9 @@ def filter_fn(request:Request):
 @crud(router,
     name="user",
     feature="user",
-    # routes={"only":["get_many"]},
+    routes={
+
+    },
     dto={"create":UserCreate,"update":UserUpdate},
     serialize={"get_many":UserPublic},
     auth = {
@@ -41,7 +42,7 @@ def filter_fn(request:Request):
         #     "id":1
         # },
         "pagination":True,
-        "join":[
+        "joins":[
             User.profile,
             User.company,
             User.roles

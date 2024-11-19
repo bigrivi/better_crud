@@ -1,5 +1,5 @@
 from pydantic import BaseModel,Field
-from typing import List, Optional, Any, Dict,Callable
+from typing import List, Optional, Any, Dict,Callable,Sequence
 from .enums import RoutesEnum
 from typing_extensions import TypedDict
 
@@ -31,13 +31,24 @@ class SerializeModel(BaseModel):
     create_one: Any = None
 
 
+class RouteOptions(BaseModel):
+    dependencies: Optional[Sequence[Any]] = None,
+
+
 class RoutesModel(BaseModel):
+    dependencies: Optional[Sequence[Any]] = None,
     only: Optional[List[RoutesEnum]] = None
     exclude: Optional[List[RoutesEnum]] = None
+    get_many: Optional[RouteOptions] = None
+    get_one: Optional[RouteOptions] = None
+    create_one: Optional[RouteOptions] = None
+    update_one: Optional[RouteOptions] = None
+    delete_many: Optional[RouteOptions] = None
+
 
 
 class QueryOptions(BaseModel):
-    join: Optional[List[Any]] = None
+    joins: Optional[List[Any]] = None
     soft_delete: Optional[bool] = None
     pagination: Optional[bool] = True
     filter: Optional[Dict] = None

@@ -9,7 +9,6 @@ DBSessionFunc = Callable[...,Generator[AsyncSession, None, None]]
 
 class FastAPICrudGlobalConfig:
     get_db_session_fn:ClassVar[DBSessionFunc] = None
-    interceptor:ClassVar[Callable[[Request], None]] = None
     query:ClassVar[GlobalQueryOptions] = None
     routes: ClassVar[Optional[RoutesModel]] = None
     delim_config:ClassVar[Optional[QueryDelimOptions]] = None
@@ -18,13 +17,11 @@ class FastAPICrudGlobalConfig:
     def init(
         cls,
         get_db_session:DBSessionFunc,
-        interceptor:Callable[[Request], None] = None,
         query:Optional[GlobalQueryOptions] = {},
         routes:Optional[RoutesModel] = {},
         delim_config:Optional[QueryDelimOptions] = {}
     ) -> None:
         cls.get_db_session_fn = get_db_session
-        cls.interceptor = interceptor
         cls.query = GlobalQueryOptions(**query)
         cls.routes = RoutesModel(**routes)
         cls.delim_config = QueryDelimOptions(**delim_config)

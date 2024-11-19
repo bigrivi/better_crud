@@ -108,28 +108,28 @@ class SqlalchemyCrudService(Generic[ModelType]):
         sorts: List[str] = None,
         implanted_cond:Optional[List[Any]] = None
     )->Selectable:
-        cond = []
+        conds = []
         if implanted_cond:
-            cond = cond+implanted_cond
+            conds = conds+implanted_cond
         options = options or []
         if search:
-            cond = self.create_search_condition(search)
+            conds = conds + self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
             if not include_deleted:
-                cond.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
+                conds.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
                                   getattr(self.entity, SOFT_DELETED_FIELD_KEY) == None))
         stmt = select(self.entity)
         if joins and len(joins) > 0:
-            for join_item in joins:
-                if isinstance(join_item, tuple):
-                    stmt = stmt.join(*join_item, isouter=True)
+            for join in joins:
+                if isinstance(join, tuple):
+                    stmt = stmt.join(*join, isouter=True)
                 else:
-                    stmt = stmt.join(join_item, isouter=True)
-                    options.append(contains_eager(join_item))
+                    stmt = stmt.join(join, isouter=True)
+                    options.append(contains_eager(join))
         if options:
             for option in options:
                 stmt = stmt.options(option)
-        stmt = stmt.where(*cond)
+        stmt = stmt.where(*conds)
         stmt = self.prepare_order(stmt, sorts)
         return stmt
 
@@ -166,9 +166,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
 
     async def get_by_id(self, id: int,joins:Optional[List[Any]] = None) -> ModelType:
         stmt = select(self.entity)
-        if joins and len(joins) > 0:
-            for join_item in joins:
-                stmt = stmt.options(joinedload(join_item))
+        # if joins and len(joins) > 0:
+        #     for join_item in joins:
+        #         stmt = stmt.options(joinedload(join_item))
         stmt = stmt.where(getattr(self.entity, self.primary_key) == id)
         result = await db.session.execute(stmt)
         return result.unique().scalar_one_or_none()
