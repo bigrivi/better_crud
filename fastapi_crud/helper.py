@@ -1,7 +1,8 @@
 from typing import Any, Optional, Callable, List, Literal, Type, TypeVar, get_type_hints, Literal, Dict, Annotated
 from fastapi import Request
-from .config import FastAPICrudGlobalConfig
 import json
+from pydantic.types import Json
+from .config import FastAPICrudGlobalConfig
 
 
 def get_feature(request: Request):
@@ -32,17 +33,17 @@ def filter_to_search(filter_str: str):
         }
     return search
 
-def make_search(
-    search_json: Optional[str] = None,
+def build_search(
+    search_spec: Optional[str] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
-    options_filter:Optional[Dict] = None
+    extra_filter:Optional[Dict] = None
 ):
     search = None
     search_list = []
-    if search_json:
+    if search_spec:
         try:
-            search = json.loads(search_json)
+            search = json.loads(search_spec)
             search_list = [search]
         except:
             search_list = None
@@ -83,9 +84,11 @@ def make_search(
                 "$or": list(map(filter_to_search, ors))
             }]
 
-    if options_filter:
-        search_list.append(options_filter)
+    if extra_filter:
+        search_list.append(extra_filter)
     if len(search_list)>0:
         search = {"$and": search_list}
 
     return search
+
+

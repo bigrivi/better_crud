@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Request,status,HTTPException
+from fastapi import FastAPI, Request,status,HTTPException,Depends
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import gc
 from contextlib import asynccontextmanager
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 from fastapi_responseschema import wrap_app_responses
 import uvicorn
 from app.core.config import ModeEnum, settings
@@ -10,6 +11,8 @@ from app.db.init_db import init_db
 from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature
 from app.db.session import get_session
 from app.core.schema import Route
+
+JWTDepend = Depends(HTTPBearer())
 
 
 async def acl(request: Request):
@@ -24,11 +27,11 @@ async def acl(request: Request):
 
 FastAPICrudGlobalConfig.init(
     get_db_session=get_session,
-    interceptor=acl,
     query={
         "soft_delete": True
-    }
-    # routes={"only":["get_many"]},
+    },
+    routes={
+        "dependencies":[JWTDepend,Depends(acl)]},
 )
 
 

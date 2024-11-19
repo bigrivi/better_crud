@@ -10,7 +10,8 @@ from typing import (
     Literal,
     Dict,
     Annotated,
-    cast
+    cast,
+    Sequence
 )
 from fastapi import (
     APIRouter,
@@ -21,15 +22,16 @@ from fastapi import (
     Path,
     HTTPException,
     Query,
-    BackgroundTasks
+    BackgroundTasks,
+    params
 )
 from fastapi_pagination import Page
 from pydantic import BaseModel
 from functools import wraps
 from .enums import RoutesEnum, CrudActions
-from .models import CrudOptions, QueryOptions, RoutesModel
+from .models import CrudOptions, QueryOptions, RoutesModel, RouteOptions
 from .config import FastAPICrudGlobalConfig
-from .depends import GetFilterParameters
+from .depends import GetQuerySearch,CrudAction
 
 
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -92,6 +94,7 @@ def crud(
         Literal["get_many", "get_one"],
         Any,
     ]] = None,
+    dependencies: Optional[Sequence[params.Depends]] = None,
     auth:Optional[Dict] = None,
     query: Optional[QueryOptions] = {}
 ) -> Callable[[Type[T]], Type[T]]:
@@ -102,6 +105,7 @@ def crud(
             dto=dto,
             auth=auth,
             serialize=serialize,
+            dependencies=dependencies,
             routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
             query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
         )
@@ -122,12 +126,12 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
 
     async def get_many(
         request: Request,
-        self=Depends(cls),
+        self = Depends(cls),
         page: int = 1,
         size: int = 30,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
-        search: dict = Depends(GetFilterParameters(
+        search: dict = Depends(GetQuerySearch(
             options_filter=options.query.filter)),
         session=Depends(FastAPICrudGlobalConfig.get_session)
     ):
@@ -135,7 +139,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             request,
             page=page,
             size=size,
-            joins=options.query.join,
+            joins=options.query.joins,
             search=search,
             session=session,
             sorts=sort,
@@ -212,49 +216,39 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             @wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 request = kwargs.get("request")
-                request.state.feature = options.feature
-                request.state.action = action_map.get(inner_router_name).value
                 auth = options.auth
                 if auth:
                     if auth.persist and isinstance(auth.persist, Callable):
                         request.state.auth_persist = auth.persist(request)
                     if auth.filter_ and isinstance(auth.filter_, Callable):
                         request.state.auth_filter = auth.filter_(request)
-                if FastAPICrudGlobalConfig.interceptor:
-                    await FastAPICrudGlobalConfig.interceptor(request)
                 endpoint_output = await func(*args, **kwargs)
                 return endpoint_output
             return wrapper
         endpoint_wrapper = decorator(endpoint, router_name)
-
+        response_model = None
         if router_name == RoutesEnum.get_many:
             if options.query.pagination:
-                router.add_api_route(
-                    schema_item["path"],
-                    endpoint_wrapper,
-                    methods=[schema_item["method"]],
-                    response_model=Page[serialize.get_many]
-                )
+                response_model=Page[serialize.get_many],
             else:
-                router.add_api_route(
-                    schema_item["path"],
-                    endpoint_wrapper,
-                    methods=[schema_item["method"]],
-                    response_model=List[serialize.get_many]
-                )
+                response_model=List[serialize.get_many]
         elif router_name == RoutesEnum.get_one:
-            router.add_api_route(
-                schema_item["path"],
-                endpoint_wrapper,
-                methods=[schema_item["method"]],
-                response_model=serialize.get_one or serialize.get_many
-            )
-        else:
-            router.add_api_route(
-                schema_item["path"],
-                endpoint_wrapper,
-                methods=[schema_item["method"]]
-            )
+            response_model=serialize.get_one or serialize.get_many
+        route_dependencies = []
+        route_options:RouteOptions = getattr(options.routes,router_name)
+        if route_options and route_options.dependencies:
+            route_dependencies = route_options.dependencies
+        router.add_api_route(
+            schema_item["path"],
+            endpoint_wrapper,
+            methods=[schema_item["method"]],
+            dependencies=[
+                Depends(CrudAction(options.feature,action_map,router_name)),
+                *options.routes.dependencies,
+                *route_dependencies
+            ],
+            response_model=response_model,
+        )
     for route in router.routes:
         if route.path == "/":
             route.path = route.path.lstrip('/')
