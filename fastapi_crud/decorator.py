@@ -11,7 +11,8 @@ from typing import (
     Dict,
     Annotated,
     cast,
-    Sequence
+    Sequence,
+    Union
 )
 from fastapi import (
     APIRouter,
@@ -127,13 +128,13 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_many(
         request: Request,
         self = Depends(cls),
-        page: int = 1,
-        size: int = 30,
+        page: Optional[int] = None,
+        size: Optional[int] = None,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
         search: dict = Depends(GetQuerySearch(
             options_filter=options.query.filter)),
-        session=Depends(FastAPICrudGlobalConfig.get_session)
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
         return await self.service.get_many(
             request,
@@ -144,8 +145,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             session=session,
             sorts=sort,
             soft_delete=options.query.soft_delete,
-            include_deleted=include_deleted,
-            pagination=options.query.pagination
+            include_deleted=include_deleted
         )
 
     async def get_one(
@@ -228,12 +228,9 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         endpoint_wrapper = decorator(endpoint, router_name)
         response_model = None
         if router_name == RoutesEnum.get_many:
-            if options.query.pagination:
-                response_model=Page[serialize.get_many],
-            else:
-                response_model=List[serialize.get_many]
+            response_model = Union[Page[serialize.get_many],List[serialize.get_many]]
         elif router_name == RoutesEnum.get_one:
-            response_model=serialize.get_one or serialize.get_many
+            response_model = serialize.get_one or serialize.get_many
         route_dependencies = []
         route_options:RouteOptions = getattr(options.routes,router_name)
         if route_options and route_options.dependencies:

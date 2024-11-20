@@ -50,7 +50,6 @@ class RoutesModel(BaseModel):
 class QueryOptions(BaseModel):
     joins: Optional[List[Any]] = None
     soft_delete: Optional[bool] = None
-    pagination: Optional[bool] = True
     filter: Optional[Dict] = None
 
 
@@ -66,8 +65,6 @@ class CrudOptions(BaseModel):
 
 class GlobalQueryOptions(BaseModel):
     soft_delete: Optional[bool] = False
-    pagination: Optional[bool] = True
-
 
 class QueryDelimOptions(BaseModel):
     delim: Optional[str] = "||"
