@@ -13,7 +13,7 @@ def get_action(request: Request):
     return request.state.action
 
 
-def filter_to_search(filter_str: str):
+def filter_to_search(filter_str: str)->Dict:
     filters = filter_str.split(FastAPICrudGlobalConfig.delim_config.delim)
     field = filters[0]
     operator = filters[1]
@@ -90,5 +90,3 @@ def build_search(
         search = {"$and": search_list}
 
     return search
-
-

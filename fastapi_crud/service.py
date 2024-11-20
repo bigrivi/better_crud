@@ -4,21 +4,21 @@ from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
 from typing import TypeVar, Generic, Optional
-from sqlalchemy.orm import contains_eager,joinedload,MANYTOMANY,MANYTOONE,ONETOMANY
+from sqlalchemy.orm import contains_eager,MANYTOMANY,MANYTOONE,ONETOMANY
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlmodel import paginate
 from fastapi_async_sqlalchemy import db
 from sqlmodel import SQLModel, select
+from .config import FastAPICrudGlobalConfig
+
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 Selectable = TypeVar("Selectable", bound=Select[Any])
 
-SOFT_DELETED_FIELD_KEY = "deleted_at"
 LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
-
 
 class SqlalchemyCrudService(Generic[ModelType]):
 
@@ -115,9 +115,10 @@ class SqlalchemyCrudService(Generic[ModelType]):
         if search:
             conds = conds + self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
+            soft_deleted_field_key = FastAPICrudGlobalConfig.soft_deleted_field_key
             if not include_deleted:
-                conds.append(or_(getattr(self.entity, SOFT_DELETED_FIELD_KEY) > datetime.now(),
-                                  getattr(self.entity, SOFT_DELETED_FIELD_KEY) == None))
+                conds.append(or_(getattr(self.entity, soft_deleted_field_key) > datetime.now(),
+                                  getattr(self.entity, soft_deleted_field_key) == None))
         stmt = select(self.entity)
         if joins and len(joins) > 0:
             for join in joins:
@@ -136,16 +137,15 @@ class SqlalchemyCrudService(Generic[ModelType]):
     async def get_many(
         self,
         request: Request,
-        page: int,
-        size: int,
         search:Dict,
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
         joins:Optional[List] = None,
         options:Optional[List] = None,
         sorts: List[str] = None,
-        session=None,
-        pagination:Optional[bool]=True,
+        page: Optional[int] = None,
+        size: Optional[int] = None,
+        session = None
     ):
         if hasattr(request.state,"auth_filter"):
             if search:
@@ -157,9 +157,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
                     "$and": [request.state.auth_filter]
                 }
         stmt = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
-        if pagination:
-            result = await paginate(session, stmt, params=Params(page=page, size=size))
-            return result
+        should_paginate =  page is not None and size is not None
+        if should_paginate:
+            return await paginate(session, stmt, params=Params(page=page, size=size))
         else:
             result = await session.execute(stmt)
             return result.unique().scalars().all()
@@ -175,7 +175,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
 ):
         extra_data = await self.on_before_create(model,background_tasks=background_tasks)
         relationships = self.entity.__mapper__.relationships
-        model_data = model.model_dump()
+        model_data = model.model_dump(exclude_unset=True)
         if extra_data:
             model_data.update(extra_data)
         if hasattr(request.state,"auth_persist"):
@@ -210,11 +210,11 @@ class SqlalchemyCrudService(Generic[ModelType]):
         model: BaseModel,
         background_tasks:BackgroundTasks = None
     ):
-        model_data = model.model_dump()
+        model_data = model.model_dump(exclude_unset=True)
         entity = await self.get_by_id(id)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
-        await self.assign_entity_update_attrs(entity, model_data)
+        await self.on_before_update(entity,update_data=model_data,background_tasks=background_tasks)
         relationships = self.entity.__mapper__.relationships
         for key, value in model_data.items():
             if value is None:
@@ -233,12 +233,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
                         instance = relation_cls(**value)
                     else:
                         instance = getattr(entity,key)
-                        for sub_key, sub_value in value.items():
-                            if sub_value is not None:
-                                setattr(instance, sub_key, sub_value)
+                        self.update_entity_attr(instance,value)
                     value = instance
             setattr(entity, key, value)
-        await self.on_before_update(entity,background_tasks=background_tasks)
         db.session.add(entity)
         await db.session.flush()
         await db.session.commit()
@@ -262,9 +259,14 @@ class SqlalchemyCrudService(Generic[ModelType]):
 
     async def soft_delete(self, id_list: list):
         stmt = update(self.entity).where(getattr(self.entity, self.primary_key).in_(
-            id_list)).values({"deleted_at": datetime.now()})
+            id_list)).values({FastAPICrudGlobalConfig.soft_deleted_field_key: datetime.now()})
         await db.session.execute(stmt)
         await db.session.commit()
+
+    def update_entity_attr(self,entity,update_value:Dict):
+        for key, value in update_value.items():
+            if value is not None:
+                setattr(entity, key, value)
 
     async def on_before_create(self, model: Optional[BaseModel],background_tasks:Optional[BackgroundTasks]=None) -> None:
         pass
@@ -272,7 +274,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
     async def on_after_create(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
         pass
 
-    async def on_before_update(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
+    async def on_before_update(self, entity: ModelType,update_data: dict,background_tasks:BackgroundTasks) -> None:
         pass
 
     async def on_after_update(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
@@ -282,9 +284,6 @@ class SqlalchemyCrudService(Generic[ModelType]):
         pass
 
     async def on_after_delete(self, id_list: list,background_tasks:BackgroundTasks) -> None:
-        pass
-
-    async def assign_entity_update_attrs(self, entity_data: ModelType, update_data: dict) -> None:
         pass
 
 
