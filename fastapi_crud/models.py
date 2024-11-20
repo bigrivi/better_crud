@@ -3,18 +3,10 @@ from typing import List, Optional, Any, Dict,Callable,Sequence
 from .enums import RoutesEnum
 from typing_extensions import TypedDict
 
-
-class NodeDict(TypedDict):
-    id: str
-    value: int
-    parent: 'NodeDict | None'
-
-
 class QueryCriterion(TypedDict):
     field: str
     value: str
     operator: str
-
 
 class DtoModel(BaseModel):
     create: Any = None
