@@ -21,7 +21,7 @@ def persist_fn(request:Request):
 
 def filter_fn(request:Request):
     return {
-        # "id":1
+        "id":100
     }
 
 @crud(router,
@@ -33,7 +33,7 @@ def filter_fn(request:Request):
     dto={"create":UserCreate,"update":UserUpdate},
     serialize={"get_many":UserPublic},
     auth = {
-        "filter":filter_fn,
+        # "filter":filter_fn,
         "persist":persist_fn
     },
     query={
@@ -41,7 +41,6 @@ def filter_fn(request:Request):
         # "filter":{
         #     "id":1
         # },
-        "pagination":True,
         "joins":[
             User.profile,
             User.company,
