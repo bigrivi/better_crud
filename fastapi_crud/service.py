@@ -1,4 +1,4 @@
-from typing import Any, Dict,List
+from typing import Any, Dict,List,Union
 from fastapi import Request,BackgroundTasks
 from fastapi.exceptions import HTTPException
 from datetime import datetime
@@ -28,7 +28,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
         self.entity = entity
         self.primary_key = entity.__mapper__.primary_key[0].name
         self.entity_has_delete_column = hasattr(
-            self.entity, SOFT_DELETED_FIELD_KEY)
+            self.entity, FastAPICrudGlobalConfig.soft_deleted_field_key)
 
     def prepare_order(self, query, sorts):
         order_bys = []
@@ -100,7 +100,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
 
     async def build_query(
         self,
-        search:Dict,
+        search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
         joins:Optional[List] = None,
@@ -137,6 +137,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
     async def get_many(
         self,
         request: Request,
+        *,
         search:Dict,
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
@@ -147,17 +148,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
         size: Optional[int] = None,
         session = None
     ):
-        if hasattr(request.state,"auth_filter"):
-            if search:
-                search = {
-                    "$and": [request.state.auth_filter,*search["$and"]]
-                }
-            else:
-                search = {
-                    "$and": [request.state.auth_filter]
-                }
         stmt = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
-        should_paginate =  page is not None and size is not None
+        should_paginate = page is not None and size is not None
         if should_paginate:
             return await paginate(session, stmt, params=Params(page=page, size=size))
         else:
@@ -268,7 +260,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
             if value is not None:
                 setattr(entity, key, value)
 
-    async def on_before_create(self, model: Optional[BaseModel],background_tasks:Optional[BackgroundTasks]=None) -> None:
+    async def on_before_create(self, model: Optional[BaseModel],background_tasks:Optional[BackgroundTasks]=None) -> Union[Dict,None]:
         pass
 
     async def on_after_create(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:

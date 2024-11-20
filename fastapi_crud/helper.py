@@ -33,11 +33,12 @@ def filter_to_search(filter_str: str)->Dict:
         }
     return search
 
-def build_search(
+def build_query_search(
     search_spec: Optional[str] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
-    extra_filter:Optional[Dict] = None
+    option_filter:Optional[Dict] = None,
+    auth_filter:Optional[Dict] = None
 ):
     search = None
     search_list = []
@@ -84,8 +85,10 @@ def build_search(
                 "$or": list(map(filter_to_search, ors))
             }]
 
-    if extra_filter:
-        search_list.append(extra_filter)
+    if option_filter:
+        search_list.append(option_filter)
+    if auth_filter:
+        search_list.append(auth_filter)
     if len(search_list)>0:
         search = {"$and": search_list}
 

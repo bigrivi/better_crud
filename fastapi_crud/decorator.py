@@ -32,7 +32,7 @@ from functools import wraps
 from .enums import RoutesEnum, CrudActions
 from .models import CrudOptions, QueryOptions, RoutesModel, RouteOptions
 from .config import FastAPICrudGlobalConfig
-from .depends import GetQuerySearch,CrudAction
+from .depends import GetQuerySearch,CrudAction,AuthAction
 
 
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -132,8 +132,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         size: Optional[int] = None,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
-        search: dict = Depends(GetQuerySearch(
-            options_filter=options.query.filter)),
+        search: dict = Depends(GetQuerySearch(option_filter=options.query.filter)),
         session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
         return await self.service.get_many(
@@ -196,10 +195,10 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     cls.delete_many = delete_many
     cls.get_one = get_one
 
-    for schema_item in RoutesSchema:
-        router_name = schema_item["name"].value
-        path = schema_item["path"]
-        method = schema_item["method"]
+    for schema in RoutesSchema:
+        router_name = schema["name"].value
+        path = schema["path"]
+        method = schema["method"]
         if options.routes and options.routes.only:
             if router_name not in options.routes.only:
                 continue
@@ -211,21 +210,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         if overrides:
             continue
         endpoint = getattr(cls, router_name)
-
-        def decorator(func: Callable, inner_router_name) -> Callable:
-            @wraps(func)
-            async def wrapper(*args: Any, **kwargs: Any) -> Any:
-                request = kwargs.get("request")
-                auth = options.auth
-                if auth:
-                    if auth.persist and isinstance(auth.persist, Callable):
-                        request.state.auth_persist = auth.persist(request)
-                    if auth.filter_ and isinstance(auth.filter_, Callable):
-                        request.state.auth_filter = auth.filter_(request)
-                endpoint_output = await func(*args, **kwargs)
-                return endpoint_output
-            return wrapper
-        endpoint_wrapper = decorator(endpoint, router_name)
         response_model = None
         if router_name == RoutesEnum.get_many:
             response_model = Union[Page[serialize.get_many],List[serialize.get_many]]
@@ -236,11 +220,12 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         if route_options and route_options.dependencies:
             route_dependencies = route_options.dependencies
         router.add_api_route(
-            schema_item["path"],
-            endpoint_wrapper,
-            methods=[schema_item["method"]],
+            schema["path"],
+            endpoint,
+            methods=[schema["method"]],
             dependencies=[
                 Depends(CrudAction(options.feature,action_map,router_name)),
+                Depends(AuthAction(options.auth)),
                 *options.routes.dependencies,
                 *route_dependencies
             ],
