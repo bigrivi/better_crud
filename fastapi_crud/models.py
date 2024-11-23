@@ -34,6 +34,7 @@ class RoutesModel(BaseModel):
     get_many: Optional[RouteOptions] = None
     get_one: Optional[RouteOptions] = None
     create_one: Optional[RouteOptions] = None
+    create_many: Optional[RouteOptions] = None
     update_one: Optional[RouteOptions] = None
     delete_many: Optional[RouteOptions] = None
 

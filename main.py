@@ -3,7 +3,7 @@ from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import gc
 from contextlib import asynccontextmanager
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer
+from fastapi.security import  HTTPBearer
 from fastapi_responseschema import wrap_app_responses
 import uvicorn
 from app.core.config import ModeEnum, settings

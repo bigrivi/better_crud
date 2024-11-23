@@ -51,6 +51,11 @@ RoutesSchema = [
         "method": "POST"
     },
     {
+        "name": RoutesEnum.create_many,
+        "path": '/bulk',
+        "method": "POST"
+    },
+    {
         "name": RoutesEnum.get_one,
         "path": '/{id}',
         "method": "GET"
@@ -128,8 +133,8 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_many(
         request: Request,
         self = Depends(cls),
-        page: Optional[int] = None,
-        size: Optional[int] = None,
+        page: Optional[int] = 1,
+        size: Optional[int] = 30,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
         search: dict = Depends(GetQuerySearch(option_filter=options.query.filter)),
@@ -166,6 +171,15 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         entity = await self.service.create_one(request, model,background_tasks = background_tasks)
         return entity
 
+    async def create_many(
+        model: Annotated[List[create_schema_type], Body()],
+        request: Request,
+        background_tasks:BackgroundTasks,
+        self=Depends(cls)
+    ):
+        entities = await self.service.create_many(request, model,background_tasks = background_tasks)
+        return entities
+
     async def update_one(
         model: Annotated[update_schema_type, Body()],
         request: Request,
@@ -191,6 +205,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
 
     cls.get_many = get_many
     cls.create_one = create_one
+    cls.create_many = create_many
     cls.update_one = update_one
     cls.delete_many = delete_many
     cls.get_one = get_one

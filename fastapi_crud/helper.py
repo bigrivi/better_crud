@@ -3,7 +3,12 @@ from fastapi import Request
 import json
 from pydantic.types import Json
 from .config import FastAPICrudGlobalConfig
+FindType = TypeVar('FindType')
 
+def find(data:List[FindType], fun:Callable[[FindType],bool])->FindType:
+    for item in data:
+        if fun(item):
+            return item
 
 def get_feature(request: Request):
     return request.state.feature

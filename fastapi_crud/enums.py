@@ -4,6 +4,7 @@ class RoutesEnum(str, Enum):
     get_many = 'get_many'
     get_one = 'get_one'
     create_one = 'create_one',
+    create_many = 'create_many',
     update_one = 'update_one'
     delete_many = 'delete_many'
 
