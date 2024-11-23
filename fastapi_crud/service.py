@@ -12,6 +12,7 @@ from fastapi_pagination.ext.sqlmodel import paginate
 from fastapi_async_sqlalchemy import db
 from sqlmodel import SQLModel, select
 from .config import FastAPICrudGlobalConfig
+from .helper import find
 
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
@@ -165,11 +166,9 @@ class SqlalchemyCrudService(Generic[ModelType]):
 
     async def create_one(self, request: Request, model: BaseModel,background_tasks:BackgroundTasks
 ):
-        extra_data = await self.on_before_create(model,background_tasks=background_tasks)
         relationships = self.entity.__mapper__.relationships
         model_data = model.model_dump(exclude_unset=True)
-        if extra_data:
-            model_data.update(extra_data)
+        await self.on_before_create(model_data,background_tasks=background_tasks)
         if hasattr(request.state,"auth_persist"):
             model_data.update(request.state.auth_persist)
         for key, value in model_data.items():
@@ -196,29 +195,48 @@ class SqlalchemyCrudService(Generic[ModelType]):
         await db.session.refresh(entity)
         return entity
 
+    async def create_many(self, request: Request, models: List[BaseModel],background_tasks:BackgroundTasks):
+        entities = []
+        for model in models:
+            entity = await self.create_one(request,model=model,background_tasks=background_tasks)
+            entities.append(entity)
+        return entities
+
     async def update_one(self,
         request: Request,
         id:int,
         model: BaseModel,
         background_tasks:BackgroundTasks = None
     ):
-        model_data = model.model_dump(exclude_unset=True)
         entity = await self.get_by_id(id)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
+        model_data = model.model_dump(exclude_unset=True)
         await self.on_before_update(entity,update_data=model_data,background_tasks=background_tasks)
         relationships = self.entity.__mapper__.relationships
         for key, value in model_data.items():
-            if value is None:
-                continue
             if key in relationships:
                 relation_dir = relationships[key].direction
                 relation_cls = relationships[key].mapper.entity
+                primary_key = relation_cls.__mapper__.primary_key[0].name
+                print(relation_cls,primary_key)
                 if relation_dir == MANYTOMANY:
-                    primary_key = relation_cls.__mapper__.primary_key[0].name
                     if len(value) > 0 and isinstance(value[0], dict):
                         value = [elem.primary_key for elem in value]
                     instances = [(await db.session.execute(select(relation_cls).where(getattr(relation_cls, primary_key) == elem))).scalar_one_or_none() for elem in value]
+                    value = instances
+                elif relation_dir == ONETOMANY:
+                    old_value = getattr(entity,key)
+                    print("oldvalue")
+                    print(old_value)
+                    instances = []
+                    for item_dict in value:
+                        if primary_key not in item_dict:
+                            instances.append(relation_cls(**item_dict))
+                        else:
+                            instance = find(old_value,lambda x:getattr(x,primary_key)==item_dict.get(primary_key))
+                            self.update_entity_attr(instance,item_dict)
+                            instances.append(instance)
                     value = instances
                 elif relation_dir == MANYTOONE:
                     if getattr(entity,key) is None:
@@ -260,7 +278,7 @@ class SqlalchemyCrudService(Generic[ModelType]):
             if value is not None:
                 setattr(entity, key, value)
 
-    async def on_before_create(self, model: Optional[BaseModel],background_tasks:Optional[BackgroundTasks]=None) -> Union[Dict,None]:
+    async def on_before_create(self, create_data: dict,background_tasks:Optional[BackgroundTasks]=None) -> None:
         pass
 
     async def on_after_create(self, entity: ModelType,background_tasks:BackgroundTasks) -> None:
@@ -316,8 +334,12 @@ class SqlalchemyCrudService(Generic[ModelType]):
             return field.between(*value)
         elif operator == "$notbetween":
             return ~field.between(*value.split(","))
-        elif operator == "length":
+        elif operator == "$length":
             return func.length(field) == int(value)
+        elif operator == "$any":
+            return field.any(value)
+        elif operator == "$notany":
+            return func.not_(field.any(value))
         else:
             raise Exception("unknow operator "+operator)
 
