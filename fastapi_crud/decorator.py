@@ -27,6 +27,7 @@ from fastapi import (
     params
 )
 from fastapi_pagination import Page
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from functools import wraps
 from .enums import RoutesEnum, CrudActions
@@ -142,11 +143,11 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     ):
         return await self.service.get_many(
             request,
+            session=session,
             page=page,
             size=size,
             joins=options.query.joins,
             search=search,
-            session=session,
             sorts=sort,
             soft_delete=options.query.soft_delete,
             include_deleted=include_deleted
@@ -155,9 +156,10 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_one(
         request: Request,
         self=Depends(cls),
-        id: int = Path(..., title="The ID of the item to get")
+        id: int = Path(..., title="The ID of the item to get"),
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        entity = await self.service.get_by_id(id)
+        entity = await self.service.get_by_id(id,session=session)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
@@ -166,18 +168,20 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         model: Annotated[create_schema_type, Body()],
         request: Request,
         background_tasks:BackgroundTasks,
-        self=Depends(cls)
+        self=Depends(cls),
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        entity = await self.service.create_one(request, model,background_tasks = background_tasks)
+        entity = await self.service.create_one(request, model,session=session,background_tasks = background_tasks)
         return entity
 
     async def create_many(
         model: Annotated[List[create_schema_type], Body()],
         request: Request,
         background_tasks:BackgroundTasks,
-        self=Depends(cls)
+        self=Depends(cls),
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        entities = await self.service.create_many(request, model,background_tasks = background_tasks)
+        entities = await self.service.create_many(request, model,session=session,background_tasks = background_tasks)
         return entities
 
     async def update_one(
@@ -185,22 +189,25 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        id: int = Path(..., title="The ID of the item to get")
+        id: int = Path(..., title="The ID of the item to get"),
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
-        return await self.service.update_one(request, id, model,background_tasks=background_tasks)
+        return await self.service.update_one(request, id, model,session=session,background_tasks=background_tasks)
 
     async def delete_many(
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        ids: str = Path(..., title="The ID of the item to get")
+        ids: str = Path(..., title="The ID of the item to get"),
+        session = Depends(FastAPICrudGlobalConfig.get_session)
     ):
         id_list = ids.split(",")
         return await self.service.delete_many(
             request,
             id_list,
             soft_delete = options.query.soft_delete,
-            background_tasks = background_tasks
+            background_tasks = background_tasks,
+            session=session
         )
 
     cls.get_many = get_many
