@@ -98,3 +98,8 @@ def build_query_search(
         search = {"$and": search_list}
 
     return search
+
+def update_entity_attr(entity,update_value:Dict):
+    for key, value in update_value.items():
+        if value is not None:
+            setattr(entity, key, value)
