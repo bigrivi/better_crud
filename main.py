@@ -30,7 +30,7 @@ FastAPICrudGlobalConfig.init(
     query={
         "soft_delete": True
     },
-    routes={"dependencies":[JWTDepend,Depends(acl)]},
+    # routes={"dependencies":[JWTDepend,Depends(acl)]},
 )
 
 
