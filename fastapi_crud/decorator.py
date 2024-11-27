@@ -26,18 +26,18 @@ from fastapi import (
     BackgroundTasks,
     params
 )
-from fastapi_pagination import Page
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-from functools import wraps
 from .enums import RoutesEnum, CrudActions
 from .models import CrudOptions, QueryOptions, RoutesModel, RouteOptions
 from .config import FastAPICrudGlobalConfig
 from .depends import GetQuerySearch,CrudAction,AuthAction
-
-
+from fastapi_pagination import pagination_ctx
+from fastapi_pagination.bases import AbstractPage
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+
+DBSession = Annotated[AsyncSession, Depends(FastAPICrudGlobalConfig.get_db_session)]
 
 
 RoutesSchema = [
@@ -129,23 +129,21 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
 
     create_schema_type = cast(CreateSchemaType, options.dto.create)
     update_schema_type = cast(UpdateSchemaType, options.dto.update)
+    page_schema_type = cast(AbstractPage,FastAPICrudGlobalConfig.page_schema)
+
     serialize = options.serialize
 
     async def get_many(
         request: Request,
         self = Depends(cls),
-        page: Optional[int] = 1,
-        size: Optional[int] = 30,
         include_deleted: Optional[int] = 0,
         sort: List[str] = Query(None),
         search: dict = Depends(GetQuerySearch(option_filter=options.query.filter)),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session:DBSession = None
     ):
         return await self.service.get_many(
             request,
-            session=session,
-            page=page,
-            size=size,
+            db_session=db_session,
             joins=options.query.joins,
             search=search,
             sorts=sort,
@@ -157,9 +155,9 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         self=Depends(cls),
         id: int = Path(..., title="The ID of the item to get"),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
     ):
-        entity = await self.service.get_by_id(id,session=session)
+        entity = await self.service.get_by_id(id,db_session=db_session)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
@@ -169,9 +167,9 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
     ):
-        entity = await self.service.create_one(request, model,session=session,background_tasks = background_tasks)
+        entity = await self.service.create_one(request, model,db_session=db_session,background_tasks = background_tasks)
         return entity
 
     async def create_many(
@@ -179,9 +177,9 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
     ):
-        entities = await self.service.create_many(request, model,session=session,background_tasks = background_tasks)
+        entities = await self.service.create_many(request, model,db_session=db_session,background_tasks = background_tasks)
         return entities
 
     async def update_one(
@@ -190,16 +188,16 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         background_tasks:BackgroundTasks,
         self=Depends(cls),
         id: int = Path(..., title="The ID of the item to get"),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
     ):
-        return await self.service.update_one(request, id, model,session=session,background_tasks=background_tasks)
+        return await self.service.update_one(request, id, model,db_session=db_session,background_tasks=background_tasks)
 
     async def delete_many(
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
         ids: str = Path(..., title="The ID of the item to get"),
-        session = Depends(FastAPICrudGlobalConfig.get_session)
+        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
     ):
         id_list = ids.split(",")
         return await self.service.delete_many(
@@ -207,7 +205,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             id_list,
             soft_delete = options.query.soft_delete,
             background_tasks = background_tasks,
-            session=session
+            db_session=db_session
         )
 
     cls.get_many = get_many
@@ -234,13 +232,15 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         endpoint = getattr(cls, router_name)
         response_model = None
         if router_name == RoutesEnum.get_many:
-            response_model = Union[Page[serialize.get_many],List[serialize.get_many]]
+            response_model = Union[page_schema_type[serialize.get_many],List[serialize.get_many]]
         elif router_name == RoutesEnum.get_one:
             response_model = serialize.get_one or serialize.get_many
         route_dependencies = []
         route_options:RouteOptions = getattr(options.routes,router_name)
         if route_options and route_options.dependencies:
             route_dependencies = route_options.dependencies
+        if router_name == RoutesEnum.get_many:
+            route_dependencies.append(Depends(pagination_ctx(FastAPICrudGlobalConfig.page_schema)))
         router.add_api_route(
             schema["path"],
             endpoint,

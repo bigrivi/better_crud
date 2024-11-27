@@ -28,7 +28,7 @@ class RouteOptions(BaseModel):
 
 
 class RoutesModel(BaseModel):
-    dependencies: Optional[Sequence[Any]] = None,
+    dependencies: Optional[Sequence[Any]] = []
     only: Optional[List[RoutesEnum]] = None
     exclude: Optional[List[RoutesEnum]] = None
     get_many: Optional[RouteOptions] = None

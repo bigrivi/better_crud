@@ -1,7 +1,10 @@
 from typing import Any, Optional, Callable, List, Literal, Type, TypeVar, get_type_hints, Literal, Dict, Annotated
 from fastapi import Request
 import json
-from pydantic.types import Json
+from fastapi_pagination.api import resolve_params
+from fastapi_pagination.bases import  AbstractParams, RawParams
+
+
 from .config import FastAPICrudGlobalConfig
 FindType = TypeVar('FindType')
 
@@ -103,3 +106,12 @@ def update_entity_attr(entity,update_value:Dict):
     for key, value in update_value.items():
         if value is not None:
             setattr(entity, key, value)
+
+
+def check_should_paginate():
+    try:
+        params:AbstractParams = resolve_params()
+        raw_params = (params.to_raw_params().as_limit_offset())
+        return raw_params.limit>0
+    except:
+        return False
