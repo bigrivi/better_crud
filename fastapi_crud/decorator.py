@@ -27,7 +27,7 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-from .enums import RoutesEnum, CrudActions
+from .enums import RoutesEnum
 from .models import CrudOptions,AbstractResponseModel,RouteOptions
 from .types import RoutesModelDict,QueryOptionsDict,AuthModelDict,DtoModelDict,SerializeModelDict,QuerySortDict
 from .config import FastAPICrudGlobalConfig
@@ -73,13 +73,7 @@ RoutesSchema = [
     }
 ]
 
-action_map = {
-    RoutesEnum.get_many.value: CrudActions.ReadAll,
-    RoutesEnum.get_one.value: CrudActions.ReadOne,
-    RoutesEnum.create_one.value: CrudActions.CreateOne,
-    RoutesEnum.update_one.value: CrudActions.UpdateOne,
-    RoutesEnum.delete_many.value: CrudActions.DeleteMany
-}
+
 
 T = TypeVar("T")
 CONFIG = TypeVar("CONFIG", bound=CrudOptions)
@@ -255,7 +249,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             endpoint_wrapper,
             methods=[schema["method"]],
             dependencies=[
-                Depends(CrudAction(options.feature,action_map,router_name)),
+                Depends(CrudAction(options.feature,FastAPICrudGlobalConfig.action_map,router_name)),
                 Depends(AuthAction(options.auth)),
                 *route_dependencies
             ],
