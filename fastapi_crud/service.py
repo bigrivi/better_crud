@@ -1,16 +1,18 @@
-from typing import Any, Dict,List,Union
+from typing import Any, Dict,List,Union,TypeVar, Generic, Optional,Sequence
 from fastapi import Request,BackgroundTasks
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
-from typing import TypeVar, Generic, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager,MANYTOMANY,MANYTOONE,ONETOMANY,noload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func,select
+from sqlalchemy.orm.interfaces import ORMOption
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
-from .helper import check_should_paginate
+from .helper import decide_should_paginate
+from .service_abstract import CrudService
+from .types import QuerySortDict
 
 from .config import FastAPICrudGlobalConfig
 from .relationship import (
@@ -19,13 +21,13 @@ from .relationship import (
     create_many_to_one_instance
 )
 
-ModelType = TypeVar("ModelType", bound=BaseModel)
+ModelType = TypeVar("ModelType")
 Selectable = TypeVar("Selectable", bound=Select[Any])
 
 LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
 
-class SqlalchemyCrudService(Generic[ModelType]):
+class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
 
     entity: object = NotImplementedError
 
@@ -35,18 +37,16 @@ class SqlalchemyCrudService(Generic[ModelType]):
         self.entity_has_delete_column = hasattr(
             self.entity, FastAPICrudGlobalConfig.soft_deleted_field_key)
 
-    def prepare_order(self, query, sorts):
+    def prepare_order(self, query, sorts:List[QuerySortDict]):
         order_bys = []
         if sorts:
             for sort_item in sorts:
-                sort_items = sort_item.split(",")
-                sort_field = sort_items[0]
-                method = sort_items[1].lower()
-                sort_field = self.get_model_field(sort_field)
-                if method == "asc":
-                    order_bys.append(sort_field.asc())
-                elif method == "desc":
-                    order_bys.append(sort_field.desc())
+                field = self.get_model_field(sort_item["field"])
+                sort = sort_item["sort"]
+                if sort == "ASC":
+                    order_bys.append(field.asc())
+                elif sort == "DESC":
+                    order_bys.append(field.desc())
         query = query.order_by(*order_bys)
         return query
 
@@ -109,8 +109,8 @@ class SqlalchemyCrudService(Generic[ModelType]):
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
         joins:Optional[List] = None,
-        options:Optional[List] = None,
-        sorts: List[str] = None,
+        options: Optional[Sequence[ORMOption]] = None,
+        sorts: List[QuerySortDict] = None,
         implanted_cond:Optional[List[Any]] = None
     )->Selectable:
         conds = []
@@ -133,36 +133,45 @@ class SqlalchemyCrudService(Generic[ModelType]):
                     stmt = stmt.join(join, isouter=True)
                     options.append(contains_eager(join))
         if options:
-            for option in options:
-                stmt = stmt.options(option)
+            stmt = stmt.options(*options)
         stmt = stmt.where(*conds)
         stmt = self.prepare_order(stmt, sorts)
         return stmt
 
     async def get_many(
         self,
-        request: Request,
         *,
         db_session:AsyncSession,
+        request: Optional[Request] = None,
         search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
         joins:Optional[List] = None,
-        options:Optional[List] = None,
-        sorts: List[str] = None,
+        options: Optional[Sequence[ORMOption]] = None,
+        sorts: List[QuerySortDict] = None,
+        implanted_cond:Optional[List[Any]] = None
     )->Union[AbstractPage[ModelType],List[ModelType]]:
-        stmt = await self.build_query(search=search,include_deleted=include_deleted,soft_delete=soft_delete,joins=joins,options=options,sorts=sorts)
-        if check_should_paginate():
+        stmt = await self.build_query(
+            search=search,
+            include_deleted=include_deleted,
+            soft_delete=soft_delete,
+            joins=joins,
+            options=options,
+            sorts=sorts,
+            implanted_cond=implanted_cond
+        )
+        if decide_should_paginate():
             return await paginate(db_session, stmt)
         result = await db_session.execute(stmt)
         return result.unique().scalars().all()
 
-    async def get_by_id(self, id: int,db_session:AsyncSession) -> ModelType:
-        stmt = select(self.entity)
-        stmt = stmt.where(getattr(self.entity, self.primary_key) == id)
-        result = await db_session.execute(stmt)
-        return result.unique().scalar_one_or_none()
-
+    async def get(
+        self,
+        id: Union[int,str],
+        db_session:AsyncSession,
+        options: Optional[Sequence[ORMOption]] = None,
+    ) -> ModelType:
+        return await db_session.get(self.entity,id,options=options)
 
     async def create_one(
         self,

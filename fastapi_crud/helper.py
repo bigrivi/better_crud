@@ -3,6 +3,7 @@ from fastapi import Request
 import json
 from fastapi_pagination.api import resolve_params
 from fastapi_pagination.bases import  AbstractParams, RawParams
+from .types import QuerySortDict
 
 
 from .config import FastAPICrudGlobalConfig
@@ -13,12 +14,12 @@ def find(data:List[FindType], fun:Callable[[FindType],bool])->FindType:
         if fun(item):
             return item
 
-def get_feature(request: Request):
-    return request.state.feature
+def get_feature(request: Request)-> str | None:
+    return getattr(request.state, 'feature', None)
 
 
-def get_action(request: Request):
-    return request.state.action
+def get_action(request: Request)-> str | None:
+    return getattr(request.state, 'action', None)
 
 
 def filter_to_search(filter_str: str)->Dict:
@@ -41,7 +42,7 @@ def filter_to_search(filter_str: str)->Dict:
         }
     return search
 
-def build_query_search(
+def parse_query_search(
     search_spec: Optional[str] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
@@ -102,13 +103,25 @@ def build_query_search(
 
     return search
 
+
+def parse_query_sort(
+    raw_query_sorts: Optional[List[str]] = None,
+)->List[QuerySortDict]:
+    sorts = []
+    for item in raw_query_sorts:
+        if FastAPICrudGlobalConfig.delim_config.delim_str not in item:
+            raise Exception("invalid query sort")
+        field,sort = item.split(FastAPICrudGlobalConfig.delim_config.delim_str)
+        sorts.append(QuerySortDict(field=field,sort=sort))
+    return sorts
+
 def update_entity_attr(entity,update_value:Dict):
     for key, value in update_value.items():
         if value is not None:
             setattr(entity, key, value)
 
 
-def check_should_paginate():
+def decide_should_paginate():
     try:
         params:AbstractParams = resolve_params()
         raw_params = (params.to_raw_params().as_limit_offset())

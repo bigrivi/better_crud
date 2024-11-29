@@ -3,34 +3,25 @@ from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import gc
 from contextlib import asynccontextmanager
-from fastapi.security import  HTTPBearer
 from fastapi_responseschema import wrap_app_responses
 import uvicorn
 from app.core.config import ModeEnum, settings
 from app.db.init_db import init_db
 from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature
 from app.db.session import get_session
-from app.core.schema import Route
-
-JWTDepend = Depends(HTTPBearer())
-
-
-async def acl(request: Request):
-    print("global acl")
-    print(request)
-    print(request.state.__dict__)
-    feature = get_feature(request)
-    action = get_action(request)
-    print(feature)
-    print(action)
-    # raise HTTPException(status.HTTP_403_FORBIDDEN,"Permission Denied")
+from app.core.schema import ResponseSchema
+from app.core.depends import JWTDepend,ACLDepend
 
 FastAPICrudGlobalConfig.init(
     get_db_session=get_session,
+    response_schema=ResponseSchema,
     query={
-        "soft_delete": True
+        "soft_delete":True
     },
-    # routes={"dependencies":[JWTDepend,Depends(acl)]},
+    routes={
+        # "dependencies":[JWTDepend,ACLDepend],
+        # "only":["create_many","create_one"]
+    },
 )
 
 
@@ -45,7 +36,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="FastAPI CRUD", lifespan=lifespan)
 
-wrap_app_responses(app, Route)
 app.add_middleware(
     SQLAlchemyMiddleware,
     db_url=str(settings.ASYNC_DATABASE_URL),

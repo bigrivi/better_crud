@@ -1,10 +1,10 @@
 from typing import Callable,Optional,List,Dict
 from fastapi import Query,Request
-from .helper import build_query_search
+from .helper import parse_query_search,parse_query_sort
 from pydantic.types import Json
-from .models import AuthModel
+from .models import AuthModel,QuerySortModel
 
-class GetQuerySearch:
+class GetSearch:
 
     def __init__(self, option_filter:Optional[Dict] = None):
         self.option_filter = option_filter
@@ -16,7 +16,7 @@ class GetQuerySearch:
         filters: List[str] = Query(None, alias="filter"),
         ors: List[str] = Query(None, alias="or"),
     ):
-        search = build_query_search(
+        search = parse_query_search(
             search_spec=search_spec,
             ors=ors,
             filters=filters,
@@ -25,6 +25,20 @@ class GetQuerySearch:
         )
         return search
 
+class GetSort:
+
+    def __init__(self, option_sort:Optional[List[QuerySortModel]] = None):
+        self.option_sort = option_sort
+
+    def __call__(
+        self,
+        sorts: List[str] = Query(None, alias="sort")
+    ):
+        if sorts:
+            return parse_query_sort(sorts)
+        if self.option_sort:
+            return [item.model_dump() for item in self.option_sort]
+        return []
 class CrudAction():
 
     def __init__(self, feature:str,action_map:Dict,router_name:str):

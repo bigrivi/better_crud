@@ -7,13 +7,12 @@ from typing import (
     Type,
     TypeVar,
     get_type_hints,
-    Literal,
-    Dict,
     Annotated,
     cast,
-    Sequence,
-    Union
+    Union,
+    Dict
 )
+from functools import wraps
 from fastapi import (
     APIRouter,
     status,
@@ -29,9 +28,10 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from .enums import RoutesEnum, CrudActions
-from .models import CrudOptions, QueryOptions, RoutesModel, RouteOptions
+from .models import CrudOptions,AbstractResponseModel,RouteOptions
+from .types import RoutesModelDict,QueryOptionsDict,AuthModelDict,DtoModelDict,SerializeModelDict,QuerySortDict
 from .config import FastAPICrudGlobalConfig
-from .depends import GetQuerySearch,CrudAction,AuthAction
+from .depends import GetSearch,CrudAction,AuthAction,GetSort
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -92,18 +92,11 @@ def crud(
     router: APIRouter,
     name: Optional[str] = "",
     feature: Optional[str] = "",
-    routes: Optional[RoutesModel] = {},
-    dto: Optional[Dict[
-        Literal["create", "update"],
-        Any,
-    ]] = None,
-    serialize: Optional[Dict[
-        Literal["get_many", "get_one"],
-        Any,
-    ]] = None,
-    dependencies: Optional[Sequence[params.Depends]] = None,
-    auth:Optional[Dict] = None,
-    query: Optional[QueryOptions] = {}
+    routes: Optional[RoutesModelDict] = {},
+    dto: DtoModelDict = {},
+    serialize: SerializeModelDict = {},
+    auth:Optional[AuthModelDict] = {},
+    query: Optional[QueryOptionsDict] = {}
 ) -> Callable[[Type[T]], Type[T]]:
     def decorator(cls: Type[T]) -> Type[T]:
         options = CrudOptions(
@@ -112,7 +105,6 @@ def crud(
             dto=dto,
             auth=auth,
             serialize=serialize,
-            dependencies=dependencies,
             routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
             query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
         )
@@ -130,6 +122,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     create_schema_type = cast(CreateSchemaType, options.dto.create)
     update_schema_type = cast(UpdateSchemaType, options.dto.update)
     page_schema_type = cast(AbstractPage,FastAPICrudGlobalConfig.page_schema)
+    response_schema_type = cast(AbstractResponseModel,FastAPICrudGlobalConfig.response_schema)
 
     serialize = options.serialize
 
@@ -137,16 +130,16 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         self = Depends(cls),
         include_deleted: Optional[int] = 0,
-        sort: List[str] = Query(None),
-        search: dict = Depends(GetQuerySearch(option_filter=options.query.filter)),
+        search: Dict = Depends(GetSearch(option_filter=options.query.filter)),
+        sorts: List[QuerySortDict] = Depends(GetSort(option_sort=options.query.sort)),
         db_session:DBSession = None
     ):
         return await self.service.get_many(
-            request,
             db_session=db_session,
+            request=request,
             joins=options.query.joins,
             search=search,
-            sorts=sort,
+            sorts=sorts,
             soft_delete=options.query.soft_delete,
             include_deleted=include_deleted
         )
@@ -154,10 +147,10 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_one(
         request: Request,
         self=Depends(cls),
-        id: int = Path(..., title="The ID of the item to get"),
-        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
+        id: Union[int,str] = Path(..., title="The ID of the item to get"),
+        db_session:DBSession = None
     ):
-        entity = await self.service.get_by_id(id,db_session=db_session)
+        entity = await self.service.get(id,db_session=db_session)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
@@ -167,7 +160,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
+        db_session:DBSession = None
     ):
         entity = await self.service.create_one(request, model,db_session=db_session,background_tasks = background_tasks)
         return entity
@@ -177,7 +170,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         background_tasks:BackgroundTasks,
         self=Depends(cls),
-        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
+        db_session:DBSession = None
     ):
         entities = await self.service.create_many(request, model,db_session=db_session,background_tasks = background_tasks)
         return entities
@@ -188,7 +181,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         background_tasks:BackgroundTasks,
         self=Depends(cls),
         id: int = Path(..., title="The ID of the item to get"),
-        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
+        db_session:DBSession = None
     ):
         return await self.service.update_one(request, id, model,db_session=db_session,background_tasks=background_tasks)
 
@@ -197,7 +190,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         background_tasks:BackgroundTasks,
         self=Depends(cls),
         ids: str = Path(..., title="The ID of the item to get"),
-        db_session = Depends(FastAPICrudGlobalConfig.get_db_session)
+        db_session:DBSession = None
     ):
         id_list = ids.split(",")
         return await self.service.delete_many(
@@ -230,25 +223,40 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         if overrides:
             continue
         endpoint = getattr(cls, router_name)
+
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            async def wrapper(*args: Any, **kwargs: Any) -> Any:
+                endpoint_output = await func(*args, **kwargs)
+                if response_schema_type:
+                    return response_schema_type.create(endpoint_output)
+                return endpoint_output
+            return wrapper
+        endpoint_wrapper = decorator(endpoint)
         response_model = None
         if router_name == RoutesEnum.get_many:
             response_model = Union[page_schema_type[serialize.get_many],List[serialize.get_many]]
         elif router_name == RoutesEnum.get_one:
             response_model = serialize.get_one or serialize.get_many
-        route_dependencies = []
+        if response_schema_type:
+            response_model = response_schema_type[response_model]
+        route_dependencies = None
         route_options:RouteOptions = getattr(options.routes,router_name)
-        if route_options and route_options.dependencies:
-            route_dependencies = route_options.dependencies
+        if route_options and route_options.dependencies is not None:
+            route_dependencies = [*route_options.dependencies]
+        if route_dependencies is None and options.routes.dependencies:
+            route_dependencies = [*options.routes.dependencies]
+        if route_dependencies is None:
+            route_dependencies = []
         if router_name == RoutesEnum.get_many:
             route_dependencies.append(Depends(pagination_ctx(FastAPICrudGlobalConfig.page_schema)))
         router.add_api_route(
             schema["path"],
-            endpoint,
+            endpoint_wrapper,
             methods=[schema["method"]],
             dependencies=[
                 Depends(CrudAction(options.feature,action_map,router_name)),
                 Depends(AuthAction(options.auth)),
-                *options.routes.dependencies,
                 *route_dependencies
             ],
             response_model=response_model,
