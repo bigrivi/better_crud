@@ -19,3 +19,7 @@ class relationshipsTypes(str,Enum):
     MANYTOMANY = "MANYTOMANY",
     ONETOMANY = "ONETOMANY",
     MANYTOONE = "MANYTOONE"
+
+class QuerySortType(str, Enum):
+    ASC = 'ASC'
+    DESC = 'DESC'

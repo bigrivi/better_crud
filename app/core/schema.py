@@ -1,39 +1,16 @@
 
-from typing import Any,Optional,TypeVar,Generic,List
-from fastapi_responseschema import AbstractResponseSchema, SchemaAPIRoute, wrap_app_responses
-from pydantic import BaseModel
-
-
-# Build your "Response Schema"
-class ResponseMetadata(BaseModel):
-    error: bool
-    message: Optional[str]
-
-
+from typing import Any,TypeVar,Generic
+from fastapi_crud import AbstractResponseModel
 T = TypeVar("T")
-
-
-class ResponseSchema(AbstractResponseSchema[T], Generic[T]):
+class ResponseSchema(AbstractResponseModel,Generic[T]):
     data: T
-    meta: ResponseMetadata
+    msg: str
 
     @classmethod
-    def from_exception(cls, reason, status_code, message: str = "Error", **others):
-        return cls(
-            data=reason,
-            meta=ResponseMetadata(error=status_code >= 400, message=message)
-        )
-
-    @classmethod
-    def from_api_route(
-        cls, content: Any, status_code: int, description: Optional[str] = None, **others
+    def create(
+        cls, content: Any
     ):
         return cls(
             data=content,
-            meta=ResponseMetadata(error=status_code >= 400, message=description)
+            msg="success"
         )
-
-
-# Create an APIRoute
-class Route(SchemaAPIRoute):
-    response_schema = ResponseSchema

@@ -1,34 +1,34 @@
-from pydantic import BaseModel,Field
-from typing import List, Optional, Any, Dict,Callable,Sequence
-from .enums import RoutesEnum
-from typing_extensions import TypedDict
-
-class QueryCriterion(TypedDict):
-    field: str
-    value: str
-    operator: str
+from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Generic,Type
+from abc import ABC,abstractmethod
+from pydantic import BaseModel,Field,ConfigDict
+from .enums import RoutesEnum,QuerySortType
 
 class DtoModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     create: Any = None
     update: Any = None
 
 class AuthModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     property_:str = Field(default=None, alias='property')
     filter_: Callable[[Any], Dict] = Field(default=None, alias='filter')
     persist: Callable[[Any], Dict] = None
 
 class SerializeModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     get_many: Any = None
     get_one: Any = None
     create_one: Any = None
 
 
 class RouteOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     dependencies: Optional[Sequence[Any]] = None,
 
 
 class RoutesModel(BaseModel):
-    dependencies: Optional[Sequence[Any]] = []
+    model_config = ConfigDict(extra="forbid")
+    dependencies: Optional[Sequence[Any]] = None
     only: Optional[List[RoutesEnum]] = None
     exclude: Optional[List[RoutesEnum]] = None
     get_many: Optional[RouteOptions] = None
@@ -38,15 +38,21 @@ class RoutesModel(BaseModel):
     update_one: Optional[RouteOptions] = None
     delete_many: Optional[RouteOptions] = None
 
-
+class QuerySortModel(BaseModel):
+    field: str
+    sort:QuerySortType
 
 class QueryOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     joins: Optional[List[Any]] = None
     soft_delete: Optional[bool] = None
     filter: Optional[Dict] = None
+    sort: Optional[List[QuerySortModel]] = None
+
 
 
 class CrudOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     dto: DtoModel = None
     serialize: Optional[SerializeModel] = None
     routes: Optional[RoutesModel] = None
@@ -55,10 +61,25 @@ class CrudOptions(BaseModel):
     query: Optional[QueryOptions] = None
     auth:Optional[AuthModel] = None
 
-
 class GlobalQueryOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     soft_delete: Optional[bool] = False
+    sort: Optional[List[QuerySortModel]] = None
 
 class QueryDelimOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     delim: Optional[str] = "||"
     delim_str: Optional[str] = ","
+
+
+
+C = TypeVar("C")
+class AbstractResponseModel(BaseModel, ABC):
+    @classmethod
+    @abstractmethod
+    def create(
+        cls: Type[C],
+        *args: Any,
+        **kwargs: Any,
+    ) -> C:
+        raise NotImplementedError
