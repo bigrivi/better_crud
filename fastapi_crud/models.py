@@ -1,6 +1,6 @@
 from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Generic,Type
 from abc import ABC,abstractmethod
-from pydantic import BaseModel,Field,ConfigDict
+from pydantic import BaseModel,Field,ConfigDict,SerializeAsAny
 from .enums import RoutesEnum,QuerySortType
 
 class DtoModel(BaseModel):
@@ -16,10 +16,12 @@ class AuthModel(BaseModel):
 
 class SerializeModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    get_many: Any = None
-    get_one: Any = None
-    create_one: Any = None
-
+    get_many: Optional[Any] = None
+    get_one: Optional[Any] = None
+    create_one: Optional[Any] = None
+    create_many: Optional[Any] = None
+    update_one: Optional[Any] = None
+    delete_many: Optional[Any] = None
 
 class RouteOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")

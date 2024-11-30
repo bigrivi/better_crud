@@ -12,6 +12,7 @@ class CrudActions(str, Enum):
     ReadAll = 'ReadAll',
     ReadOne = 'ReadOne',
     CreateOne = 'CreateOne',
+    CreateMany = 'CreateMany',
     UpdateOne = 'UpdateOne',
     DeleteMany = 'DeleteMany'
 

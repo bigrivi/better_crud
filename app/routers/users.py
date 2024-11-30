@@ -23,7 +23,10 @@ def filter_fn(request:Request):
         # "only":["get_many","create_one"]
     },
     dto={"create":UserCreate,"update":UserUpdate},
-    serialize={"get_many":UserPublic,"get_one":UserPublic},
+    serialize={
+        "get_many":UserPublic,
+        "create_one":UserPublic,
+    },
     auth = {
         # "filter":filter_fn
     },

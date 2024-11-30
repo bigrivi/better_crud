@@ -192,9 +192,9 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
                 if relation_dir == MANYTOMANY:
                     model_data[key] = await create_many_to_many_instances(db_session,relation_cls,value)
                 elif relation_dir == ONETOMANY:
-                    model_data[key] = create_one_to_many_instances(relation_cls=relation_cls,value=value)
+                    model_data[key] = await create_one_to_many_instances(relation_cls,value)
                 elif relation_dir == MANYTOONE:
-                    model_data[key] = create_many_to_one_instance(relation_cls=relation_cls,value=value)
+                    model_data[key] = await create_many_to_one_instance(relation_cls,value)
         entity = self.entity(**model_data)
         db_session.add(entity)
         await db_session.flush()
@@ -241,9 +241,9 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
                 if relation_dir == MANYTOMANY:
                     value = await create_many_to_many_instances(db_session,relation_cls,value)
                 elif relation_dir == ONETOMANY:
-                    value = create_one_to_many_instances(relation_cls=relation_cls,data=value,old_value=getattr(entity,key))
+                    value = await create_one_to_many_instances(relation_cls=relation_cls,data=value,old_value=getattr(entity,key))
                 elif relation_dir == MANYTOONE:
-                    value = create_many_to_one_instance(relation_cls=relation_cls,data=value,old_value=getattr(entity,key))
+                    value = await create_many_to_one_instance(relation_cls=relation_cls,data=value,old_value=getattr(entity,key))
             setattr(entity, key, value)
         db_session.add(entity)
         await db_session.flush()

@@ -31,6 +31,7 @@ from .enums import RoutesEnum
 from .models import CrudOptions,AbstractResponseModel,RouteOptions
 from .types import RoutesModelDict,QueryOptionsDict,AuthModelDict,DtoModelDict,SerializeModelDict,QuerySortDict
 from .config import FastAPICrudGlobalConfig
+from .helper import get_serialize_model
 from .depends import GetSearch,CrudAction,AuthAction,GetSort
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
@@ -218,22 +219,28 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             continue
         endpoint = getattr(cls, router_name)
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable,inner_router_name:str) -> Callable:
             @wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 endpoint_output = await func(*args, **kwargs)
+                serialize_model = get_serialize_model(serialize,inner_router_name)
+                if serialize_model is None:
+                    endpoint_output = None
                 if response_schema_type:
                     return response_schema_type.create(endpoint_output)
                 return endpoint_output
             return wrapper
-        endpoint_wrapper = decorator(endpoint)
-        response_model = None
+        endpoint_wrapper = decorator(endpoint,router_name)
+        response_model = get_serialize_model(serialize,router_name)
         if router_name == RoutesEnum.get_many:
             response_model = Union[page_schema_type[serialize.get_many],List[serialize.get_many]]
-        elif router_name == RoutesEnum.get_one:
-            response_model = serialize.get_one or serialize.get_many
+        if response_model:
+            if router_name in [RoutesEnum.create_many,RoutesEnum.delete_many]:
+                response_model = List[response_model]
+
         if response_schema_type:
             response_model = response_schema_type[response_model]
+
         route_dependencies = None
         route_options:RouteOptions = getattr(options.routes,router_name)
         if route_options and route_options.dependencies is not None:

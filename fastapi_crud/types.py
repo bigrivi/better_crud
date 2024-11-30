@@ -64,3 +64,6 @@ class SerializeModelDict(TypedDict,total=False):
     get_many: Optional[Any] = None
     get_one: Optional[Any] = None
     create_one: Optional[Any] = None
+    create_many: Optional[Any] = None
+    update_one: Optional[Any] = None
+    delete_many: Optional[Any] = None

@@ -4,6 +4,8 @@ import json
 from fastapi_pagination.api import resolve_params
 from fastapi_pagination.bases import  AbstractParams, RawParams
 from .types import QuerySortDict
+from .models import SerializeModel
+from .enums import RoutesEnum
 
 
 from .config import FastAPICrudGlobalConfig
@@ -128,3 +130,12 @@ def decide_should_paginate():
         return raw_params.limit>0
     except:
         return False
+
+def get_serialize_model(serialize:SerializeModel,router_name):
+    serialize_model = getattr(serialize,router_name,None)
+    if serialize_model is None:
+        if router_name == RoutesEnum.get_one:
+            return get_serialize_model(serialize,RoutesEnum.get_many)
+        if router_name == RoutesEnum.create_many:
+            return get_serialize_model(serialize,RoutesEnum.create_one)
+    return serialize_model
