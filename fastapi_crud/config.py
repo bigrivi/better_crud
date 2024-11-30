@@ -13,6 +13,7 @@ DEFAULT_ACTION_MAP = {
     RoutesEnum.get_many: CrudActions.ReadAll,
     RoutesEnum.get_one: CrudActions.ReadOne,
     RoutesEnum.create_one: CrudActions.CreateOne,
+    RoutesEnum.create_many: CrudActions.CreateMany,
     RoutesEnum.update_one: CrudActions.UpdateOne,
     RoutesEnum.delete_many: CrudActions.DeleteMany
 }

@@ -23,7 +23,7 @@ async def create_one_to_many_instances(relation_cls,data:List[Dict],old_instance
         instances.append(relation_cls(**item_data))
     return  instances
 
-async def create_many_to_one_instance(relation_cls,data:Dict,old_instance:Any):
+async def create_many_to_one_instance(relation_cls,data:Dict,old_instance:Optional[Any] = None):
     if old_instance is None:
         return relation_cls(**data)
     update_entity_attr(old_instance,data)
