@@ -18,6 +18,41 @@ DEFAULT_ACTION_MAP = {
     RoutesEnum.delete_many: CrudActions.DeleteMany
 }
 
+
+RoutesSchema = [
+    {
+        "name": RoutesEnum.get_many,
+        "path": '/',
+        "method": "GET"
+    },
+    {
+        "name": RoutesEnum.create_one,
+        "path": '/',
+        "method": "POST"
+    },
+    {
+        "name": RoutesEnum.create_many,
+        "path": '/bulk',
+        "method": "POST"
+    },
+    {
+        "name": RoutesEnum.get_one,
+        "path": '/{id}',
+        "method": "GET"
+    },
+    {
+        "name": RoutesEnum.update_one,
+        "path": '/{id}',
+        "method": "PUT"
+    },
+    {
+        "name": RoutesEnum.delete_many,
+        "path": '/{ids}',
+        "method": "DELETE"
+    }
+]
+
+
 class FastAPICrudGlobalConfig:
     get_db_session_fn:ClassVar[DBSessionFunc] = None
     query:ClassVar[GlobalQueryOptions] = GlobalQueryOptions()

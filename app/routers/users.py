@@ -16,16 +16,17 @@ def filter_fn(request:Request):
     }
 
 @crud(router,
-    name="user",
     feature="user",
     routes={
         # "dependencies":[JWTDepend,ACLDepend],
         # "only":["get_many","create_one"]
     },
+    context_vars={
+        "name":"sun"
+    },
     dto={"create":UserCreate,"update":UserUpdate},
     serialize={
-        "get_many":UserPublic,
-        "create_one":UserPublic,
+        "base":UserPublic,
     },
     auth = {
         # "filter":filter_fn

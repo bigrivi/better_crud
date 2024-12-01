@@ -1,12 +1,12 @@
-from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Generic,Type
+from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Union,Type
 from abc import ABC,abstractmethod
-from pydantic import BaseModel,Field,ConfigDict,SerializeAsAny
+from pydantic import BaseModel,Field,ConfigDict
 from .enums import RoutesEnum,QuerySortType
 
 class DtoModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    create: Any = None
-    update: Any = None
+    create: Optional[Any] = None
+    update: Optional[Any] = None
 
 class AuthModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -16,6 +16,7 @@ class AuthModel(BaseModel):
 
 class SerializeModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    base:Any = Field(...)
     get_many: Optional[Any] = None
     get_one: Optional[Any] = None
     create_one: Optional[Any] = None
@@ -25,8 +26,8 @@ class SerializeModel(BaseModel):
 
 class RouteOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    dependencies: Optional[Sequence[Any]] = None,
-
+    dependencies: Optional[Sequence[Any]] = None
+    summary:Optional[str] = None
 
 class RoutesModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -58,10 +59,10 @@ class CrudOptions(BaseModel):
     dto: DtoModel = None
     serialize: Optional[SerializeModel] = None
     routes: Optional[RoutesModel] = None
-    name: str = None
     feature: str = None
     query: Optional[QueryOptions] = None
     auth:Optional[AuthModel] = None
+    context_vars:Dict = None
 
 class GlobalQueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")

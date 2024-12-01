@@ -5,10 +5,9 @@ from app.services.role import RoleService
 router = APIRouter()
 
 @crud(router,
-    name="role",
     dto={"create":RoleCreate,"update":RoleUpdate},
     routes={},
-    serialize={"get_many":RolePublic},
+    serialize={"base":RolePublic},
 )
 class RoleController():
     service: RoleService = Depends(RoleService)
