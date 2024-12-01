@@ -228,7 +228,7 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
         db_session:AsyncSession,
         background_tasks:BackgroundTasks = None
     ):
-        entity = await self.get_by_id(id,db_session=db_session)
+        entity = await self.get(id,db_session=db_session)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
         model_data = model.model_dump(exclude_unset=True)
@@ -250,14 +250,24 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
         await db_session.commit()
         await db_session.refresh(entity)
         await self.on_after_update(entity,background_tasks=background_tasks)
+        return entity
 
-    async def delete_many(self, request: Request, id_list: list,db_session:AsyncSession, soft_delete: Optional[bool] = False,background_tasks:BackgroundTasks=None):
+    async def delete_many(self,
+        request: Request,
+        id_list: list,
+        db_session:AsyncSession,
+        soft_delete: Optional[bool] = False,
+        background_tasks:BackgroundTasks=None
+    )->List[ModelType]:
+        returns = [await self.get(id,db_session) for id in id_list]
         await self.on_before_delete(id_list,background_tasks=background_tasks)
         if soft_delete:
             await self.soft_delete(id_list,db_session=db_session)
         else:
             await self.batch_delete(getattr(self.entity, self.primary_key).in_(id_list),db_session=db_session)
         await self.on_after_delete(id_list,background_tasks=background_tasks)
+        return returns
+
 
     async def batch_delete(self, stmt,db_session:AsyncSession):
         if not isinstance(stmt, list):

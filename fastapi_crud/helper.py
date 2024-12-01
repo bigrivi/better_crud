@@ -1,12 +1,11 @@
-from typing import Any, Optional, Callable, List, Literal, Type, TypeVar, get_type_hints, Literal, Dict, Annotated
+from typing import Optional, Callable, List, TypeVar, Dict,Union
 from fastapi import Request
 import json
 from fastapi_pagination.api import resolve_params
 from fastapi_pagination.bases import  AbstractParams, RawParams
 from .types import QuerySortDict
-from .models import SerializeModel
+from .models import SerializeModel,RouteOptions
 from .enums import RoutesEnum
-
 
 from .config import FastAPICrudGlobalConfig
 FindType = TypeVar('FindType')
@@ -138,4 +137,15 @@ def get_serialize_model(serialize:SerializeModel,router_name):
             return get_serialize_model(serialize,RoutesEnum.get_many)
         if router_name == RoutesEnum.create_many:
             return get_serialize_model(serialize,RoutesEnum.create_one)
-    return serialize_model
+    return serialize_model or getattr(serialize,"base",None)
+
+class DefaultMap(dict):
+    def __missing__(self, key):
+        return key
+
+def get_route_summary(route_options:RouteOptions,context_vars:Dict):
+    if not route_options:
+        return None
+    if not route_options.summary:
+        return None
+    return route_options.summary.format_map(DefaultMap(**context_vars))

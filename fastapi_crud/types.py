@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict,Callable,Sequence,Literal,TypeAlias
+from typing import List, Optional, Any, Dict,Callable,Sequence,Literal,TypeAlias,Union
 from typing_extensions import TypedDict
 from fastapi import params
 
@@ -11,9 +11,9 @@ RoutesEnumType:TypeAlias = Literal[
     "delete_many"
 ]
 
-
 class RouteOptionsDict(TypedDict,total=False):
-    dependencies: Optional[Sequence[params.Depends]] = None,
+    dependencies: Optional[Sequence[params.Depends]] = None
+    summary:Optional[str] = None
 
 class RoutesModelDict(TypedDict,total=False):
     dependencies: Optional[Sequence[params.Depends]] = None
@@ -61,6 +61,7 @@ class DtoModelDict(TypedDict,total=False):
     update: Optional[Any] = None
 
 class SerializeModelDict(TypedDict,total=False):
+    base: Any
     get_many: Optional[Any] = None
     get_one: Optional[Any] = None
     create_one: Optional[Any] = None

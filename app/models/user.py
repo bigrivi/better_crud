@@ -47,11 +47,11 @@ class UserCreate(UserBase):
     password: str
     profile: UserProfileCreate = None
     roles: List[int]
-    tasks:List[UserTaskCreate]
+    tasks:Optional[List[UserTaskCreate]] = None
 
 
 class UserUpdate(UserBase):
     password: str = None
     profile: UserProfileCreate = None
     roles: List[int] = None
-    tasks:List[UserTaskCreate]
+    tasks:Optional[List[UserTaskCreate]] = None
