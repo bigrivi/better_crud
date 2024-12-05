@@ -17,6 +17,12 @@ def filter_fn(request:Request):
 
 @crud(router,
     feature="user",
+    params={
+        "companyid":{
+            "field":"company_id",
+            "type":"str"
+        }
+    },
     routes={
         # "dependencies":[JWTDepend,ACLDepend],
         # "only":["get_many","create_one"]
@@ -32,11 +38,20 @@ def filter_fn(request:Request):
         # "filter":filter_fn
     },
     query={
-        "joins":[
-            User.profile,
-            User.company,
-            User.roles
-        ],
+        "joins":{
+            "profile":{
+                "select":True
+            },
+            "tasks":{
+                "select":True
+            },
+            "company":{
+                "select":True
+            },
+            "roles":{
+                "select":True
+            }
+        },
         "soft_delete":True,
         "sort":[
             {

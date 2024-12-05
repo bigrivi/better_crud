@@ -8,12 +8,10 @@ import uvicorn
 from app.core.config import ModeEnum, settings
 from app.db.init_db import init_db
 from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature
-from app.db.session import get_session
 from app.core.schema import ResponseSchema
 from app.core.depends import JWTDepend,ACLDepend
 
 FastAPICrudGlobalConfig.init(
-    get_db_session=get_session,
     response_schema=ResponseSchema,
     query={
         "soft_delete":True
@@ -40,7 +38,7 @@ app.add_middleware(
     SQLAlchemyMiddleware,
     db_url=str(settings.ASYNC_DATABASE_URL),
     engine_args={
-        "echo": False,
+        "echo": True,
         "poolclass": NullPool
         if settings.MODE == ModeEnum.testing
         else AsyncAdaptedQueuePool

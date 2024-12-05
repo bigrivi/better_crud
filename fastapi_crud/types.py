@@ -35,6 +35,11 @@ class QuerySortDict(TypedDict):
     field: str
     sort:Literal["ASC","DESC"]
 
+class PathParamDict(TypedDict):
+    field: str
+    type:Literal["str","int"]
+
+
 class GlobalQueryOptionsDict(TypedDict,total=False):
     soft_delete: Optional[bool] = False
     sort: Optional[List[QuerySortDict]] = None
@@ -44,8 +49,13 @@ class QueryDelimOptionsDict(TypedDict,total=False):
     delim: Optional[str] = "||"
     delim_str: Optional[str] = ","
 
+class JoinOptionsDict(TypedDict,total=False):
+    select:Optional[bool] = True
+    join:Optional[bool] = True
+    allow:Optional[List[str]] = None
+
 class QueryOptionsDict(TypedDict,total=False):
-    joins: Optional[List[Any]] = None
+    joins: Optional[Dict[str,JoinOptionsDict]] = None
     soft_delete: Optional[bool] = None
     filter: Optional[Dict] = None
     sort: Optional[List[QuerySortDict]] = None

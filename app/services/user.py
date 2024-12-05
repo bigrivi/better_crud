@@ -1,10 +1,11 @@
 from fastapi_crud import SqlalchemyCrudService
 from app.models.user import User
 from app.core.security import get_hashed_password
+from app.db.session import get_session
 
 class UserService(SqlalchemyCrudService[User]):
     def __init__(self):
-        super().__init__(User)
+        super().__init__(User,get_db_session_fn=get_session)
 
     async def on_before_create(self,create_data:dict,**kwargs):
         hashed_password = get_hashed_password(create_data["password"])

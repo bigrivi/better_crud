@@ -27,17 +27,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from .enums import RoutesEnum
 from .models import CrudOptions,AbstractResponseModel,RouteOptions
-from .types import RoutesModelDict,QueryOptionsDict,AuthModelDict,DtoModelDict,SerializeModelDict,QuerySortDict
+from .types import RoutesModelDict,QueryOptionsDict,AuthModelDict,DtoModelDict,SerializeModelDict,QuerySortDict,PathParamDict
 from .config import FastAPICrudGlobalConfig,RoutesSchema
 from .helper import get_serialize_model,get_route_summary
-from .depends import GetSearch,CrudAction,AuthAction,GetSort
+from .depends import GetSearch,CrudAction,StateAction,GetSort
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
-
-DBSession = Annotated[AsyncSession, Depends(FastAPICrudGlobalConfig.get_db_session)]
-
 
 
 
@@ -54,6 +51,7 @@ def crud(
     serialize: SerializeModelDict,
     context_vars:Optional[Dict] = {},
     feature: Optional[str] = "",
+    params:Optional[Dict[str,PathParamDict]] = None,
     routes: Optional[RoutesModelDict] = {},
     dto: DtoModelDict = {},
     auth:Optional[AuthModelDict] = {},
@@ -64,6 +62,7 @@ def crud(
             feature=feature,
             dto=dto,
             auth=auth,
+            params=params,
             serialize=serialize,
             context_vars=context_vars,
             routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
@@ -75,10 +74,6 @@ def crud(
 
 def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     _init_cbv(cls)
-    function_members = inspect.getmembers(cls, inspect.isfunction)
-    functions_set = set(func for _, func in function_members)
-    for func in functions_set:
-        _update_route_endpoint_signature(cls, func)
 
     create_schema_type = cast(CreateSchemaType, options.dto.create)
     update_schema_type = cast(UpdateSchemaType, options.dto.update)
@@ -88,15 +83,13 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     serialize = options.serialize
 
     async def get_many(
+        self,
         request: Request,
-        self = Depends(cls),
         include_deleted: Optional[int] = 0,
-        search: Dict = Depends(GetSearch(option_filter=options.query.filter)),
-        sorts: List[QuerySortDict] = Depends(GetSort(option_sort=options.query.sort)),
-        db_session:DBSession = None
+        search: Dict = Depends(GetSearch(options.query.filter,options.params)),
+        sorts: List[QuerySortDict] = Depends(GetSort(options.query.sort)),
     ):
-        return await self.service.get_many(
-            db_session=db_session,
+        return await self.service.crud_get_many(
             request=request,
             joins=options.query.joins,
             search=search,
@@ -106,60 +99,71 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         )
 
     async def get_one(
+        self,
         request: Request,
-        self=Depends(cls),
-        id: Union[int,str] = Path(..., title="The ID of the item to get"),
-        db_session:DBSession = None
+        id: Union[int,str] = Path(..., title="The ID of the item to get")
     ):
-        entity = await self.service.get(id,db_session=db_session)
+        entity = await self.service.crud_get_one(id,joins=options.query.joins)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
 
     async def create_one(
+        self,
         model: Annotated[create_schema_type, Body()],
         request: Request,
-        background_tasks:BackgroundTasks,
-        self=Depends(cls),
-        db_session:DBSession = None
+        background_tasks:BackgroundTasks
     ):
-        entity = await self.service.create_one(request, model,db_session=db_session,background_tasks = background_tasks)
+        entity = await self.service.crud_create_one(
+            request,
+            model,
+            joins=options.query.joins,
+            background_tasks = background_tasks
+        )
         return entity
 
     async def create_many(
+        self,
         model: Annotated[List[create_schema_type], Body()],
         request: Request,
-        background_tasks:BackgroundTasks,
-        self=Depends(cls),
-        db_session:DBSession = None
+        background_tasks:BackgroundTasks
     ):
-        entities = await self.service.create_many(request, model,db_session=db_session,background_tasks = background_tasks)
+        entities = await self.service.crud_create_many(
+            request,
+            model,
+            joins=options.query.joins,
+            background_tasks = background_tasks
+        )
         return entities
 
     async def update_one(
+        self,
         model: Annotated[update_schema_type, Body()],
         request: Request,
         background_tasks:BackgroundTasks,
-        self=Depends(cls),
-        id: int = Path(..., title="The ID of the item to get"),
-        db_session:DBSession = None
+        id: Union[int,str] = Path(..., title="The ID of the item to get")
     ):
-        return await self.service.update_one(request, id, model,db_session=db_session,background_tasks=background_tasks)
+        return await self.service.crud_update_one(
+            request,
+            id,
+            model,
+            joins=options.query.joins,
+            background_tasks=background_tasks
+        )
 
     async def delete_many(
+        self,
         request: Request,
         background_tasks:BackgroundTasks,
-        self=Depends(cls),
-        ids: str = Path(..., title="The ID of the item to get"),
-        db_session:DBSession = None
+        ids: str = Path(..., title="The ID of the item to get")
     ):
         id_list = ids.split(",")
-        return await self.service.delete_many(
+        return await self.service.crud_delete_many(
             request,
             id_list,
+            joins=options.query.joins,
             soft_delete = options.query.soft_delete,
-            background_tasks = background_tasks,
-            db_session=db_session
+            background_tasks = background_tasks
         )
 
     cls.get_many = get_many
@@ -168,6 +172,11 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     cls.update_one = update_one
     cls.delete_many = delete_many
     cls.get_one = get_one
+
+    function_members = inspect.getmembers(cls, inspect.isfunction)
+    functions_set = set(func for _, func in function_members)
+    for func in functions_set:
+        _update_route_endpoint_signature(cls, func,options)
 
     for schema in RoutesSchema:
         router_name = schema["name"].value
@@ -185,15 +194,18 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             continue
         endpoint = getattr(cls, router_name)
 
-        def decorator(func: Callable,inner_router_name:str) -> Callable:
+        def decorator(func: Callable) -> Callable:
             @wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
+                if options.params:
+                    for key in options.params.keys():
+                        kwargs.pop(key)
                 endpoint_output = await func(*args, **kwargs)
                 if response_schema_type:
                     return response_schema_type.create(endpoint_output)
                 return endpoint_output
             return wrapper
-        endpoint_wrapper = decorator(endpoint,router_name)
+        endpoint_wrapper = decorator(endpoint)
         response_model = get_serialize_model(serialize,router_name)
         if router_name == RoutesEnum.get_many:
             response_model = Union[page_schema_type[response_model],List[response_model]]
@@ -221,7 +233,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             summary=get_route_summary(route_options,options.context_vars),
             dependencies=[
                 Depends(CrudAction(options.feature,FastAPICrudGlobalConfig.action_map,router_name)),
-                Depends(AuthAction(options.auth)),
+                Depends(StateAction(options.auth,options.params)),
                 *dependencies
             ],
             response_model=response_model,
@@ -263,7 +275,7 @@ def _init_cbv(cls: Type[Any]) -> None:
     setattr(cls, CRUD_CLASS_KEY, True)
 
 
-def _update_route_endpoint_signature(cls: Type[Any], endpoint: Callable) -> None:
+def _update_route_endpoint_signature(cls: Type[Any], endpoint: Callable,options:CrudOptions) -> None:
     old_signature = inspect.signature(endpoint)
     old_parameters: List[inspect.Parameter] = list(
         old_signature.parameters.values())
@@ -272,5 +284,11 @@ def _update_route_endpoint_signature(cls: Type[Any], endpoint: Callable) -> None
     new_parameters = [new_first_parameter] + [
         parameter.replace(kind=inspect.Parameter.KEYWORD_ONLY) for parameter in old_parameters[1:]
     ]
+    if options.params:
+        for key,param in options.params.items():
+            new_param = inspect.Parameter(key,
+                                        inspect.Parameter.KEYWORD_ONLY,
+                                        annotation=Annotated[int if param.type=="int" else str, Path(title="")])
+            new_parameters.append(new_param)
     new_signature = old_signature.replace(parameters=new_parameters)
     setattr(endpoint, "__signature__", new_signature)

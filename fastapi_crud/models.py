@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Union,Type
+from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Union,Type,Literal
 from abc import ABC,abstractmethod
 from pydantic import BaseModel,Field,ConfigDict
 from .enums import RoutesEnum,QuerySortType
@@ -45,14 +45,23 @@ class QuerySortModel(BaseModel):
     field: str
     sort:QuerySortType
 
+
+class JoinOptionModel(BaseModel):
+    select:Optional[bool] = True
+    join:Optional[bool] = True
+    allow:Optional[List[str]] = None
+
+JoinOptions = Dict[str,JoinOptionModel]
 class QueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    joins: Optional[List[Any]] = None
+    joins: Optional[JoinOptions] = None
     soft_delete: Optional[bool] = None
     filter: Optional[Dict] = None
     sort: Optional[List[QuerySortModel]] = None
 
-
+class PathParamModel(BaseModel):
+    field: str
+    type:Literal["str","int"]
 
 class CrudOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -63,6 +72,7 @@ class CrudOptions(BaseModel):
     query: Optional[QueryOptions] = None
     auth:Optional[AuthModel] = None
     context_vars:Dict = None
+    params:Optional[Dict[str,PathParamModel]] = None
 
 class GlobalQueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
