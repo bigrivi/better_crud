@@ -1,21 +1,23 @@
-from typing import Any, Dict,List,Union,TypeVar, Generic, Optional,Sequence
+from typing import Any, Dict,List,Union,TypeVar, Generic, Optional,Sequence,Callable,Generator,AsyncGenerator
 from fastapi import Request,BackgroundTasks
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
+import functools
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import contains_eager,MANYTOMANY,MANYTOONE,ONETOMANY,noload
+from sqlalchemy.orm import contains_eager,MANYTOMANY,MANYTOONE,ONETOMANY,noload,joinedload,load_only,subqueryload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func,select
 from sqlalchemy.orm.interfaces import ORMOption
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
-from .helper import decide_should_paginate
-from .service_abstract import CrudService
-from .types import QuerySortDict
+from ..helper import decide_should_paginate,build_join_option_tree,find
+from .abstract import AbstractCrudService
+from ..types import QuerySortDict
+from ..models import JoinOptions,JoinOptionModel
 
-from .config import FastAPICrudGlobalConfig
-from .relationship import (
+from ..config import FastAPICrudGlobalConfig
+from ..relationship import (
     create_many_to_many_instances,
     create_one_to_many_instances,
     create_many_to_one_instance
@@ -27,12 +29,19 @@ Selectable = TypeVar("Selectable", bound=Select[Any])
 LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
 
-class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
+
+
+class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
 
     entity: object = NotImplementedError
 
-    def __init__(self, entity: object):
+    def __init__(
+        self,
+        entity: object,
+        get_db_session_fn:Callable[...,AsyncGenerator[AsyncSession, None]]
+    ):
         self.entity = entity
+        self.get_db_session_fn = get_db_session_fn
         self.primary_key = entity.__mapper__.primary_key[0].name
         self.entity_has_delete_column = hasattr(
             self.entity, FastAPICrudGlobalConfig.soft_deleted_field_key)
@@ -103,20 +112,45 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
                             conds.append(self.get_model_field(field) == value)
         return conds
 
-    async def build_query(
+    def _create_join_options(self,joins:Optional[JoinOptions] = None)->Sequence[ORMOption]:
+        options:Sequence[ORMOption] = []
+        if joins:
+            for field_key,join_option in joins.items():
+                join_field = self.get_model_field(field_key)
+                if join_option.select:
+                    options.append(joinedload(join_field))
+                else:
+                    options.append(noload(join_field))
+        return options
+
+    def _make_join_options(self,children,disabled_join:Optional[bool] = False)->Sequence[ORMOption]:
+        options:Sequence[ORMOption] = []
+        for child in children:
+            field_key = child["field_key"]
+            join_field = self.get_model_field(field_key)
+            config:JoinOptionModel = child["config"]
+            load_fn = contains_eager if config.join else joinedload
+            if disabled_join:
+                load_fn = joinedload
+            if config.select:
+                if child["children"]:
+                    options.append(load_fn(join_field).options(*self._make_join_options(child["children"],disabled_join)))
+                else:
+                    options.append(load_fn(join_field))
+            else:
+                options.append(noload(join_field))
+        return options
+
+    def _build_query(
         self,
         search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
-        soft_delete:Optional[bool] = False,
-        joins:Optional[List] = None,
-        options: Optional[Sequence[ORMOption]] = None,
-        sorts: List[QuerySortDict] = None,
-        implanted_cond:Optional[List[Any]] = None
+        soft_delete:Optional[bool] = True,
+        joins:Optional[JoinOptions] = None,
+        sorts: List[QuerySortDict] = None
     )->Selectable:
         conds = []
-        if implanted_cond:
-            conds = conds+implanted_cond
-        options = options or []
+        options:Sequence[ORMOption] = []
         if search:
             conds = conds + self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
@@ -125,47 +159,43 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
                 conds.append(or_(getattr(self.entity, soft_deleted_field_key) > datetime.now(),
                                   getattr(self.entity, soft_deleted_field_key) == None))
         stmt = select(self.entity)
-        if joins and len(joins) > 0:
-            for join in joins:
-                if isinstance(join, tuple):
-                    stmt = stmt.join(*join, isouter=True)
-                else:
-                    stmt = stmt.join(join, isouter=True)
-                    options.append(contains_eager(join))
+        if joins:
+            for field_key,config in joins.items():
+                if config.join:
+                    join_field = self.get_model_field(field_key)
+                    stmt = stmt.join(join_field, isouter=True)
+            options = self._make_join_options(build_join_option_tree(joins))
         if options:
             stmt = stmt.options(*options)
+        stmt = stmt.distinct()
         stmt = stmt.where(*conds)
         stmt = self.prepare_order(stmt, sorts)
         return stmt
 
-    async def get_many(
+    async def crud_get_many(
         self,
         *,
-        db_session:AsyncSession,
         request: Optional[Request] = None,
         search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = False,
-        joins:Optional[List] = None,
-        options: Optional[Sequence[ORMOption]] = None,
         sorts: List[QuerySortDict] = None,
-        implanted_cond:Optional[List[Any]] = None
+        joins:Optional[JoinOptions] = None,
     )->Union[AbstractPage[ModelType],List[ModelType]]:
-        stmt = await self.build_query(
+        query = self._build_query(
             search=search,
             include_deleted=include_deleted,
             soft_delete=soft_delete,
             joins=joins,
-            options=options,
-            sorts=sorts,
-            implanted_cond=implanted_cond
+            sorts=sorts
         )
+        db_session = await anext(self.get_db_session_fn())
         if decide_should_paginate():
-            return await paginate(db_session, stmt)
-        result = await db_session.execute(stmt)
+            return await paginate(db_session, query)
+        result = await db_session.execute(query)
         return result.unique().scalars().all()
 
-    async def get(
+    async def _get(
         self,
         id: Union[int,str],
         db_session:AsyncSession,
@@ -173,18 +203,33 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
     ) -> ModelType:
         return await db_session.get(self.entity,id,options=options)
 
-    async def create_one(
+    async def crud_get_one(
+        self,
+        id: Union[int,str],
+        joins:Optional[JoinOptions] = None,
+    )->ModelType:
+        db_session = await anext(self.get_db_session_fn())
+        return await self._get(
+            id,
+            db_session,
+            options=self._make_join_options(build_join_option_tree(joins),True)
+        )
+
+    async def crud_create_one(
         self,
         request: Request,
         model: BaseModel,
-        db_session:AsyncSession,
-        background_tasks:BackgroundTasks
+        joins:Optional[JoinOptions] = None,
+        background_tasks:Optional[BackgroundTasks] = None
     )->ModelType:
+        db_session = await anext(self.get_db_session_fn())
         relationships = self.entity.__mapper__.relationships
         model_data = model.model_dump(exclude_unset=True)
         await self.on_before_create(model_data,background_tasks=background_tasks)
         if hasattr(request.state,"auth_persist"):
             model_data.update(request.state.auth_persist)
+        if hasattr(request.state,"params_filter"):
+            model_data.update(request.state.params_filter)
         for key, value in model_data.items():
             if key in relationships:
                 relation_dir = relationships[key].direction
@@ -203,32 +248,32 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
         await db_session.refresh(entity)
         return entity
 
-    async def create_many(
+    async def crud_create_many(
         self,
         request: Request,
         models: List[BaseModel],
-        db_session:AsyncSession,
-        background_tasks:BackgroundTasks
+        joins:Optional[JoinOptions] = None,
+        background_tasks:Optional[BackgroundTasks] = None
     )->List[ModelType]:
         entities = []
         for model in models:
-            entity = await self.create_one(
+            entity = await self.crud_create_one(
                 request,
-                db_session=db_session,
                 model=model,
                 background_tasks=background_tasks
             )
             entities.append(entity)
         return entities
 
-    async def update_one(self,
+    async def crud_update_one(self,
         request: Request,
-        id:int,
+        id:Union[int,str],
         model: BaseModel,
-        db_session:AsyncSession,
-        background_tasks:BackgroundTasks = None
+        joins:Optional[JoinOptions] = None,
+        background_tasks:Optional[BackgroundTasks] = None
     ):
-        entity = await self.get(id,db_session=db_session)
+        db_session = await anext(self.get_db_session_fn())
+        entity = await self._get(id,db_session=db_session)
         if entity is None:
             raise HTTPException(status_code=404, detail="Data not found")
         model_data = model.model_dump(exclude_unset=True)
@@ -252,31 +297,33 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
         await self.on_after_update(entity,background_tasks=background_tasks)
         return entity
 
-    async def delete_many(self,
+    async def crud_delete_many(
+        self,
         request: Request,
         id_list: list,
-        db_session:AsyncSession,
         soft_delete: Optional[bool] = False,
-        background_tasks:BackgroundTasks=None
+        joins:Optional[JoinOptions] = None,
+        background_tasks:Optional[BackgroundTasks]=None
     )->List[ModelType]:
-        returns = [await self.get(id,db_session) for id in id_list]
+        db_session = await anext(self.get_db_session_fn())
+        returns = [await self._get(id,db_session) for id in id_list]
         await self.on_before_delete(id_list,background_tasks=background_tasks)
         if soft_delete:
-            await self.soft_delete(id_list,db_session=db_session)
+            await self._soft_delete(id_list,db_session=db_session)
         else:
-            await self.batch_delete(getattr(self.entity, self.primary_key).in_(id_list),db_session=db_session)
+            await self._batch_delete(getattr(self.entity, self.primary_key).in_(id_list),db_session=db_session)
         await self.on_after_delete(id_list,background_tasks=background_tasks)
         return returns
 
 
-    async def batch_delete(self, stmt,db_session:AsyncSession):
+    async def _batch_delete(self, stmt,db_session:AsyncSession):
         if not isinstance(stmt, list):
             stmt = [stmt]
         statement = delete(self.entity).where(*stmt)
         await db_session.execute(statement)
         await db_session.commit()
 
-    async def soft_delete(self, id_list: list,db_session:AsyncSession):
+    async def _soft_delete(self, id_list: list,db_session:AsyncSession):
         stmt = update(self.entity).where(getattr(self.entity, self.primary_key).in_(
             id_list)).values({FastAPICrudGlobalConfig.soft_deleted_field_key: datetime.now()})
         await db_session.execute(stmt)
@@ -312,19 +359,19 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
             return field >= value
         elif operator == "$lt":
             return field < value
-        elif operator == "<=":
+        elif operator == "$lte":
             return field <= value
         elif operator == "$cont":
             return field.like('%{}%'.format(value))
-        elif operator == "exclude":
+        elif operator == "$excl":
             return field.notlike('%{}%'.format(value))
         elif operator == "$starts":
             return field.startswith(value)
         elif operator == "$ends":
             return field.endswith(value)
-        elif operator == "doesNotBeginWith":
+        elif operator == "$doesNotBeginWith":
             return field.notlike('{}%'.format(value))
-        elif operator == "doesNotEndWith":
+        elif operator == "$doesNotEndWith":
             return field.notlike('%{}'.format(value))
         elif operator == "$isnull":
             return field.is_(None)
@@ -335,27 +382,58 @@ class SqlalchemyCrudService(Generic[ModelType],CrudService[ModelType]):
         elif operator == "$notin":
             return field.notin_(value.split(","))
         elif operator == "$between":
-            return field.between(*value)
+            return field.between(*value.split(","))
         elif operator == "$notbetween":
             return ~field.between(*value.split(","))
         elif operator == "$length":
             return func.length(field) == int(value)
         elif operator == "$any":
-            return field.any(value)
+            primary_key = self.get_field_primary_key(field)
+            if not primary_key:
+                raise Exception("only one-to-many, many-to-many relationship fields support any")
+            return field.any(**{primary_key:value})
         elif operator == "$notany":
-            return func.not_(field.any(value))
+            primary_key = self.get_field_primary_key(field)
+            if not primary_key:
+                raise Exception("only one-to-many, many-to-many relationship fields support notany")
+            return func.not_(field.any(**{primary_key:value}))
         else:
-            raise Exception("unknow operator "+operator)
+            raise Exception("unsupport operator "+operator)
 
     def get_model_field(self, field):
         field_parts = field.split(".")
-        relationships = self.entity.__mapper__.relationships
         model_field = None
         if len(field_parts) > 1:
-            field_prefix = field_parts[0]
-            if field_prefix in relationships:
-                relation_cls = relationships[field_prefix].mapper.entity
-                model_field = getattr(relation_cls, field_parts[1])
+            relation_cls = None
+            relationships = self.entity.__mapper__.relationships
+            for index,field_part in enumerate(field_parts):
+                if relation_cls:
+                    model_field = getattr(relation_cls, field_part,None)
+                    if index == len(field_parts)-1:
+                        break
+                relation_cls = relationships[field_part].mapper.entity
+                relationships = relation_cls.__mapper__.relationships
         else:
-            model_field = getattr(self.entity, field)
+            model_field = getattr(self.entity, field,None)
+        if not model_field:
+            raise Exception(f"invalid field name {field}")
         return model_field
+
+    def get_model_class(self, field):
+        field_parts = field.split(".")
+        relationships = self.entity.__mapper__.relationships
+        if len(field_parts) > 1:
+            relation_cls = None
+            for field_part in field_parts:
+                relation_cls = relationships[field_part].mapper.entity
+                relationships = relation_cls.__mapper__.relationships
+            return relation_cls
+        return relationships[field].mapper.entity
+
+    def get_field_primary_key(self,field):
+        try:
+            relation_cls = field.mapper.entity
+            return relation_cls.__mapper__.primary_key[0].name
+        except Exception:
+            pass
+        return None

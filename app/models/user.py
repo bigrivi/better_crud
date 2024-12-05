@@ -12,7 +12,6 @@ class UserBase(SQLModel):
     email: str
     is_active: bool = Field(default=True)
     is_superuser: Optional[bool] = Field(default=False)
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id")
 
 
 
@@ -21,14 +20,15 @@ class User(UserBase, table=True):
     hashed_password: str
     profile_id: Optional[int] = Field(
         default=None, foreign_key="user_profile.id")
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id")
     profile: UserProfile = Relationship(
-        sa_relationship_kwargs={"uselist": False, "lazy": "joined"})
+        sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
     tasks: List[UserTask] = Relationship(
-        sa_relationship_kwargs={"uselist": True,"cascade":"all, delete-orphan","lazy": "joined"})
+        sa_relationship_kwargs={"uselist": True,"cascade":"all, delete-orphan","lazy": "noload"})
     company: Company = Relationship(
-        sa_relationship_kwargs={"uselist": False, "lazy": "joined"})
+        sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
     roles: List["Role"] = Relationship(back_populates="users", sa_relationship_kwargs={
-                                       "lazy": "joined"}, link_model=UserRoleLink)
+                                       "lazy": "noload"}, link_model=UserRoleLink)
     deleted_at: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
@@ -42,6 +42,8 @@ class UserPublic(UserBase):
     profile_id: Optional[int] = Field(
         default=None, foreign_key="user_profile.id")
     tasks:List[UserTaskList] = None
+    company_id: Optional[int] = None
+
 
 class UserCreate(UserBase):
     password: str

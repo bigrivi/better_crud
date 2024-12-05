@@ -4,7 +4,7 @@ import json
 from fastapi_pagination.api import resolve_params
 from fastapi_pagination.bases import  AbstractParams, RawParams
 from .types import QuerySortDict
-from .models import SerializeModel,RouteOptions
+from .models import SerializeModel,RouteOptions,PathParamModel,JoinOptions
 from .enums import RoutesEnum
 
 from .config import FastAPICrudGlobalConfig
@@ -48,7 +48,8 @@ def parse_query_search(
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
     option_filter:Optional[Dict] = None,
-    auth_filter:Optional[Dict] = None
+    auth_filter:Optional[Dict] = None,
+    params_filter:Optional[Dict] = None
 ):
     search = None
     search_list = []
@@ -99,6 +100,8 @@ def parse_query_search(
         search_list.append(option_filter)
     if auth_filter:
         search_list.append(auth_filter)
+    if params_filter:
+        search_list.append(params_filter)
     if len(search_list)>0:
         search = {"$and": search_list}
 
@@ -149,3 +152,33 @@ def get_route_summary(route_options:RouteOptions,context_vars:Dict):
     if not route_options.summary:
         return None
     return route_options.summary.format_map(DefaultMap(**context_vars))
+
+def get_params_filter(params:Dict[str,PathParamModel],request:Request):
+    params_filter = {}
+    if params and request.path_params:
+        for key,value in params.items():
+            if key in request.path_params:
+                params_filter[value.field] = request.path_params[key]
+    return params_filter
+
+def build_join_option_tree(raw_join_options:JoinOptions):
+    join_options = dict(sorted(raw_join_options.items()))
+    nodes = []
+    node_dict:Dict[str,] = {}
+    for field_key,config in join_options.items():
+        segments = field_key.split(".")
+        parent_key = ".".join(segments[:-1])
+        node_data = {
+            "field_key":field_key,
+            "config":config,
+            "children":[]
+        }
+        if parent_key=="":
+            node_dict[field_key] = node_data
+            nodes.append(node_dict[field_key])
+        else:
+            parent_node = node_dict.get(parent_key)
+            if parent_node:
+                node_dict[field_key] = node_data
+                parent_node.get("children").append(node_dict[field_key])
+    return nodes
