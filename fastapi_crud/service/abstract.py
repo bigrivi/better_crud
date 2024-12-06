@@ -13,7 +13,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
     @abc.abstractmethod
     async def crud_get_many(
         self,
-        *,
         request: Optional[Request] = None,
         search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
@@ -26,6 +25,7 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
     @abc.abstractmethod
     async def crud_get_one(
         self,
+        request: Request,
         id: Union[int,str],
         joins:Optional[JoinOptions] = None,
     )->ModelType:
@@ -36,7 +36,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         self,
         request: Request,
         model: BaseModel,
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     )->ModelType:
         raise NotImplementedError
@@ -46,7 +45,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         self,
         request: Request,
         models: List[BaseModel],
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     )->List[ModelType]:
         raise NotImplementedError
@@ -56,7 +54,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         request: Request,
         id:Union[int,str],
         model: BaseModel,
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     ):
         raise NotImplementedError
@@ -66,7 +63,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         self,
         request: Request,
         id_list: list,
-        joins:Optional[JoinOptions] = None,
         soft_delete: Optional[bool] = False,
         background_tasks:Optional[BackgroundTasks]=None
     )->List[ModelType]:

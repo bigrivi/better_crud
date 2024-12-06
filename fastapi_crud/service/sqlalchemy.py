@@ -1,14 +1,13 @@
 from typing import Any, Dict,List,Union,TypeVar, Generic, Optional,Sequence,Callable,Generator,AsyncGenerator
-from fastapi import Request,BackgroundTasks
-from fastapi.exceptions import HTTPException
 from datetime import datetime
 from pydantic import BaseModel
-import functools
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import contains_eager,MANYTOMANY,MANYTOONE,ONETOMANY,noload,joinedload,load_only,subqueryload
+from sqlalchemy.orm import MANYTOMANY,MANYTOONE,ONETOMANY,noload,joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func,select
 from sqlalchemy.orm.interfaces import ORMOption
+from fastapi import Request,BackgroundTasks
+from fastapi.exceptions import HTTPException
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
 from ..helper import decide_should_paginate,build_join_option_tree,find
@@ -123,20 +122,36 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
                     options.append(noload(join_field))
         return options
 
-    def _make_join_options(self,children,disabled_join:Optional[bool] = False)->Sequence[ORMOption]:
+    def _make_join_options(
+        self,
+        children,
+        request: Optional[Request] = None,
+        from_detail:Optional[bool] = False
+    )->Sequence[ORMOption]:
         options:Sequence[ORMOption] = []
         for child in children:
             field_key = child["field_key"]
             join_field = self.get_model_field(field_key)
             config:JoinOptionModel = child["config"]
-            load_fn = contains_eager if config.join else joinedload
-            if disabled_join:
-                load_fn = joinedload
-            if config.select:
-                if child["children"]:
-                    options.append(load_fn(join_field).options(*self._make_join_options(child["children"],disabled_join)))
+            should_select = config.select
+            if not from_detail and config.select_only_detail:
+                should_select = False
+            if should_select:
+                if config.additional_filter_fn:
+                    filter_results = config.additional_filter_fn(request)
+                    if not isinstance(filter_results,list):
+                        filter_results = [filter_results]
+                    loader = joinedload(join_field.and_(*filter_results))
                 else:
-                    options.append(load_fn(join_field))
+                    loader = joinedload(join_field)
+                if child["children"]:
+                    options.append(loader.options(*self._make_join_options(
+                        child["children"],
+                        request=request,
+                        from_detail=from_detail
+                    )))
+                else:
+                    options.append(loader)
             else:
                 options.append(noload(join_field))
         return options
@@ -147,7 +162,8 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
         include_deleted:Optional[bool] = False,
         soft_delete:Optional[bool] = True,
         joins:Optional[JoinOptions] = None,
-        sorts: List[QuerySortDict] = None
+        sorts: List[QuerySortDict] = None,
+        request: Optional[Request] = None
     )->Selectable:
         conds = []
         options:Sequence[ORMOption] = []
@@ -164,7 +180,7 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
                 if config.join:
                     join_field = self.get_model_field(field_key)
                     stmt = stmt.join(join_field, isouter=True)
-            options = self._make_join_options(build_join_option_tree(joins))
+            options = self._make_join_options(build_join_option_tree(joins),request=request)
         if options:
             stmt = stmt.options(*options)
         stmt = stmt.distinct()
@@ -174,7 +190,6 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
 
     async def crud_get_many(
         self,
-        *,
         request: Optional[Request] = None,
         search:Optional[Dict] = None,
         include_deleted:Optional[bool] = False,
@@ -187,7 +202,8 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
             include_deleted=include_deleted,
             soft_delete=soft_delete,
             joins=joins,
-            sorts=sorts
+            sorts=sorts,
+            request=request
         )
         db_session = await anext(self.get_db_session_fn())
         if decide_should_paginate():
@@ -205,6 +221,7 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
 
     async def crud_get_one(
         self,
+        request: Request,
         id: Union[int,str],
         joins:Optional[JoinOptions] = None,
     )->ModelType:
@@ -212,14 +229,13 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
         return await self._get(
             id,
             db_session,
-            options=self._make_join_options(build_join_option_tree(joins),True)
+            options=self._make_join_options(build_join_option_tree(joins),request=request,from_detail=True)
         )
 
     async def crud_create_one(
         self,
         request: Request,
         model: BaseModel,
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     )->ModelType:
         db_session = await anext(self.get_db_session_fn())
@@ -252,7 +268,6 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
         self,
         request: Request,
         models: List[BaseModel],
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     )->List[ModelType]:
         entities = []
@@ -269,7 +284,6 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
         request: Request,
         id:Union[int,str],
         model: BaseModel,
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks] = None
     ):
         db_session = await anext(self.get_db_session_fn())
@@ -302,7 +316,6 @@ class SqlalchemyCrudService(Generic[ModelType],AbstractCrudService[ModelType]):
         request: Request,
         id_list: list,
         soft_delete: Optional[bool] = False,
-        joins:Optional[JoinOptions] = None,
         background_tasks:Optional[BackgroundTasks]=None
     )->List[ModelType]:
         db_session = await anext(self.get_db_session_fn())

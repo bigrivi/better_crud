@@ -40,16 +40,20 @@ def filter_fn(request:Request):
     query={
         "joins":{
             "profile":{
-                "select":True
+                "select":True,
+                "join":False
             },
             "tasks":{
-                "select":True
+                "select":True,
+                "join":False
             },
             "company":{
-                "select":True
+                "select":True,
+                "join":False
             },
             "roles":{
-                "select":True
+                "select":True,
+                "join":False
             }
         },
         "soft_delete":True,

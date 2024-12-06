@@ -85,7 +85,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_many(
         self,
         request: Request,
-        include_deleted: Optional[int] = 0,
+        include_deleted: Optional[bool] = False,
         search: Dict = Depends(GetSearch(options.query.filter,options.params)),
         sorts: List[QuerySortDict] = Depends(GetSort(options.query.sort)),
     ):
@@ -103,7 +103,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         id: Union[int,str] = Path(..., title="The ID of the item to get")
     ):
-        entity = await self.service.crud_get_one(id,joins=options.query.joins)
+        entity = await self.service.crud_get_one(request,id,joins=options.query.joins)
         if entity is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         return entity
@@ -117,7 +117,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         entity = await self.service.crud_create_one(
             request,
             model,
-            joins=options.query.joins,
             background_tasks = background_tasks
         )
         return entity
@@ -131,7 +130,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         entities = await self.service.crud_create_many(
             request,
             model,
-            joins=options.query.joins,
             background_tasks = background_tasks
         )
         return entities
@@ -147,7 +145,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             request,
             id,
             model,
-            joins=options.query.joins,
             background_tasks=background_tasks
         )
 
@@ -161,7 +158,6 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         return await self.service.crud_delete_many(
             request,
             id_list,
-            joins=options.query.joins,
             soft_delete = options.query.soft_delete,
             background_tasks = background_tasks
         )

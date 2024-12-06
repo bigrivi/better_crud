@@ -162,6 +162,8 @@ def get_params_filter(params:Dict[str,PathParamModel],request:Request):
     return params_filter
 
 def build_join_option_tree(raw_join_options:JoinOptions):
+    if raw_join_options is None:
+        return []
     join_options = dict(sorted(raw_join_options.items()))
     nodes = []
     node_dict:Dict[str,] = {}
