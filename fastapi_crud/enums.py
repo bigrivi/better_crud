@@ -9,12 +9,12 @@ class RoutesEnum(str, Enum):
     delete_many = 'delete_many'
 
 class CrudActions(str, Enum):
-    ReadAll = 'ReadAll',
-    ReadOne = 'ReadOne',
-    CreateOne = 'CreateOne',
-    CreateMany = 'CreateMany',
-    UpdateOne = 'UpdateOne',
-    DeleteMany = 'DeleteMany'
+    read_all = 'read_all',
+    read_one = 'read_one',
+    create_one = 'create_one',
+    create_many = 'create_many',
+    update_one = 'update_one',
+    delete_many = 'delete_many'
 
 class relationshipsTypes(str,Enum):
     MANYTOMANY = "MANYTOMANY",

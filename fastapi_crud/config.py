@@ -10,12 +10,12 @@ DBSessionFunc = Callable[...,Generator[AsyncSession, None, None]]
 DEFAULT_SOFT_DELETED_FIELD_KEY = "deleted_at"
 
 DEFAULT_ACTION_MAP = {
-    RoutesEnum.get_many: CrudActions.ReadAll,
-    RoutesEnum.get_one: CrudActions.ReadOne,
-    RoutesEnum.create_one: CrudActions.CreateOne,
-    RoutesEnum.create_many: CrudActions.CreateMany,
-    RoutesEnum.update_one: CrudActions.UpdateOne,
-    RoutesEnum.delete_many: CrudActions.DeleteMany
+    RoutesEnum.get_many: CrudActions.read_all,
+    RoutesEnum.get_one: CrudActions.read_one,
+    RoutesEnum.create_one: CrudActions.create_one,
+    RoutesEnum.create_many: CrudActions.create_many,
+    RoutesEnum.update_one: CrudActions.update_one,
+    RoutesEnum.delete_many: CrudActions.delete_many
 }
 
 

@@ -52,7 +52,8 @@ class QueryDelimOptionsDict(TypedDict,total=False):
 class JoinOptionsDict(TypedDict,total=False):
     select:Optional[bool] = True
     join:Optional[bool] = True
-    allow:Optional[List[str]] = None
+    select_only_detail:Optional[bool] = False
+    additional_filter_fn:Optional[Callable[[Any], List[Any]]] = None
 
 class QueryOptionsDict(TypedDict,total=False):
     joins: Optional[Dict[str,JoinOptionsDict]] = None
