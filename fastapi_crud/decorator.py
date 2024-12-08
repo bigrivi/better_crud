@@ -49,13 +49,13 @@ def crud(
     router: APIRouter,
     *,
     serialize: SerializeModelDict,
-    context_vars:Optional[Dict] = {},
-    feature: Optional[str] = "",
     params:Optional[Dict[str,PathParamDict]] = None,
     routes: Optional[RoutesModelDict] = {},
     dto: DtoModelDict = {},
     auth:Optional[AuthModelDict] = {},
-    query: Optional[QueryOptionsDict] = {}
+    query: Optional[QueryOptionsDict] = {},
+    summary_vars:Optional[Dict] = {},
+    feature: Optional[str] = "",
 ) -> Callable[[Type[T]], Type[T]]:
     def decorator(cls: Type[T]) -> Type[T]:
         options = CrudOptions(
@@ -64,7 +64,7 @@ def crud(
             auth=auth,
             params=params,
             serialize=serialize,
-            context_vars=context_vars,
+            summary_vars=summary_vars,
             routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
             query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
         )
@@ -226,7 +226,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             schema["path"],
             endpoint_wrapper,
             methods=[schema["method"]],
-            summary=get_route_summary(route_options,options.context_vars),
+            summary=get_route_summary(route_options,options.summary_vars),
             dependencies=[
                 Depends(CrudAction(options.feature,FastAPICrudGlobalConfig.action_map,router_name)),
                 Depends(StateAction(options.auth,options.params)),

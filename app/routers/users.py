@@ -26,8 +26,11 @@ def filter_fn(request:Request):
     routes={
         # "dependencies":[JWTDepend,ACLDepend],
         # "only":["get_many","create_one"]
+        "get_many":{
+            "summary":""
+        }
     },
-    context_vars={
+    summary_vars={
         "name":"sun"
     },
     dto={"create":UserCreate,"update":UserUpdate},

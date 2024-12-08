@@ -146,12 +146,12 @@ class DefaultMap(dict):
     def __missing__(self, key):
         return key
 
-def get_route_summary(route_options:RouteOptions,context_vars:Dict):
+def get_route_summary(route_options:RouteOptions,summary_vars:Dict):
     if not route_options:
         return None
     if not route_options.summary:
         return None
-    return route_options.summary.format_map(DefaultMap(**context_vars))
+    return route_options.summary.format_map(DefaultMap(**summary_vars))
 
 def get_params_filter(params:Dict[str,PathParamModel],request:Request):
     params_filter = {}

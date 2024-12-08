@@ -72,7 +72,7 @@ class CrudOptions(BaseModel):
     feature: str = None
     query: Optional[QueryOptions] = None
     auth:Optional[AuthModel] = None
-    context_vars:Dict = None
+    summary_vars:Dict = None
     params:Optional[Dict[str,PathParamModel]] = None
 
 class GlobalQueryOptions(BaseModel):
