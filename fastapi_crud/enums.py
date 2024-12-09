@@ -1,4 +1,5 @@
-from enum import Enum, IntEnum
+from enum import Enum
+
 
 class RoutesEnum(str, Enum):
     get_many = 'get_many'
@@ -8,6 +9,7 @@ class RoutesEnum(str, Enum):
     update_one = 'update_one'
     delete_many = 'delete_many'
 
+
 class CrudActions(str, Enum):
     read_all = 'read_all',
     read_one = 'read_one',
@@ -16,10 +18,12 @@ class CrudActions(str, Enum):
     update_one = 'update_one',
     delete_many = 'delete_many'
 
-class relationshipsTypes(str,Enum):
+
+class relationshipsTypes(str, Enum):
     MANYTOMANY = "MANYTOMANY",
     ONETOMANY = "ONETOMANY",
     MANYTOONE = "MANYTOONE"
+
 
 class QuerySortType(str, Enum):
     ASC = 'ASC'

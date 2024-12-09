@@ -1,29 +1,31 @@
-from typing import Optional, Callable, List, TypeVar, Dict,Union
+from typing import Optional, Callable, List, TypeVar, Dict
 from fastapi import Request
 import json
 from fastapi_pagination.api import resolve_params
-from fastapi_pagination.bases import  AbstractParams, RawParams
+from fastapi_pagination.bases import AbstractParams
 from .types import QuerySortDict
-from .models import SerializeModel,RouteOptions,PathParamModel,JoinOptions
+from .models import SerializeModel, RouteOptions, PathParamModel, JoinOptions
 from .enums import RoutesEnum
 
 from .config import FastAPICrudGlobalConfig
 FindType = TypeVar('FindType')
 
-def find(data:List[FindType], fun:Callable[[FindType],bool])->FindType:
+
+def find(data: List[FindType], fun: Callable[[FindType], bool]) -> FindType:
     for item in data:
         if fun(item):
             return item
 
-def get_feature(request: Request)-> str | None:
+
+def get_feature(request: Request) -> str | None:
     return getattr(request.state, 'feature', None)
 
 
-def get_action(request: Request)-> str | None:
+def get_action(request: Request) -> str | None:
     return getattr(request.state, 'action', None)
 
 
-def filter_to_search(filter_str: str)->Dict:
+def filter_to_search(filter_str: str) -> Dict:
     filters = filter_str.split(FastAPICrudGlobalConfig.delim_config.delim)
     field = filters[0]
     operator = filters[1]
@@ -43,13 +45,14 @@ def filter_to_search(filter_str: str)->Dict:
         }
     return search
 
+
 def parse_query_search(
     search_spec: Optional[str] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
-    option_filter:Optional[Dict] = None,
-    auth_filter:Optional[Dict] = None,
-    params_filter:Optional[Dict] = None
+    option_filter: Optional[Dict] = None,
+    auth_filter: Optional[Dict] = None,
+    params_filter: Optional[Dict] = None
 ):
     search = None
     search_list = []
@@ -57,7 +60,7 @@ def parse_query_search(
         try:
             search = json.loads(search_spec)
             search_list = [search]
-        except:
+        except Exception:
             search_list = None
     elif filters and ors:
         if len(filters) == 1 and len(ors) == 1:
@@ -65,11 +68,13 @@ def parse_query_search(
                 "$or": [
                     {
                         filter_to_search(
-                            filters[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
+                            filters[0],
+                            delim=FastAPICrudGlobalConfig.delim_config.delim)
                     },
                     {
                         filter_to_search(
-                            ors[0], delim=FastAPICrudGlobalConfig.delim_config.delim)
+                            ors[0],
+                            delim=FastAPICrudGlobalConfig.delim_config.delim)
                     }
                 ]
             }]
@@ -102,7 +107,7 @@ def parse_query_search(
         search_list.append(auth_filter)
     if params_filter:
         search_list.append(params_filter)
-    if len(search_list)>0:
+    if len(search_list) > 0:
         search = {"$and": search_list}
 
     return search
@@ -110,16 +115,19 @@ def parse_query_search(
 
 def parse_query_sort(
     raw_query_sorts: Optional[List[str]] = None,
-)->List[QuerySortDict]:
+) -> List[QuerySortDict]:
     sorts = []
     for item in raw_query_sorts:
         if FastAPICrudGlobalConfig.delim_config.delim_str not in item:
             raise Exception("invalid query sort")
-        field,sort = item.split(FastAPICrudGlobalConfig.delim_config.delim_str)
-        sorts.append(QuerySortDict(field=field,sort=sort))
+        field, sort = item.split(
+            FastAPICrudGlobalConfig.delim_config.delim_str
+        )
+        sorts.append(QuerySortDict(field=field, sort=sort))
     return sorts
 
-def update_entity_attr(entity,update_value:Dict):
+
+def update_entity_attr(entity, update_value: Dict):
     for key, value in update_value.items():
         if value is not None:
             setattr(entity, key, value)
@@ -127,55 +135,60 @@ def update_entity_attr(entity,update_value:Dict):
 
 def decide_should_paginate():
     try:
-        params:AbstractParams = resolve_params()
+        params: AbstractParams = resolve_params()
         raw_params = (params.to_raw_params().as_limit_offset())
-        return raw_params.limit>0
-    except:
+        return raw_params.limit > 0
+    except Exception:
         return False
 
-def get_serialize_model(serialize:SerializeModel,router_name):
-    serialize_model = getattr(serialize,router_name,None)
+
+def get_serialize_model(serialize: SerializeModel, router_name):
+    serialize_model = getattr(serialize, router_name, None)
     if serialize_model is None:
         if router_name == RoutesEnum.get_one:
-            return get_serialize_model(serialize,RoutesEnum.get_many)
+            return get_serialize_model(serialize, RoutesEnum.get_many)
         if router_name == RoutesEnum.create_many:
-            return get_serialize_model(serialize,RoutesEnum.create_one)
-    return serialize_model or getattr(serialize,"base",None)
+            return get_serialize_model(serialize, RoutesEnum.create_one)
+    return serialize_model or getattr(serialize, "base", None)
+
 
 class DefaultMap(dict):
     def __missing__(self, key):
         return key
 
-def get_route_summary(route_options:RouteOptions,summary_vars:Dict):
+
+def get_route_summary(route_options: RouteOptions, summary_vars: Dict):
     if not route_options:
         return None
     if not route_options.summary:
         return None
     return route_options.summary.format_map(DefaultMap(**summary_vars))
 
-def get_params_filter(params:Dict[str,PathParamModel],request:Request):
+
+def get_params_filter(params: Dict[str, PathParamModel], request: Request):
     params_filter = {}
     if params and request.path_params:
-        for key,value in params.items():
+        for key, value in params.items():
             if key in request.path_params:
                 params_filter[value.field] = request.path_params[key]
     return params_filter
 
-def build_join_option_tree(raw_join_options:JoinOptions):
+
+def build_join_option_tree(raw_join_options: JoinOptions):
     if raw_join_options is None:
         return []
     join_options = dict(sorted(raw_join_options.items()))
     nodes = []
-    node_dict:Dict[str,] = {}
-    for field_key,config in join_options.items():
+    node_dict: Dict[str,] = {}
+    for field_key, config in join_options.items():
         segments = field_key.split(".")
         parent_key = ".".join(segments[:-1])
         node_data = {
-            "field_key":field_key,
-            "config":config,
-            "children":[]
+            "field_key": field_key,
+            "config": config,
+            "children": []
         }
-        if parent_key=="":
+        if parent_key == "":
             node_dict[field_key] = node_data
             nodes.append(node_dict[field_key])
         else:

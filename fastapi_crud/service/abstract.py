@@ -1,6 +1,6 @@
 import abc
-from typing import Any, Dict,List,Union,TypeVar, Generic, Optional,Sequence
-from fastapi import Request,BackgroundTasks
+from typing import Dict, List, Union, TypeVar, Generic, Optional
+from fastapi import Request, BackgroundTasks
 from fastapi_pagination.bases import AbstractPage
 from pydantic import BaseModel
 from ..types import QuerySortDict
@@ -8,27 +8,28 @@ from ..models import JoinOptions
 
 ModelType = TypeVar("ModelType")
 
-class AbstractCrudService(Generic[ModelType],abc.ABC):
+
+class AbstractCrudService(Generic[ModelType], abc.ABC):
 
     @abc.abstractmethod
     async def crud_get_many(
         self,
         request: Optional[Request] = None,
-        search:Optional[Dict] = None,
-        include_deleted:Optional[bool] = False,
-        soft_delete:Optional[bool] = False,
+        search: Optional[Dict] = None,
+        include_deleted: Optional[bool] = False,
+        soft_delete: Optional[bool] = False,
         sorts: List[QuerySortDict] = None,
-        joins:Optional[JoinOptions] = None,
-    )->Union[AbstractPage[ModelType],List[ModelType]]:
+        joins: Optional[JoinOptions] = None,
+    ) -> Union[AbstractPage[ModelType], List[ModelType]]:
         raise NotImplementedError
 
     @abc.abstractmethod
     async def crud_get_one(
         self,
         request: Request,
-        id: Union[int,str],
-        joins:Optional[JoinOptions] = None,
-    )->ModelType:
+        id: Union[int, str],
+        joins: Optional[JoinOptions] = None,
+    ) -> ModelType:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -36,8 +37,8 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         self,
         request: Request,
         model: BaseModel,
-        background_tasks:Optional[BackgroundTasks] = None
-    )->ModelType:
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> ModelType:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -45,16 +46,17 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         self,
         request: Request,
         models: List[BaseModel],
-        background_tasks:Optional[BackgroundTasks] = None
-    )->List[ModelType]:
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> List[ModelType]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def crud_update_one(self,
+    async def crud_update_one(
+        self,
         request: Request,
-        id:Union[int,str],
+        id: Union[int, str],
         model: BaseModel,
-        background_tasks:Optional[BackgroundTasks] = None
+        background_tasks: Optional[BackgroundTasks] = None
     ):
         raise NotImplementedError
 
@@ -64,6 +66,6 @@ class AbstractCrudService(Generic[ModelType],abc.ABC):
         request: Request,
         id_list: list,
         soft_delete: Optional[bool] = False,
-        background_tasks:Optional[BackgroundTasks]=None
-    )->List[ModelType]:
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> List[ModelType]:
         raise NotImplementedError

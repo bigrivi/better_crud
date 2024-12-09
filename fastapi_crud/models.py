@@ -1,22 +1,36 @@
-from typing import List, Optional, Any, Dict,Callable,Sequence,TypeVar,Union,Type,Literal
-from abc import ABC,abstractmethod
-from pydantic import BaseModel,Field,ConfigDict
-from .enums import RoutesEnum,QuerySortType
+from typing import (
+    List,
+    Optional,
+    Any,
+    Dict,
+    Callable,
+    Sequence,
+    TypeVar,
+    Type,
+    Literal
+)
+from abc import ABC, abstractmethod
+from pydantic import BaseModel, Field, ConfigDict
+from .enums import RoutesEnum, QuerySortType
+C = TypeVar("C")
+
 
 class DtoModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
     create: Optional[Any] = None
     update: Optional[Any] = None
 
+
 class AuthModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    property_:str = Field(default=None, alias='property')
+    property_: str = Field(default=None, alias='property')
     filter_: Callable[[Any], Dict] = Field(default=None, alias='filter')
     persist: Callable[[Any], Dict] = None
 
+
 class SerializeModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    base:Any = Field(...)
+    base: Any = Field(...)
     get_many: Optional[Any] = None
     get_one: Optional[Any] = None
     create_one: Optional[Any] = None
@@ -24,10 +38,12 @@ class SerializeModel(BaseModel):
     update_one: Optional[Any] = None
     delete_many: Optional[Any] = None
 
+
 class RouteOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     dependencies: Optional[Sequence[Any]] = None
-    summary:Optional[str] = None
+    summary: Optional[str] = None
+
 
 class RoutesModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -41,18 +57,22 @@ class RoutesModel(BaseModel):
     update_one: Optional[RouteOptions] = None
     delete_many: Optional[RouteOptions] = None
 
+
 class QuerySortModel(BaseModel):
     field: str
-    sort:QuerySortType
+    sort: QuerySortType
 
 
 class JoinOptionModel(BaseModel):
-    select:Optional[bool] = True
-    join:Optional[bool] = True
-    select_only_detail:Optional[bool] = False
-    additional_filter_fn:Optional[Callable[[Any], List[Any]]] = None
+    select: Optional[bool] = True
+    join: Optional[bool] = True
+    select_only_detail: Optional[bool] = False
+    additional_filter_fn: Optional[Callable[[Any], List[Any]]] = None
 
-JoinOptions = Dict[str,JoinOptionModel]
+
+JoinOptions = Dict[str, JoinOptionModel]
+
+
 class QueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     joins: Optional[JoinOptions] = None
@@ -60,9 +80,11 @@ class QueryOptions(BaseModel):
     filter: Optional[Dict] = None
     sort: Optional[List[QuerySortModel]] = None
 
+
 class PathParamModel(BaseModel):
     field: str
-    type:Literal["str","int"]
+    type: Literal["str", "int"]
+
 
 class CrudOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -71,14 +93,16 @@ class CrudOptions(BaseModel):
     routes: Optional[RoutesModel] = None
     feature: str = None
     query: Optional[QueryOptions] = None
-    auth:Optional[AuthModel] = None
-    summary_vars:Dict = None
-    params:Optional[Dict[str,PathParamModel]] = None
+    auth: Optional[AuthModel] = None
+    summary_vars: Dict = None
+    params: Optional[Dict[str, PathParamModel]] = None
+
 
 class GlobalQueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     soft_delete: Optional[bool] = False
     sort: Optional[List[QuerySortModel]] = None
+
 
 class QueryDelimOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -86,8 +110,6 @@ class QueryDelimOptions(BaseModel):
     delim_str: Optional[str] = ","
 
 
-
-C = TypeVar("C")
 class AbstractResponseModel(BaseModel, ABC):
     @classmethod
     @abstractmethod
