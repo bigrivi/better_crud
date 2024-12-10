@@ -50,7 +50,7 @@ RoutesSchema = [
     {
         "name": RoutesEnum.update_one,
         "path": '/{id}',
-        "method": "PUT"
+        "method": "PATCH"
     },
     {
         "name": RoutesEnum.delete_many,
