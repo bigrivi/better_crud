@@ -109,7 +109,6 @@ def parse_query_search(
         search_list.append(params_filter)
     if len(search_list) > 0:
         search = {"$and": search_list}
-
     return search
 
 

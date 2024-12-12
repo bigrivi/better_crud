@@ -79,7 +79,6 @@ class QueryOptionsDict(TypedDict, total=False):
 
 
 class AuthModelDict(TypedDict, total=False):
-    property: Optional[str]
     filter: Optional[Callable[[Any], Dict]]
     persist: Optional[Callable[[Any], Dict]]
 

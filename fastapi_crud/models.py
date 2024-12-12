@@ -23,7 +23,6 @@ class DtoModel(BaseModel):
 
 class AuthModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    property_: str = Field(default=None, alias='property')
     filter_: Callable[[Any], Dict] = Field(default=None, alias='filter')
     persist: Callable[[Any], Dict] = None
 
