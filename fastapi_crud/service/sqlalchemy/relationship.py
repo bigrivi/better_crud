@@ -48,3 +48,14 @@ async def create_many_to_one_instance(
         return relation_cls(**data)
     update_entity_attr(old_instance, data)
     return old_instance
+
+
+async def create_one_to_one_instance(
+    relation_cls: Any,
+    data: Dict,
+    old_instance: Optional[Any] = None
+):
+    if old_instance is None:
+        return relation_cls(**data)
+    update_entity_attr(old_instance, data)
+    return old_instance

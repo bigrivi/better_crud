@@ -31,7 +31,8 @@ from ...config import FastAPICrudGlobalConfig
 from .relationship import (
     create_many_to_many_instances,
     create_one_to_many_instances,
-    create_many_to_one_instance
+    create_many_to_one_instance,
+    create_one_to_one_instance
 )
 from .errors import (
     UnSupportOperatorError,
@@ -160,12 +161,12 @@ class SqlalchemyCrudService(
                                 conds.append(or_(*clauses))
                         elif isinstance(value, Dict):
                             conds.append(
-                                    self.create_search_field_object_condition(
-                                        LOGICAL_OPERATOR_AND,
-                                        field,
-                                        value
-                                    )
+                                self.create_search_field_object_condition(
+                                    LOGICAL_OPERATOR_AND,
+                                    field,
+                                    value
                                 )
+                            )
                         else:
                             conds.append(self.get_model_field(field) == value)
         return conds
@@ -316,6 +317,7 @@ class SqlalchemyCrudService(
             if key in relationships:
                 relation_dir = relationships[key].direction
                 relation_cls = relationships[key].mapper.entity
+
                 if relation_dir == MANYTOMANY:
                     model_data[key] = await create_many_to_many_instances(
                         db_session,
@@ -323,10 +325,18 @@ class SqlalchemyCrudService(
                         value
                     )
                 elif relation_dir == ONETOMANY:
-                    model_data[key] = await create_one_to_many_instances(
-                        relation_cls,
-                        value
-                    )
+                    if relationships[key].uselist:
+                        model_data[key] = await create_one_to_many_instances(
+                            relation_cls,
+                            value
+                        )
+                    else:
+                        # one to one
+                        model_data[key] = await create_one_to_one_instance(
+                            relation_cls,
+                            value
+                        )
+
                 elif relation_dir == MANYTOONE:
                     model_data[key] = await create_many_to_one_instance(
                         relation_cls,
@@ -401,11 +411,19 @@ class SqlalchemyCrudService(
                         value
                     )
                 elif relation_dir == ONETOMANY:
-                    value = await create_one_to_many_instances(
-                        relation_cls=relation_cls,
-                        data=value,
-                        old_instances=getattr(entity, key)
-                    )
+                    if relationships[key].uselist:
+                        value = await create_one_to_many_instances(
+                            relation_cls=relation_cls,
+                            data=value,
+                            old_instances=getattr(entity, key)
+                        )
+                    else:
+                        # one to one
+                        value = await create_one_to_one_instance(
+                            relation_cls=relation_cls,
+                            data=value,
+                            old_instance=getattr(entity, key)
+                        )
                 elif relation_dir == MANYTOONE:
                     value = await create_many_to_one_instance(
                         relation_cls=relation_cls,
@@ -462,10 +480,10 @@ class SqlalchemyCrudService(
         await db_session.commit()
 
     async def _soft_delete(
-                self,
-                id_list: List[Union[int, str]],
-                db_session: AsyncSession
-            ):
+        self,
+        id_list: List[Union[int, str]],
+        db_session: AsyncSession
+    ):
         stmt = update(self.entity).where(
             getattr(self.entity, self.primary_key)
             .in_(id_list)).values({

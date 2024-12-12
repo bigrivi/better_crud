@@ -258,8 +258,8 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                     FastAPICrudGlobalConfig.action_map,
                     router_name
                 )),
+                *dependencies,
                 Depends(StateAction(options.auth, options.params)),
-                *dependencies
             ],
             response_model=response_model,
         )
