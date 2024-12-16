@@ -1,22 +1,27 @@
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent.parent))
-from fastapi import FastAPI, Request,status,HTTPException,Depends
-from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
-from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
-import gc
-from contextlib import asynccontextmanager
-import uvicorn
-from app.core.config import ModeEnum, settings
-from app.db.init_db import init_db
-from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature
+sys.path.append(str(Path(__file__).parent.parent.parent))  # noqa: E402
+from fastapi import FastAPI, Request, status, HTTPException, Depends
+from app.core.depends import JWTDepend, ACLDepend
+from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature, SqlalchemyCrudService
+from fastapi_async_sqlalchemy import SQLAlchemyMiddleware, db
 from app.core.schema import ResponseSchema
-from app.core.depends import JWTDepend,ACLDepend
+from app.db.session import engine
+from app.db.init_db import init_db
+import uvicorn
+from contextlib import asynccontextmanager
+import gc
+
 
 FastAPICrudGlobalConfig.init(
+    backend_config={
+        "sqlalchemy": {
+            "db_session": lambda: db.session
+        }
+    },
     response_schema=ResponseSchema,
     query={
-        "soft_delete":True
+        "soft_delete": True
     },
     routes={
         # "dependencies":[JWTDepend,ACLDepend],
@@ -38,16 +43,7 @@ app = FastAPI(title="FastAPI CRUD", lifespan=lifespan)
 
 app.add_middleware(
     SQLAlchemyMiddleware,
-    db_url=str(settings.DATABASE_URL),
-    engine_args={
-        "echo": True,
-        "poolclass": NullPool
-        if settings.MODE == ModeEnum.testing
-        else AsyncAdaptedQueuePool
-        # "pool_pre_ping": True,
-        # "pool_size": settings.POOL_SIZE,
-        # "max_overflow": 64,
-    },
+    custom_engine=engine
 )
 
 

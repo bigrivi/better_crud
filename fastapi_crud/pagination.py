@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Generic, Sequence, TypeVar, Optional
+from typing import Generic, Sequence, TypeVar, Optional,Any
 from fastapi import Query
 from fastapi_pagination.bases import AbstractPage, AbstractParams, RawParams
 from pydantic import BaseModel
@@ -38,8 +38,10 @@ class Page(AbstractPage[T], Generic[T]):
     def create(
         cls,
         items: Sequence[T],
-        total: int,
-        params: Params,
+        params: AbstractParams,
+        *,
+        total: Optional[int] = None,
+        **kwargs: Any,
     ) -> Page[T]:
         size = params.size if params.size is not None else (total or None)
         page = params.page if params.page is not None else 1

@@ -1,6 +1,13 @@
 from typing import Dict, List, Union, Optional, Any
+import inspect
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...helper import find, update_entity_attr
+from ...config import FastAPICrudGlobalConfig
+
+
+class Provide:
+    pass
 
 
 async def create_many_to_many_instances(
@@ -59,3 +66,25 @@ async def create_one_to_one_instance(
         return relation_cls(**data)
     update_entity_attr(old_instance, data)
     return old_instance
+
+
+def inject_db_session(f):
+    sig = inspect.signature(f)
+
+    async def wrapper(*args, **kwargs):
+        for param in sig.parameters.values():
+            if isinstance(param.default, Provide):
+                if kwargs.get(param.name) is None:
+                    sqlalchemy_config = FastAPICrudGlobalConfig.backend_config.sqlalchemy
+                    if inspect.isasyncgenfunction(sqlalchemy_config.db_session):
+                        DBSession = asynccontextmanager(
+                            sqlalchemy_config.db_session)
+                        async with DBSession() as db_session:
+                            kwargs[param.name] = db_session
+                            return await f(*args, **kwargs)
+                    else:
+                        kwargs[param.name] = sqlalchemy_config.db_session()
+                        return await f(*args, **kwargs)
+                else:
+                    return await f(*args, **kwargs)
+    return wrapper

@@ -3,7 +3,7 @@ from typing import Dict, List, Union, TypeVar, Generic, Optional
 from fastapi import Request, BackgroundTasks
 from fastapi_pagination.bases import AbstractPage
 from pydantic import BaseModel
-from ..types import QuerySortDict
+from ..types import QuerySortDict, ID_TYPE
 from ..models import JoinOptions
 
 ModelType = TypeVar("ModelType")
@@ -27,7 +27,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
     async def crud_get_one(
         self,
         request: Request,
-        id: Union[int, str],
+        id: ID_TYPE,
         joins: Optional[JoinOptions] = None,
     ) -> ModelType:
         raise NotImplementedError
@@ -54,7 +54,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
     async def crud_update_one(
         self,
         request: Request,
-        id: Union[int, str],
+        id: ID_TYPE,
         model: BaseModel,
         background_tasks: Optional[BackgroundTasks] = None
     ):
@@ -64,7 +64,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
     async def crud_delete_many(
         self,
         request: Request,
-        id_list: list,
+        ids: List[ID_TYPE],
         soft_delete: Optional[bool] = False,
         background_tasks: Optional[BackgroundTasks] = None
     ) -> List[ModelType]:

@@ -6,9 +6,7 @@ from typing import (
     TypeVar,
     Generic,
     Optional,
-    Sequence,
-    Callable,
-    AsyncGenerator
+    Sequence
 )
 from datetime import datetime
 from pydantic import BaseModel
@@ -18,21 +16,23 @@ from sqlalchemy.orm import MANYTOMANY, MANYTOONE, ONETOMANY, noload, joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func, select
 from sqlalchemy.orm.interfaces import ORMOption
-from fastapi import Request, BackgroundTasks, status
+from fastapi import Request, BackgroundTasks, status, Depends
 from fastapi.exceptions import HTTPException
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
 from ...helper import decide_should_paginate, build_join_option_tree
 from ..abstract import AbstractCrudService
-from ...types import QuerySortDict
+from ...types import QuerySortDict, ID_TYPE
 from ...models import JoinOptions, JoinOptionModel
 
 from ...config import FastAPICrudGlobalConfig
-from .relationship import (
+from .helper import (
     create_many_to_many_instances,
     create_one_to_many_instances,
     create_many_to_one_instance,
-    create_one_to_one_instance
+    create_one_to_one_instance,
+    inject_db_session,
+    Provide
 )
 from .errors import (
     UnSupportOperatorError,
@@ -43,9 +43,9 @@ from .errors import (
 ModelType = TypeVar("ModelType")
 Selectable = TypeVar("Selectable", bound=Select[Any])
 
+
 LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
-ID_TYPE = Union[int, str]
 
 
 class SqlalchemyCrudService(
@@ -57,11 +57,9 @@ class SqlalchemyCrudService(
 
     def __init__(
         self,
-        entity: object,
-        get_db_session_fn: Callable[..., AsyncGenerator[AsyncSession, None]]
+        entity: object
     ):
         self.entity = entity
-        self.get_db_session_fn = get_db_session_fn
         self.primary_key = entity.__mapper__.primary_key[0].name
         self.entity_has_delete_column = hasattr(
             self.entity, FastAPICrudGlobalConfig.soft_deleted_field_key)
@@ -242,6 +240,7 @@ class SqlalchemyCrudService(
         stmt = self.prepare_order(stmt, sorts)
         return stmt
 
+    @inject_db_session
     async def crud_get_many(
         self,
         request: Optional[Request] = None,
@@ -250,6 +249,7 @@ class SqlalchemyCrudService(
         soft_delete: Optional[bool] = False,
         sorts: List[QuerySortDict] = None,
         joins: Optional[JoinOptions] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ) -> Union[AbstractPage[ModelType], List[ModelType]]:
         query = self._build_query(
             search=search,
@@ -259,28 +259,20 @@ class SqlalchemyCrudService(
             sorts=sorts,
             request=request
         )
-        db_session = await anext(self.get_db_session_fn())
         if decide_should_paginate():
             return await paginate(db_session, query)
         result = await db_session.execute(query)
         return result.unique().scalars().all()
 
-    async def _get(
-        self,
-        id: Union[int, str],
-        db_session: AsyncSession,
-        options: Optional[Sequence[ORMOption]] = None,
-    ) -> ModelType:
-        return await db_session.get(self.entity, id, options=options)
-
+    @inject_db_session
     async def crud_get_one(
         self,
         request: Request,
         id: ID_TYPE,
         joins: Optional[JoinOptions] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
-        db_session = await anext(self.get_db_session_fn())
-        entity = await self._get(
+        return await self._get(
             id,
             db_session,
             options=self._create_join_options(
@@ -289,30 +281,26 @@ class SqlalchemyCrudService(
                 from_detail=True
             )
         )
-        if entity is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Data not found"
-            )
-        return entity
 
+    @inject_db_session
     async def crud_create_one(
         self,
         request: Request,
         model: BaseModel,
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
-        db_session = await anext(self.get_db_session_fn())
         relationships = self.entity.__mapper__.relationships
         model_data = model.model_dump(exclude_unset=True)
         await self.on_before_create(
             model_data,
             background_tasks=background_tasks
         )
-        if hasattr(request.state, "auth_persist"):
-            model_data.update(request.state.auth_persist)
-        if hasattr(request.state, "params_filter"):
-            model_data.update(request.state.params_filter)
+        if request:
+            if hasattr(request.state, "auth_persist"):
+                model_data.update(request.state.auth_persist)
+            if hasattr(request.state, "params_filter"):
+                model_data.update(request.state.params_filter)
         for key, value in model_data.items():
             if key in relationships:
                 relation_dir = relationships[key].direction
@@ -350,30 +338,34 @@ class SqlalchemyCrudService(
         await db_session.refresh(entity)
         return entity
 
+    @inject_db_session
     async def crud_create_many(
         self,
         request: Request,
         models: List[BaseModel],
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
         entities = []
         for model in models:
             entity = await self.crud_create_one(
                 request,
                 model=model,
+                db_session=db_session,
                 background_tasks=background_tasks
             )
             entities.append(entity)
         return entities
 
+    @inject_db_session
     async def crud_update_one(
         self,
         request: Request,
-        id: Union[int, str],
+        id: ID_TYPE,
         model: BaseModel,
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ):
-        db_session = await anext(self.get_db_session_fn())
         model_data = model.model_dump(exclude_unset=True)
         relationship_fields = self._guess_should_load_relationship_fields(
             model_data
@@ -438,14 +430,15 @@ class SqlalchemyCrudService(
         await self.on_after_update(entity, background_tasks=background_tasks)
         return entity
 
+    @inject_db_session
     async def crud_delete_many(
         self,
         request: Request,
         ids: List[ID_TYPE],
         soft_delete: Optional[bool] = False,
-        background_tasks: Optional[BackgroundTasks] = None
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
-        db_session = await anext(self.get_db_session_fn())
         returns = [await self._get(id, db_session) for id in ids]
         await self.on_before_delete(ids, background_tasks=background_tasks)
         if soft_delete:
@@ -478,6 +471,14 @@ class SqlalchemyCrudService(
         statement = delete(self.entity).where(*stmt)
         await db_session.execute(statement)
         await db_session.commit()
+
+    async def _get(
+        self,
+        id: Union[int, str],
+        db_session: AsyncSession,
+        options: Optional[Sequence[ORMOption]] = None,
+    ) -> ModelType:
+        return await db_session.get(self.entity, id, options=options)
 
     async def _soft_delete(
         self,

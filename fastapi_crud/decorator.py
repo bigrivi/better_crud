@@ -115,11 +115,15 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
         entity = await self.service.crud_get_one(
-            request, id,
+            request,
+            id,
             joins=options.query.joins
         )
         if entity is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="No data found"
+            )
         return entity
 
     async def create_one(

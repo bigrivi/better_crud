@@ -1,9 +1,10 @@
+from typing import AsyncGenerator
 from sqlalchemy.orm import sessionmaker
 from app.core.config import ModeEnum, settings
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
-from fastapi_async_sqlalchemy import  db
+from fastapi_async_sqlalchemy import db
 
 DB_POOL_SIZE = 83
 WEB_CONCURRENCY = 9
@@ -16,9 +17,7 @@ engine = create_async_engine(
     echo=False,
     poolclass=NullPool
     if settings.MODE == ModeEnum.testing
-    else AsyncAdaptedQueuePool,  # Asincio pytest works with NullPool
-    # pool_size=POOL_SIZE,
-    # max_overflow=64,
+    else AsyncAdaptedQueuePool
 )
 
 SessionLocal = sessionmaker(
@@ -30,12 +29,6 @@ SessionLocal = sessionmaker(
 )
 
 
-async def get_session():
-    yield db.session
-    # async with SessionLocal() as session:
-    #     yield session
-    # session = SessionLocal()
-    # try:
-    #     yield session
-    # finally:
-    #     await session.close()
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with SessionLocal() as session:
+        yield session
