@@ -6,7 +6,9 @@ from typing import (
     Callable,
     Sequence,
     Literal,
-    TypeAlias
+    TypeAlias,
+    Union,
+    AsyncGenerator
 )
 from typing_extensions import TypedDict
 from fastapi import params
@@ -19,6 +21,9 @@ RoutesEnumType: TypeAlias = Literal[
     "update_one",
     "delete_many"
 ]
+
+ID_TYPE = Union[int, str]
+DBSessionFactory = Callable[..., Union[AsyncGenerator[Any, None], Any]]
 
 
 class RouteOptionsDict(TypedDict, total=False):
@@ -96,3 +101,11 @@ class SerializeModelDict(TypedDict, total=False):
     create_many: Optional[Any] = None
     update_one: Optional[Any] = None
     delete_many: Optional[Any] = None
+
+
+class SqlalchemyBackendDict(TypedDict):
+    db_session: DBSessionFactory
+
+
+class BackendConfigDict(TypedDict):
+    sqlalchemy: SqlalchemyBackendDict

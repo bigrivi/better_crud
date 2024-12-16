@@ -3,12 +3,15 @@ from .models import (
     GlobalQueryOptions,
     RoutesModel,
     QueryDelimOptions,
-    AbstractResponseModel
+    AbstractResponseModel,
+    BackendConfigModel
 )
 from .types import (
     GlobalQueryOptionsDict,
     RoutesModelDict,
-    QueryDelimOptionsDict
+    QueryDelimOptionsDict,
+    DBSessionFactory,
+    BackendConfigDict
 )
 from .pagination import Page
 from fastapi_pagination.bases import AbstractPage
@@ -64,14 +67,18 @@ class FastAPICrudGlobalConfig:
     query: ClassVar[GlobalQueryOptions] = GlobalQueryOptions()
     routes: ClassVar[Optional[RoutesModel]] = RoutesModel()
     delim_config: ClassVar[Optional[QueryDelimOptions]] = None
-    soft_deleted_field_key: ClassVar[Optional[str]] = None
+    soft_deleted_field_key: ClassVar[Optional[str]
+                                     ] = DEFAULT_SOFT_DELETED_FIELD_KEY
     action_map: ClassVar[Optional[Dict[str, str]]] = None
     page_schema: ClassVar[Optional[AbstractPage]] = Page
     response_schema: ClassVar[Optional[AbstractResponseModel]] = None
+    backend_config: ClassVar[BackendConfigModel] = None
 
     @classmethod
     def init(
         cls,
+        *,
+        backend_config: Optional[BackendConfigDict] = None,
         query: Optional[GlobalQueryOptionsDict] = {},
         routes: Optional[RoutesModelDict] = {},
         delim_config: Optional[QueryDelimOptionsDict] = {},
@@ -83,8 +90,9 @@ class FastAPICrudGlobalConfig:
         cls.query = GlobalQueryOptions(**query)
         cls.routes = RoutesModel(**routes)
         cls.delim_config = QueryDelimOptions(**delim_config)
-        cls.soft_deleted_field_key = soft_deleted_field_key or \
-            DEFAULT_SOFT_DELETED_FIELD_KEY
+        if soft_deleted_field_key:
+            cls.soft_deleted_field_key = soft_deleted_field_key
         cls.page_schema = page_schema
         cls.response_schema = response_schema
         cls.action_map = action_map or DEFAULT_ACTION_MAP
+        cls.backend_config = BackendConfigModel(**backend_config)

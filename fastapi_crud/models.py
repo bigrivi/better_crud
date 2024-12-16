@@ -12,6 +12,7 @@ from typing import (
 from abc import ABC, abstractmethod
 from pydantic import BaseModel, Field, ConfigDict
 from .enums import RoutesEnum, QuerySortType
+from .types import DBSessionFactory
 C = TypeVar("C")
 
 
@@ -118,3 +119,11 @@ class AbstractResponseModel(BaseModel, ABC):
         **kwargs: Any,
     ) -> C:
         raise NotImplementedError
+
+
+class SqlalchemyBackendModel(BaseModel):
+    db_session: DBSessionFactory
+
+
+class BackendConfigModel(BaseModel):
+    sqlalchemy: SqlalchemyBackendModel

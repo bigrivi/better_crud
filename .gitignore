@@ -43,6 +43,7 @@ coverage.xml
 
 # Rope
 .ropeproject
+.pytest_cache
 
 # Django stuff:
 *.log
