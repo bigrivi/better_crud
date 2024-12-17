@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import select
-from examples.app.models.company import Company
+from app.models.company import Company
 
 
 @pytest.mark.asyncio

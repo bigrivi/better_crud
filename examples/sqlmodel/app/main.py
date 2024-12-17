@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent.parent))  # noqa: E402
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 from fastapi import FastAPI, Request, status, HTTPException, Depends
 from app.core.depends import JWTDepend, ACLDepend
 from fastapi_crud import FastAPICrudGlobalConfig, get_action, get_feature, SqlalchemyCrudService

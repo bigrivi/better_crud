@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import select
-from examples.app.models.company import Company, CompanyCreate
-from examples.app.services.company import CompanyService
+from app.models.company import Company, CompanyCreate
+from app.services.company import CompanyService
 
 
 @pytest.mark.asyncio
