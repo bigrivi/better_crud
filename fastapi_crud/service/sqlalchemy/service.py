@@ -16,7 +16,7 @@ from sqlalchemy.orm import MANYTOMANY, MANYTOONE, ONETOMANY, noload, joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func, select
 from sqlalchemy.orm.interfaces import ORMOption
-from fastapi import Request, BackgroundTasks, status, Depends
+from fastapi import Request, BackgroundTasks, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage

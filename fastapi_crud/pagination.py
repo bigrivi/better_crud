@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Generic, Sequence, TypeVar, Optional,Any
+from typing import Generic, Sequence, TypeVar, Optional, Any
 from fastapi import Query
 from fastapi_pagination.bases import AbstractPage, AbstractParams, RawParams
 from pydantic import BaseModel

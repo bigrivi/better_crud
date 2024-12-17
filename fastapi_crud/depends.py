@@ -2,10 +2,16 @@ from typing import Callable, Optional, List, Dict
 from fastapi import Query, Request
 from .helper import parse_query_search, parse_query_sort, get_params_filter
 from pydantic.types import Json
-from .models import AuthModel, QuerySortModel, PathParamModel
+from .models import (
+    AuthModel,
+    QuerySortModel,
+    PathParamModel,
+    JoinOptions,
+    JoinOptionModel
+)
 
 
-class GetSearch:
+class DependGetSearch:
 
     def __init__(
         self,
@@ -35,7 +41,7 @@ class GetSearch:
         return search
 
 
-class GetSort:
+class DependGetSort:
 
     def __init__(self, option_sort: Optional[List[QuerySortModel]] = None):
         self.option_sort = option_sort
@@ -49,6 +55,56 @@ class GetSort:
         if self.option_sort:
             return [item.model_dump() for item in self.option_sort]
         return []
+
+
+class DependGetJoins:
+
+    def __init__(self, option_joins: Optional[JoinOptions] = None):
+        self.option_joins = option_joins
+
+    def __call__(
+        self,
+        loads: List[str] = Query(None, alias="load"),
+        joins: List[str] = Query(None, alias="join"),
+    ):
+
+        join_options: JoinOptions = {**self.option_joins}
+        if loads:
+            for load_field in loads:
+                if load_field in join_options:
+                    join_options[load_field].select = True
+                else:
+                    join_options[load_field] = JoinOptionModel(
+                        select=True, join=False)
+        if joins:
+            for join_field in joins:
+                if join_field in join_options:
+                    join_options[join_field].join = True
+                else:
+                    join_options[join_field] = JoinOptionModel(
+                        select=False, join=True)
+        return join_options
+
+
+class DependGetLoads:
+
+    def __init__(self, option_joins: Optional[JoinOptions] = None):
+        self.option_joins = option_joins
+
+    def __call__(
+        self,
+        loads: List[str] = Query(None, alias="load"),
+    ):
+
+        join_options: JoinOptions = {**self.option_joins}
+        if loads:
+            for load_field in loads:
+                if load_field in join_options:
+                    join_options[load_field].select = True
+                else:
+                    join_options[load_field] = JoinOptionModel(
+                        select=True, join=False)
+        return join_options
 
 
 class CrudAction():
