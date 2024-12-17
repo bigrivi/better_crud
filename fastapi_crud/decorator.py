@@ -21,11 +21,16 @@ from fastapi import (
     Request,
     Path,
     HTTPException,
-    BackgroundTasks,
+    BackgroundTasks
 )
 from pydantic import BaseModel
 from .enums import RoutesEnum
-from .models import CrudOptions, AbstractResponseModel, RouteOptions
+from .models import (
+    CrudOptions,
+    AbstractResponseModel,
+    RouteOptions,
+    JoinOptions
+)
 from .types import (
     RoutesModelDict,
     QueryOptionsDict,
@@ -37,7 +42,14 @@ from .types import (
 )
 from .config import FastAPICrudGlobalConfig, RoutesSchema
 from .helper import get_serialize_model, get_route_summary
-from .depends import GetSearch, CrudAction, StateAction, GetSort
+from .depends import (
+    CrudAction,
+    StateAction,
+    DependGetJoins,
+    DependGetSearch,
+    DependGetLoads,
+    DependGetSort
+)
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -96,13 +108,17 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
         request: Request,
         include_deleted: Optional[bool] = False,
         search: Dict = Depends(
-            GetSearch(options.query.filter, options.params)
+            DependGetSearch(options.query.filter, options.params)
         ),
-        sorts: List[QuerySortDict] = Depends(GetSort(options.query.sort)),
+        joins: JoinOptions = Depends(
+            DependGetJoins(options.query.joins)
+        ),
+        sorts: List[QuerySortDict] = Depends(
+            DependGetSort(options.query.sort)),
     ):
         return await self.service.crud_get_many(
             request=request,
-            joins=options.query.joins,
+            joins=joins,
             search=search,
             sorts=sorts,
             soft_delete=options.query.soft_delete,
@@ -112,12 +128,15 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     async def get_one(
         self,
         request: Request,
+        joins: JoinOptions = Depends(
+            DependGetLoads(options.query.joins)
+        ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
         entity = await self.service.crud_get_one(
             request,
             id,
-            joins=options.query.joins
+            joins=joins
         )
         if entity is None:
             raise HTTPException(

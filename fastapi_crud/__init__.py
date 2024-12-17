@@ -5,7 +5,7 @@ from .config import FastAPICrudGlobalConfig
 from .helper import get_feature, get_action, decide_should_paginate
 from .types import QuerySortDict
 from .pagination import Page, AbstractPage
-from .depends import GetSearch, GetSort
+from .depends import DependGetSearch, DependGetSort, DependGetJoins, DependGetLoads
 
 __all__ = [
     "SqlalchemyCrudService",
@@ -19,6 +19,8 @@ __all__ = [
     "QuerySortDict",
     "Page",
     "AbstractPage",
-    "GetSearch",
-    "GetSort"
+    "DependGetSearch",
+    "DependGetSort",
+    "DependGetJoins",
+    "DependGetLoads"
 ]
