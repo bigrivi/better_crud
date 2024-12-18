@@ -36,6 +36,7 @@ class SerializeModel(BaseModel):
     create_one: Optional[Any] = None
     create_many: Optional[Any] = None
     update_one: Optional[Any] = None
+    update_many: Optional[Any] = None
     delete_many: Optional[Any] = None
 
 
@@ -55,6 +56,7 @@ class RoutesModel(BaseModel):
     create_one: Optional[RouteOptions] = None
     create_many: Optional[RouteOptions] = None
     update_one: Optional[RouteOptions] = None
+    update_many: Optional[RouteOptions] = None
     delete_many: Optional[RouteOptions] = None
 
 

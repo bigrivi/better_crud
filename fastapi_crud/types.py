@@ -19,6 +19,7 @@ RoutesEnumType: TypeAlias = Literal[
     "create_one",
     "create_many",
     "update_one",
+    "update_many",
     "delete_many"
 ]
 

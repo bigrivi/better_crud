@@ -363,8 +363,8 @@ class SqlalchemyCrudService(
         request: Request,
         id: ID_TYPE,
         model: BaseModel,
-        background_tasks: Optional[BackgroundTasks] = None,
-        db_session: Optional[AsyncSession] = Provide()
+        db_session: Optional[AsyncSession] = Provide(),
+        background_tasks: Optional[BackgroundTasks] = None
     ):
         model_data = model.model_dump(exclude_unset=True)
         relationship_fields = self._guess_should_load_relationship_fields(
@@ -429,6 +429,27 @@ class SqlalchemyCrudService(
         await db_session.refresh(entity)
         await self.on_after_update(entity, background_tasks=background_tasks)
         return entity
+
+    @inject_db_session
+    async def crud_update_many(
+        self,
+        request: Request,
+        ids: List[ID_TYPE],
+        models: List[BaseModel],
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
+    ) -> List[ModelType]:
+        entities = []
+        for index, model in enumerate(models):
+            entity = await self.crud_update_one(
+                request,
+                id=ids[index],
+                model=model,
+                db_session=db_session,
+                background_tasks=background_tasks
+            )
+            entities.append(entity)
+        return entities
 
     @inject_db_session
     async def crud_delete_many(

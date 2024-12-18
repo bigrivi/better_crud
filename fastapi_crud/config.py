@@ -10,7 +10,6 @@ from .types import (
     GlobalQueryOptionsDict,
     RoutesModelDict,
     QueryDelimOptionsDict,
-    DBSessionFactory,
     BackendConfigDict
 )
 from .pagination import Page
@@ -25,6 +24,7 @@ DEFAULT_ACTION_MAP = {
     RoutesEnum.create_one: CrudActions.create_one,
     RoutesEnum.create_many: CrudActions.create_many,
     RoutesEnum.update_one: CrudActions.update_one,
+    RoutesEnum.update_many: CrudActions.update_many,
     RoutesEnum.delete_many: CrudActions.delete_many
 }
 
@@ -53,7 +53,12 @@ RoutesSchema = [
     {
         "name": RoutesEnum.update_one,
         "path": '/{id}',
-        "method": "PATCH"
+        "method": "PUT"
+    },
+    {
+        "name": RoutesEnum.update_many,
+        "path": '/{ids}/bulk',
+        "method": "PUT"
     },
     {
         "name": RoutesEnum.delete_many,
