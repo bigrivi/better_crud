@@ -185,11 +185,33 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
             background_tasks=background_tasks
         )
 
+    async def update_many(
+        self,
+        request: Request,
+        models: Annotated[List[update_schema_type], Body()],
+        background_tasks: BackgroundTasks,
+        ids: str = Path(...,
+                        description="Primary key values, use commas to separate multiple values")
+    ):
+        id_list = ids.split(",")
+        if len(id_list) != len(models):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail="The id and payload length do not match"
+            )
+        return await self.service.crud_update_many(
+            request,
+            id_list,
+            models,
+            background_tasks=background_tasks
+        )
+
     async def delete_many(
         self,
         request: Request,
         background_tasks: BackgroundTasks,
-        ids: str = Path(..., title="The ID of the item to get")
+        ids: str = Path(...,
+                        description="Primary key values, use commas to separate multiple values")
     ):
         id_list = ids.split(",")
         return await self.service.crud_delete_many(
@@ -203,6 +225,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     cls.create_one = create_one
     cls.create_many = create_many
     cls.update_one = update_one
+    cls.update_many = update_many
     cls.delete_many = delete_many
     cls.get_one = get_one
 
@@ -245,7 +268,7 @@ def _crud(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
                 page_schema_type[response_model],
                 List[response_model]
             ]
-        elif router_name in [RoutesEnum.create_many, RoutesEnum.delete_many]:
+        elif router_name in [RoutesEnum.create_many, RoutesEnum.update_many, RoutesEnum.delete_many]:
             response_model = List[response_model]
 
         if response_schema_type:

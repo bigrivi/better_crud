@@ -61,6 +61,16 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    async def crud_update_many(
+        self,
+        request: Request,
+        ids: List[ID_TYPE],
+        model: BaseModel,
+        background_tasks: Optional[BackgroundTasks] = None
+    ):
+        raise NotImplementedError
+
+    @abc.abstractmethod
     async def crud_delete_many(
         self,
         request: Request,

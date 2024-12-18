@@ -146,8 +146,10 @@ def get_serialize_model(serialize: SerializeModel, router_name):
     if serialize_model is None:
         if router_name == RoutesEnum.get_one:
             return get_serialize_model(serialize, RoutesEnum.get_many)
-        if router_name == RoutesEnum.create_many:
+        elif router_name == RoutesEnum.create_many:
             return get_serialize_model(serialize, RoutesEnum.create_one)
+        elif router_name == RoutesEnum.update_many:
+            return get_serialize_model(serialize, RoutesEnum.update_one)
     return serialize_model or getattr(serialize, "base", None)
 
 

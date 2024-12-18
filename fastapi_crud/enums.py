@@ -7,16 +7,18 @@ class RoutesEnum(str, Enum):
     create_one = 'create_one',
     create_many = 'create_many',
     update_one = 'update_one'
+    update_many = 'update_many'
     delete_many = 'delete_many'
 
 
 class CrudActions(str, Enum):
-    read_all = 'read_all',
-    read_one = 'read_one',
-    create_one = 'create_one',
-    create_many = 'create_many',
-    update_one = 'update_one',
-    delete_many = 'delete_many'
+    read_all = 'read',
+    read_one = 'read',
+    create_one = 'create',
+    create_many = 'create',
+    update_one = 'update',
+    update_many = 'update',
+    delete_many = 'delete'
 
 
 class QuerySortType(str, Enum):
