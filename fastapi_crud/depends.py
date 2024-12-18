@@ -68,7 +68,8 @@ class DependGetJoins:
         joins: List[str] = Query(None, alias="join"),
     ):
 
-        join_options: JoinOptions = {**self.option_joins}
+        join_options: JoinOptions = {
+            **self.option_joins} if self.option_joins else {}
         if loads:
             for load_field in loads:
                 if load_field in join_options:
@@ -96,7 +97,8 @@ class DependGetLoads:
         loads: List[str] = Query(None, alias="load"),
     ):
 
-        join_options: JoinOptions = {**self.option_joins}
+        join_options: JoinOptions = {
+            **self.option_joins} if self.option_joins else {}
         if loads:
             for load_field in loads:
                 if load_field in join_options:
