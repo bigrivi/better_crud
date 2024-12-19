@@ -73,7 +73,3 @@ def filter_fn(request: Request):
       )
 class UserController():
     service: UserService = Depends(UserService)
-
-    @router.get("/")
-    async def override_get_many(self, request: Request):
-        return []

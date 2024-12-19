@@ -271,9 +271,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             ],
             response_model=response_model,
         )
-    for route in router.routes:
-        if route.path == "/":
-            route.path = route.path.lstrip('/')
     return cls
 
 

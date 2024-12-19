@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter
-from app.routers import company, roles, users
+from app.routers import company, users, roles
 
 api_router = APIRouter()
 

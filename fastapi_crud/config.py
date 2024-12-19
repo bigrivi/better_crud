@@ -33,12 +33,12 @@ DEFAULT_ACTION_MAP = {
 RoutesSchema = [
     {
         "name": RoutesEnum.get_many,
-        "path": '/',
+        "path": '',
         "method": "GET"
     },
     {
         "name": RoutesEnum.create_one,
-        "path": '/',
+        "path": '',
         "method": "POST"
     },
     {
