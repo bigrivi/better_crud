@@ -12,9 +12,16 @@ from app.services.company import CompanyService
 # class CompanyController():
 #     service: CompanyService = Depends(CompanyService)
 
+
+async def on_before_create(*args, **kwargs) -> None:
+    print("on_before_create")
+    print(args)
+    print(kwargs)
+
 router = crud_router(
     Company,
     dto={"create": CompanyCreate, "update": CompanyUpdate},
     routes={},
     serialize={"base": CompanyPublic},
+    on_before_create=on_before_create
 )
