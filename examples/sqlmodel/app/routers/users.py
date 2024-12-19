@@ -20,12 +20,12 @@ def filter_fn(request: Request):
 
 @crud(router,
       feature="user",
-      params={
-          "companyid": {
-              "field": "company_id",
-              "type": "str"
-          }
-      },
+      #   params={
+      #       "companyid": {
+      #           "field": "company_id",
+      #           "type": "str"
+      #       }
+      #   },
       routes={
           # "dependencies":[JWTDepend,ACLDepend],
           # "only":["get_many","create_one"]
@@ -74,6 +74,6 @@ def filter_fn(request: Request):
 class UserController():
     service: UserService = Depends(UserService)
 
-    # @router.get("/xxxxx")
-    # async def override_get_many(self,request:Request):
-    #     return []
+    @router.get("/")
+    async def override_get_many(self, request: Request):
+        return []

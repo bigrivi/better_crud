@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi_crud import crud, crud_router
 from app.models.company import CompanyPublic, CompanyCreate, CompanyUpdate, Company
-from app.services.company import CompanyService
+# from app.services.company import CompanyService
 # router = APIRouter()
 # @crud(
 #     router,
@@ -25,3 +25,8 @@ router = crud_router(
     serialize={"base": CompanyPublic},
     on_before_create=on_before_create
 )
+
+
+@router.get("/")
+async def override_get_many(request: Request):
+    return []

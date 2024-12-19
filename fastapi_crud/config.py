@@ -1,4 +1,5 @@
 from typing import Dict, Optional, ClassVar
+from importlib import import_module
 from .models import (
     GlobalQueryOptions,
     RoutesModel,
@@ -101,3 +102,5 @@ class FastAPICrudGlobalConfig:
         cls.response_schema = response_schema
         cls.action_map = action_map or DEFAULT_ACTION_MAP
         cls.backend_config = BackendConfigModel(**backend_config)
+        import_module(
+            f".service.{cls.backend_config.backend}", package="fastapi_crud")

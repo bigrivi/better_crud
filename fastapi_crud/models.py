@@ -12,7 +12,7 @@ from typing import (
 from abc import ABC, abstractmethod
 from pydantic import BaseModel, Field, ConfigDict
 from .enums import RoutesEnum, QuerySortType
-from .types import DBSessionFactory
+from .types import DBSessionFactory, BackendType
 C = TypeVar("C")
 
 
@@ -128,4 +128,5 @@ class SqlalchemyBackendModel(BaseModel):
 
 
 class BackendConfigModel(BaseModel):
+    backend: BackendType = "sqlalchemy"
     sqlalchemy: SqlalchemyBackendModel

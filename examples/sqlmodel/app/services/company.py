@@ -1,4 +1,4 @@
-from fastapi_crud import SqlalchemyCrudService
+from fastapi_crud.service.sqlalchemy import SqlalchemyCrudService
 from ..models.company import Company
 
 

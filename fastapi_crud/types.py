@@ -23,6 +23,10 @@ RoutesEnumType: TypeAlias = Literal[
     "delete_many"
 ]
 
+BackendType: TypeAlias = Literal[
+    "sqlalchemy"
+]
+
 ID_TYPE = Union[int, str]
 DBSessionFactory = Callable[..., Union[AsyncGenerator[Any, None], Any]]
 
@@ -109,4 +113,5 @@ class SqlalchemyBackendDict(TypedDict):
 
 
 class BackendConfigDict(TypedDict):
+    backend: BackendType
     sqlalchemy: SqlalchemyBackendDict
