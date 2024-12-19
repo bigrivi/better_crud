@@ -5,11 +5,11 @@ from .helper import get_feature, get_action, decide_should_paginate
 from .types import QuerySortDict
 from .pagination import Page, AbstractPage
 from .depends import DependGetSearch, DependGetSort, DependGetJoins, DependGetLoads
-from .router import crud_router
+from .generator import crud_generator
 
 __all__ = [
     "crud",
-    "crud_router",
+    "crud_generator",
     "AbstractResponseModel",
     "FastAPICrudGlobalConfig",
     "get_feature",

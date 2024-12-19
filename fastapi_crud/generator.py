@@ -1,5 +1,4 @@
 from typing import TypeVar, Any
-from fastapi import APIRouter
 from typing import (
     Any,
     Optional,
@@ -18,7 +17,6 @@ from .types import (
     SerializeModelDict,
     PathParamDict
 )
-from importlib import import_module
 from .config import FastAPICrudGlobalConfig
 from .factory import crud_routes_factory
 from .service.abstract import AbstractCrudService
@@ -27,7 +25,8 @@ from .backend import get_backend
 ModelType = TypeVar("ModelType", bound=Any)
 
 
-def crud_router(
+def crud_generator(
+    router: APIRouter,
     model: ModelType,
     serialize: SerializeModelDict,
     params: Optional[Dict[str, PathParamDict]] = None,
@@ -55,7 +54,6 @@ def crud_router(
         routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
         query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
     )
-    router = APIRouter()
     backend_name = FastAPICrudGlobalConfig.backend_config.backend
     backend_cls = get_backend(backend_name)
 
@@ -85,4 +83,3 @@ def crud_router(
         def __init__(self):
             self.service = service or LocalCrudService()
     crud_routes_factory(router, LocalCrudController, options)
-    return router
