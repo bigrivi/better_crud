@@ -1,4 +1,3 @@
-from .service import SqlalchemyCrudService, AbstractCrudService
 from .decorator import crud
 from .models import AbstractResponseModel
 from .config import FastAPICrudGlobalConfig
@@ -7,9 +6,8 @@ from .types import QuerySortDict
 from .pagination import Page, AbstractPage
 from .depends import DependGetSearch, DependGetSort, DependGetJoins, DependGetLoads
 from .router import crud_router
+
 __all__ = [
-    "SqlalchemyCrudService",
-    "AbstractCrudService",
     "crud",
     "crud_router",
     "AbstractResponseModel",

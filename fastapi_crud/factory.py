@@ -95,7 +95,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
-        print(self.service)
         entity = await self.service.crud_get_one(
             request,
             id,

@@ -18,10 +18,11 @@ from .types import (
     SerializeModelDict,
     PathParamDict
 )
+from importlib import import_module
 from .config import FastAPICrudGlobalConfig
 from .factory import crud_routes_factory
-from .service.sqlalchemy import SqlalchemyCrudService
-from .service import AbstractCrudService
+from .service.abstract import AbstractCrudService
+from .backend import get_backend
 
 ModelType = TypeVar("ModelType", bound=Any)
 
@@ -55,8 +56,10 @@ def crud_router(
         query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
     )
     router = APIRouter()
+    backend_name = FastAPICrudGlobalConfig.backend_config.backend
+    backend_cls = get_backend(backend_name)
 
-    class LocalCrudService(SqlalchemyCrudService):
+    class LocalCrudService(backend_cls[model]):
         def __init__(self):
             super().__init__(model)
 
@@ -78,8 +81,8 @@ def crud_router(
         async def on_after_delete(self, *args, **kwargs) -> None:
             on_after_delete and await on_after_delete(*args, **kwargs)
 
-    class CrudController:
+    class LocalCrudController:
         def __init__(self):
             self.service = service or LocalCrudService()
-    crud_routes_factory(router, CrudController, options)
+    crud_routes_factory(router, LocalCrudController, options)
     return router

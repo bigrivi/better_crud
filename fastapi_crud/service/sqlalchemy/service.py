@@ -24,6 +24,7 @@ from ...helper import decide_should_paginate, build_join_option_tree
 from ..abstract import AbstractCrudService
 from ...types import QuerySortDict, ID_TYPE
 from ...models import JoinOptions, JoinOptionModel
+from ...backend import register_backend
 
 from ...config import FastAPICrudGlobalConfig
 from .helper import (
@@ -48,6 +49,7 @@ LOGICAL_OPERATOR_AND = "$and"
 LOGICAL_OPERATOR_OR = "$or"
 
 
+@register_backend("sqlalchemy")
 class SqlalchemyCrudService(
     Generic[ModelType],
     AbstractCrudService[ModelType]
