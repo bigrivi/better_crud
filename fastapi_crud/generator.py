@@ -28,6 +28,7 @@ ModelType = TypeVar("ModelType", bound=Any)
 def crud_generator(
     router: APIRouter,
     model: ModelType,
+    *,
     serialize: SerializeModelDict,
     params: Optional[Dict[str, PathParamDict]] = None,
     routes: Optional[RoutesModelDict] = {},
