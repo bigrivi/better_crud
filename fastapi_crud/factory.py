@@ -78,7 +78,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         sorts: List[QuerySortDict] = Depends(
             DependGetSort(options.query.sort)),
     ):
-        print(self.service)
         return await self.service.crud_get_many(
             request=request,
             joins=joins,
