@@ -2,6 +2,8 @@ from typing import Callable, Optional, List, Dict
 from fastapi import Query, Request
 from .helper import parse_query_search, parse_query_sort, get_params_filter
 from pydantic.types import Json
+from pydantic import BaseModel
+from .types import QuerySortDict
 from .models import (
     AuthModel,
     QuerySortModel,
@@ -11,15 +13,13 @@ from .models import (
 )
 
 
-class DependGetSearch:
+class GetQuerySearch:
 
     def __init__(
         self,
-        option_filter: Optional[Dict] = None,
-        params_def: Optional[Dict] = None
+        option_filter: Optional[Dict] = None
     ):
         self.option_filter = option_filter
-        self.params = params_def
 
     def __call__(
         self,
@@ -41,10 +41,12 @@ class DependGetSearch:
         return search
 
 
-class DependGetSort:
+class GetQuerySorts:
 
-    def __init__(self, option_sort: Optional[List[QuerySortModel]] = None):
+    def __init__(self, option_sort: Optional[List[QuerySortDict]] = None):
         self.option_sort = option_sort
+        if self.option_sort and isinstance(self.option_sort[0], BaseModel):
+            self.option_sort = [item.model_dump() for item in self.option_sort]
 
     def __call__(
         self,
@@ -53,11 +55,11 @@ class DependGetSort:
         if sorts:
             return parse_query_sort(sorts)
         if self.option_sort:
-            return [item.model_dump() for item in self.option_sort]
+            return self.option_sort
         return []
 
 
-class DependGetJoins:
+class GetQueryJoins:
 
     def __init__(self, option_joins: Optional[JoinOptions] = None):
         self.option_joins = option_joins
@@ -87,7 +89,7 @@ class DependGetJoins:
         return join_options
 
 
-class DependGetLoads:
+class GetQueryLoads:
 
     def __init__(self, option_joins: Optional[JoinOptions] = None):
         self.option_joins = option_joins
