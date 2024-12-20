@@ -22,7 +22,6 @@ from fastapi import (
     HTTPException,
     BackgroundTasks
 )
-from pydantic import BaseModel
 from .enums import RoutesEnum
 from .models import (
     CrudOptions,
@@ -30,7 +29,7 @@ from .models import (
     RouteOptions,
     JoinOptions
 )
-from .types import QuerySortDict
+from .types import QuerySortDict, CreateSchemaType, UpdateSchemaType
 from .config import FastAPICrudGlobalConfig, RoutesSchema
 from .helper import get_serialize_model, get_route_summary
 from .depends import (
@@ -43,10 +42,8 @@ from .depends import (
 )
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+
 T = TypeVar("T")
-CONFIG = TypeVar("CONFIG", bound=CrudOptions)
 CRUD_CLASS_KEY = "__crud_class__"
 UNBIND_KIND_TYPE = (
     inspect.Parameter.VAR_POSITIONAL,

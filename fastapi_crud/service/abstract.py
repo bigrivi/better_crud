@@ -2,8 +2,7 @@ import abc
 from typing import Dict, List, Union, TypeVar, Generic, Optional
 from fastapi import Request, BackgroundTasks
 from fastapi_pagination.bases import AbstractPage
-from pydantic import BaseModel
-from ..types import QuerySortDict, ID_TYPE
+from ..types import QuerySortDict, ID_TYPE, CreateSchemaType, UpdateSchemaType
 from ..models import JoinOptions
 
 ModelType = TypeVar("ModelType")
@@ -36,7 +35,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
     async def crud_create_one(
         self,
         request: Request,
-        model: BaseModel,
+        model: CreateSchemaType,
         background_tasks: Optional[BackgroundTasks] = None
     ) -> ModelType:
         raise NotImplementedError
@@ -45,7 +44,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
     async def crud_create_many(
         self,
         request: Request,
-        models: List[BaseModel],
+        models: List[CreateSchemaType],
         background_tasks: Optional[BackgroundTasks] = None
     ) -> List[ModelType]:
         raise NotImplementedError
@@ -55,7 +54,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         self,
         request: Request,
         id: ID_TYPE,
-        model: BaseModel,
+        model: UpdateSchemaType,
         background_tasks: Optional[BackgroundTasks] = None
     ):
         raise NotImplementedError
@@ -65,7 +64,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         self,
         request: Request,
         ids: List[ID_TYPE],
-        model: BaseModel,
+        model: List[UpdateSchemaType],
         background_tasks: Optional[BackgroundTasks] = None
     ):
         raise NotImplementedError

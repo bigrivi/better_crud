@@ -6,6 +6,7 @@ from .types import QuerySortDict
 from .pagination import Page, AbstractPage
 from .depends import GetQuerySearch, GetQuerySorts, GetQueryJoins, GetQueryLoads
 from .generator import crud_generator
+from .backend import register_backend
 
 __all__ = [
     "crud",
@@ -15,6 +16,7 @@ __all__ = [
     "get_feature",
     "get_action",
     "decide_should_paginate",
+    "register_backend",
     "QuerySortDict",
     "Page",
     "AbstractPage",

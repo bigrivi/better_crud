@@ -22,7 +22,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
 from ...helper import decide_should_paginate, build_join_option_tree
 from ..abstract import AbstractCrudService
-from ...types import QuerySortDict, ID_TYPE
+from ...types import QuerySortDict, ID_TYPE, CreateSchemaType, UpdateSchemaType
 from ...models import JoinOptions, JoinOptionModel
 from ...backend import register_backend
 
@@ -288,7 +288,7 @@ class SqlalchemyCrudService(
     async def crud_create_one(
         self,
         request: Request,
-        model: BaseModel,
+        model: CreateSchemaType,
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
@@ -344,7 +344,7 @@ class SqlalchemyCrudService(
     async def crud_create_many(
         self,
         request: Request,
-        models: List[BaseModel],
+        models: List[CreateSchemaType],
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
@@ -364,7 +364,7 @@ class SqlalchemyCrudService(
         self,
         request: Request,
         id: ID_TYPE,
-        model: BaseModel,
+        model: UpdateSchemaType,
         db_session: Optional[AsyncSession] = Provide(),
         background_tasks: Optional[BackgroundTasks] = None
     ):
@@ -437,7 +437,7 @@ class SqlalchemyCrudService(
         self,
         request: Request,
         ids: List[ID_TYPE],
-        models: List[BaseModel],
+        models: List[UpdateSchemaType],
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
