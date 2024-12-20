@@ -9,7 +9,6 @@ from typing import (
     Sequence
 )
 from datetime import datetime
-from pydantic import BaseModel
 import functools
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import MANYTOMANY, MANYTOONE, ONETOMANY, noload, joinedload
