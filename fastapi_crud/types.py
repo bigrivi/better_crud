@@ -8,10 +8,13 @@ from typing import (
     Literal,
     TypeAlias,
     Union,
-    AsyncGenerator
+    AsyncGenerator,
+    TypeVar
 )
 from typing_extensions import TypedDict
 from fastapi import params
+from pydantic import BaseModel
+
 
 RoutesEnumType: TypeAlias = Literal[
     "get_many",
@@ -24,9 +27,12 @@ RoutesEnumType: TypeAlias = Literal[
 ]
 
 BackendType: TypeAlias = Literal[
-    "sqlalchemy"
+    "sqlalchemy",
+    "custom"
 ]
 
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 ID_TYPE = Union[int, str]
 DBSessionFactory = Callable[..., Union[AsyncGenerator[Any, None], Any]]
 

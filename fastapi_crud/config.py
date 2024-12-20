@@ -102,5 +102,6 @@ class FastAPICrudGlobalConfig:
         cls.response_schema = response_schema
         cls.action_map = action_map or DEFAULT_ACTION_MAP
         cls.backend_config = BackendConfigModel(**backend_config)
-        import_module(
-            f".service.{cls.backend_config.backend}", package="fastapi_crud")
+        if cls.backend_config.backend != "custom":
+            import_module(
+                f".service.{cls.backend_config.backend}", package="fastapi_crud")
