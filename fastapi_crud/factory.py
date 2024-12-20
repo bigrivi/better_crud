@@ -36,10 +36,10 @@ from .helper import get_serialize_model, get_route_summary
 from .depends import (
     CrudAction,
     StateAction,
-    DependGetJoins,
-    DependGetSearch,
-    DependGetLoads,
-    DependGetSort
+    GetQuerySearch,
+    GetQueryLoads,
+    GetQuerySorts,
+    GetQueryJoins,
 )
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
@@ -70,13 +70,13 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         request: Request,
         include_deleted: Optional[bool] = False,
         search: Dict = Depends(
-            DependGetSearch(options.query.filter, options.params)
+            GetQuerySearch(options.query.filter)
         ),
         joins: JoinOptions = Depends(
-            DependGetJoins(options.query.joins)
+            GetQueryJoins(options.query.joins)
         ),
         sorts: List[QuerySortDict] = Depends(
-            DependGetSort(options.query.sort)),
+            GetQuerySorts(options.query.sort)),
     ):
         return await self.service.crud_get_many(
             request=request,
@@ -91,7 +91,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         self,
         request: Request,
         joins: JoinOptions = Depends(
-            DependGetLoads(options.query.joins)
+            GetQueryLoads(options.query.joins)
         ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):

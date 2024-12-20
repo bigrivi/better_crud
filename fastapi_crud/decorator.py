@@ -22,7 +22,7 @@ from .types import (
     SerializeModelDict,
     PathParamDict
 )
-from .config import FastAPICrudGlobalConfig, RoutesSchema
+from .config import FastAPICrudGlobalConfig
 from .factory import crud_routes_factory
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
