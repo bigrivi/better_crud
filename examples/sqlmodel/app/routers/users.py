@@ -46,22 +46,22 @@ def filter_fn(request: Request):
     },
     query={
         "joins": {
-            #   "profile": {
-            #       "select": True,
-            #       "join": False
-            #   },
-            #   "tasks": {
-            #       "select": True,
-            #       "join": False
-            #   },
-            #   "company": {
-            #       "select": True,
-            #       "join": False
-            #   },
-            #   "roles": {
-            #       "select": True,
-            #       "join": False
-            #   }
+            "profile": {
+                "select": True,
+                "join": False
+            },
+            "tasks": {
+                "select": True,
+                "join": False
+            },
+            "company": {
+                "select": True,
+                "join": False
+            },
+            "roles": {
+                "select": True,
+                "join": False
+            }
         },
         "soft_delete": True,
         "sort": [

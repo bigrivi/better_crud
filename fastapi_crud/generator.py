@@ -37,7 +37,7 @@ def crud_generator(
     query: Optional[QueryOptionsDict] = {},
     summary_vars: Optional[Dict] = {},
     feature: Optional[str] = "",
-    service: Optional[AbstractCrudService] = None,
+    service_cls: Optional[AbstractCrudService] = None,
     on_before_create: Optional[Callable[..., Awaitable[Any]]] = None,
     on_after_create: Optional[Callable[..., Awaitable[Any]]] = None,
     on_before_update: Optional[Callable[..., Awaitable[Any]]] = None,
@@ -82,5 +82,5 @@ def crud_generator(
 
     class LocalCrudController:
         def __init__(self):
-            self.service = service or LocalCrudService()
+            self.service = service_cls() if service_cls else LocalCrudService()
     crud_routes_factory(router, LocalCrudController, options)
