@@ -61,6 +61,9 @@ def filter_fn(request: Request):
             "roles": {
                 "select": True,
                 "join": False
+            },
+            "staff": {
+                "select": True,
             }
         },
         "soft_delete": True,
