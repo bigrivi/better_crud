@@ -1,4 +1,5 @@
 import os
+from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from enum import Enum
 

@@ -306,7 +306,6 @@ class SqlalchemyCrudService(
             if key in relationships:
                 relation_dir = relationships[key].direction
                 relation_cls = relationships[key].mapper.entity
-
                 if relation_dir == MANYTOMANY:
                     model_data[key] = await create_many_to_many_instances(
                         db_session,
