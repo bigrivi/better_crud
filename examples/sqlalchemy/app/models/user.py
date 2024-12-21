@@ -9,6 +9,7 @@ from .company import Company, CompanyPublic
 from .user_role import UserRoleLink
 from .role import Role, RolePublic
 from .user_task import UserTask, UserTaskPublic, UserTaskCreate, UserTaskUpdate
+from .staff import Staff, StaffPublic, StaffCreate
 
 
 class UserBase(BaseModel):
@@ -28,6 +29,8 @@ class User(Base):
     company_id: Mapped[int] = mapped_column(Integer, ForeignKey("company.id"))
     profile: Mapped[UserProfile | None] = relationship(
         uselist=False, lazy="noload")
+    staff: Mapped[Staff | None] = relationship(
+        uselist=False, lazy="noload")
     tasks: Mapped[List[UserTask]] = relationship(
         uselist=True, cascade="all, delete-orphan", lazy="noload")
     company: Mapped[Company] = relationship(
@@ -46,6 +49,7 @@ class UserPublic(UserBase):
     profile_id: Optional[int] = None
     tasks: List[UserTaskPublic] = None
     company_id: Optional[int] = None
+    staff: Optional[StaffPublic] = None
 
 
 class UserCreate(UserBase):
@@ -54,6 +58,7 @@ class UserCreate(UserBase):
     profile: UserProfileCreate = None
     roles: List[int]
     tasks: Optional[List[UserTaskCreate]] = None
+    staff: Optional[StaffCreate] = None
 
 
 class UserUpdate(UserBase):
@@ -62,3 +67,4 @@ class UserUpdate(UserBase):
     profile: Optional[UserProfileCreate] = None
     roles: Optional[List[int]] = None
     tasks: Optional[List[UserTaskUpdate]] = None
+    staff: Optional[StaffCreate] = None
