@@ -335,7 +335,6 @@ class SqlalchemyCrudService(
         await db_session.flush()
         await self.on_after_create(entity, background_tasks=background_tasks)
         await db_session.commit()
-        await db_session.refresh(entity)
         return entity
 
     @inject_db_session
