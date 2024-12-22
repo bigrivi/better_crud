@@ -24,7 +24,10 @@ class User(UserBase, table=True):
     profile: UserProfile = Relationship(
         sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
     tasks: List[UserTask] = Relationship(
-        sa_relationship_kwargs={"uselist": True, "cascade": "all, delete-orphan", "lazy": "noload"})
+        sa_relationship_kwargs={"uselist": True,
+                                "order_by": "UserTask.id.asc()",
+                                "cascade": "all, delete-orphan",
+                                "lazy": "noload"})
     staff: Staff = Relationship(
         sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
     company: Company = Relationship(
@@ -50,8 +53,8 @@ class UserPublic(UserBase):
 
 class UserCreate(UserBase):
     password: str
-    profile: UserProfileCreate = None
-    roles: List[int]
+    profile: Optional[UserProfileCreate] = None
+    roles: Optional[List[int]] = None
     tasks: Optional[List[UserTaskCreate]] = None
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
@@ -59,7 +62,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(UserBase):
     password: str = None
-    profile: UserProfileCreate = None
+    profile: Optional[UserProfileCreate] = None
     roles: List[int] = None
     tasks: Optional[List[UserTaskCreate]] = None
     staff: Optional[StaffCreate] = None

@@ -1,8 +1,6 @@
-from fastapi import Depends
 from fastapi_crud.service.sqlalchemy import SqlalchemyCrudService
 from app.models.user import User
 from app.core.security import get_hashed_password
-from app.db.session import get_session
 
 
 class UserService(SqlalchemyCrudService[User]):

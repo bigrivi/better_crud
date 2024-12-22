@@ -1,5 +1,5 @@
-from typing import Optional,List
-from sqlmodel import Field, SQLModel,Relationship,String,Column
+from typing import Optional, List
+from sqlmodel import Field, SQLModel, Relationship, String, Column
 from enum import Enum
 from sqlalchemy_utils import ChoiceType
 
@@ -8,6 +8,7 @@ class TaskStatusEnum(str, Enum):
     pending = "pending"
     inprogress = "inprogress"
     completed = "completed"
+
 
 class UserTaskBase(SQLModel):
     description: str
@@ -23,8 +24,14 @@ class UserTask(UserTaskBase, table=True):
         default=None, foreign_key="user.id"
     )
 
+
 class UserTaskList(UserTaskBase):
-    id:int
+    id: int
+
 
 class UserTaskCreate(UserTaskBase):
-    id:Optional[int] = None
+    id: Optional[int] = None
+
+
+class UserTaskCreateWithoutId(UserTaskBase):
+    pass
