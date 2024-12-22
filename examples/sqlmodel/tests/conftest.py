@@ -42,9 +42,39 @@ async def async_session(
 @pytest.fixture(scope="function")
 def test_user_data() -> dict:
     return {
-        "email": "bob@email.com",
+        "id": 1,
+        "email": "bob@gmail.com",
         "password": "111111",
-        "is_active": True
+        "is_active": True,
+        "profile": {
+            "name": "bob",
+            "gender": "male",
+            "phone": "111111",
+            "birthdate": "2020-01-01",
+            "hobby": "music",
+            "state": "nice",
+            "country": "china",
+            "address": "anhui"
+        },
+        "staff": {
+            "name": "bob",
+            "position": "CEO",
+            "job_title": "The Chief Executive Officer"
+        },
+        "tasks": [
+            {
+                "status": "pending",
+                "description": "pending task"
+            },
+            {
+                "status": "inprogress",
+                "description": "inprogress task"
+            },
+            {
+                "status": "completed",
+                "description": "completed task"
+            }
+        ]
     }
 
 
@@ -52,14 +82,17 @@ def test_user_data() -> dict:
 def test_role_data() -> list[dict]:
     return [
         {
+            "id": 1,
             "name": "test1",
             "description": "test1 des"
         },
         {
+            "id": 2,
             "name": "test2",
             "description": "test2 des"
         },
         {
+            "id": 3,
             "name": "test3",
             "description": "test3 des"
         }

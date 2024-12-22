@@ -10,8 +10,8 @@ from .staff import Staff, StaffPublic, StaffCreate
 
 
 class UserBase(SQLModel):
-    email: str
-    is_active: bool = Field(default=True)
+    email: Optional[str] = Field(default=True)
+    is_active: Optional[bool] = Field(default=True)
     is_superuser: Optional[bool] = Field(default=False)
 
 
@@ -61,7 +61,7 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(UserBase):
-    password: str = None
+    password: Optional[str] = None
     profile: Optional[UserProfileCreate] = None
     roles: List[int] = None
     tasks: Optional[List[UserTaskCreate]] = None
