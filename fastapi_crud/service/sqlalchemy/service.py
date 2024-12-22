@@ -423,9 +423,7 @@ class SqlalchemyCrudService(
                     )
             setattr(entity, key, value)
         db_session.add(entity)
-        await db_session.flush()
         await db_session.commit()
-        await db_session.refresh(entity)
         await self.on_after_update(entity, background_tasks=background_tasks)
         return entity
 
