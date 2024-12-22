@@ -26,7 +26,39 @@ async def test_create_successful(async_session, test_request):
 
 
 @pytest.mark.asyncio
-async def test_create_with_one_to_one(async_session, test_user_data, test_request):
+async def test_create_many_successful(async_session, test_request):
+    company_service = CompanyService()
+    test_data = [
+        {
+            "name": "New Company1",
+            "domain": "domain1",
+            "description": "description1"
+        },
+        {
+            "name": "New Company2",
+            "domain": "domain2",
+            "description": "description2"
+        },
+        {
+            "name": "New Company3",
+            "domain": "domain3",
+            "description": "description3"
+        }
+    ]
+    new_data = [CompanyCreate(**item) for item in test_data]
+    await company_service.crud_create_many(test_request, new_data, db_session=async_session)
+    stmt = select(Company).where(
+        Company.name.in_([item.name for item in new_data]))
+    result = await async_session.execute(stmt)
+    fetched_records: List[Company] = result.scalars().all()
+    assert len(fetched_records) == len(test_data)
+    for index, item in enumerate(test_data):
+        for key, value in item.items():
+            assert getattr(fetched_records[index], key) == value
+
+
+@pytest.mark.asyncio
+async def test_create_by_one_to_one(async_session, test_user_data, test_request):
     user_service = UserService()
     staff_data = {
         "name": "bob",
@@ -49,7 +81,7 @@ async def test_create_with_one_to_one(async_session, test_user_data, test_reques
 
 
 @pytest.mark.asyncio
-async def test_create_with_many_to_one(async_session, test_user_data, test_request):
+async def test_create_by_many_to_one(async_session, test_user_data, test_request):
     user_service = UserService()
     profile_data = {
         "name": "bob",
@@ -79,7 +111,7 @@ async def test_create_with_many_to_one(async_session, test_user_data, test_reque
 
 
 @pytest.mark.asyncio
-async def test_create_with_one_to_many(async_session, test_user_data, test_request):
+async def test_create_by_one_to_many(async_session, test_user_data, test_request):
     user_service = UserService()
     tasks = [
         {
@@ -113,7 +145,7 @@ async def test_create_with_one_to_many(async_session, test_user_data, test_reque
 
 
 @pytest.mark.asyncio
-async def test_create_with_many_to_many(async_session, test_request, test_user_data, test_role_data):
+async def test_create_by_many_to_many(async_session, test_request, test_user_data, test_role_data):
     user_service = UserService()
     role_service = RoleService()
     for role_data in test_role_data:
@@ -140,7 +172,7 @@ async def test_create_with_many_to_many(async_session, test_request, test_user_d
 
 
 @pytest.mark.asyncio
-async def test_create_auth_persist(async_session, test_request):
+async def test_create_by_auth_persist(async_session, test_request):
     user_task_service = UserTaskService()
     new_data = UserTaskCreateWithoutId(
         status="pending", description="pending task")
@@ -152,7 +184,7 @@ async def test_create_auth_persist(async_session, test_request):
 
 
 @pytest.mark.asyncio
-async def test_create_params_filter(async_session, test_request):
+async def test_create_by_params_filter(async_session, test_request):
     user_task_service = UserTaskService()
     new_data = UserTaskCreateWithoutId(
         status="pending", description="pending task")

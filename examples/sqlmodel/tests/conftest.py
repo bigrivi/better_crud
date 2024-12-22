@@ -22,13 +22,11 @@ async def _setup_database(url: str) -> AsyncGenerator[AsyncSession, None]:
         engine, class_=AsyncSession, expire_on_commit=False)
     async with session_maker() as session:
         async with engine.begin() as conn:
-            print("create")
             await conn.run_sync(SQLModel.metadata.create_all)
         try:
             yield session
         finally:
             async with engine.begin() as conn:
-                print("drop")
                 await conn.run_sync(SQLModel.metadata.drop_all)
     await engine.dispose()
 
