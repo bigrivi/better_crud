@@ -7,6 +7,7 @@ from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
+from starlette.requests import Request
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
@@ -21,11 +22,13 @@ async def _setup_database(url: str) -> AsyncGenerator[AsyncSession, None]:
         engine, class_=AsyncSession, expire_on_commit=False)
     async with session_maker() as session:
         async with engine.begin() as conn:
+            print("create")
             await conn.run_sync(SQLModel.metadata.create_all)
         try:
             yield session
         finally:
             async with engine.begin() as conn:
+                print("drop")
                 await conn.run_sync(SQLModel.metadata.drop_all)
     await engine.dispose()
 
@@ -36,6 +39,40 @@ async def async_session(
 ) -> AsyncGenerator[AsyncSession, None]:  # pragma: no cover
     async with _setup_database("sqlite+aiosqlite:///:memory:") as session:
         yield session
+
+
+@pytest.fixture(scope="function")
+def test_user_data() -> dict:
+    return {
+        "email": "bob@email.com",
+        "password": "111111",
+        "is_active": True
+    }
+
+
+@pytest.fixture(scope="function")
+def test_role_data() -> list[dict]:
+    return [
+        {
+            "name": "test1",
+            "description": "test1 des"
+        },
+        {
+            "name": "test2",
+            "description": "test2 des"
+        },
+        {
+            "name": "test3",
+            "description": "test3 des"
+        }
+    ]
+
+
+@pytest.fixture(scope="function")
+def test_request() -> Request:
+    return Request(scope={
+        "type": "http",
+    })
 
 
 @pytest.fixture
