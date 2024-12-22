@@ -60,14 +60,9 @@ async def test_create_many_successful(async_session, test_request):
 @pytest.mark.asyncio
 async def test_create_by_one_to_one(async_session, test_user_data, test_request):
     user_service = UserService()
-    staff_data = {
-        "name": "bob",
-        "position": "CEO",
-        "job_title": "The Chief Executive Officer"
-    }
+
     new_data = UserCreate(
         **test_user_data,
-        staff=staff_data
     )
     await user_service.crud_create_one(test_request, new_data, db_session=async_session)
     stmt = select(User).where(User.email == test_user_data["email"])
@@ -76,26 +71,16 @@ async def test_create_by_one_to_one(async_session, test_user_data, test_request)
     fetched_record: User = result.scalar_one_or_none()
     assert fetched_record is not None
     assert fetched_record.email == test_user_data["email"]
-    for key, value in staff_data.items():
+    for key, value in test_user_data["staff"].items():
         assert getattr(fetched_record.staff, key) == value
 
 
 @pytest.mark.asyncio
 async def test_create_by_many_to_one(async_session, test_user_data, test_request):
     user_service = UserService()
-    profile_data = {
-        "name": "bob",
-        "gender": "male",
-        "phone": "111111",
-        "birthdate": "2020-01-01",
-        "hobby": "music",
-        "state": "nice",
-        "country": "china",
-        "address": "anhui"
-    }
+
     new_data = UserCreate(
         **test_user_data,
-        profile=profile_data
     )
     res = await user_service.crud_create_one(test_request, new_data, db_session=async_session)
     stmt = select(User).where(User.email == test_user_data["email"])
@@ -106,30 +91,15 @@ async def test_create_by_many_to_one(async_session, test_user_data, test_request
     assert fetched_record is not None
     assert fetched_record.email == test_user_data["email"]
     assert fetched_record.profile_id == res.profile_id
-    for key, value in profile_data.items():
+    for key, value in test_user_data["profile"].items():
         assert getattr(fetched_record.profile, key) == value
 
 
 @pytest.mark.asyncio
 async def test_create_by_one_to_many(async_session, test_user_data, test_request):
     user_service = UserService()
-    tasks = [
-        {
-            "status": "pending",
-            "description": "pending task"
-        },
-        {
-            "status": "inprogress",
-            "description": "inprogress task"
-        },
-        {
-            "status": "completed",
-            "description": "completed task"
-        }
-    ]
     new_data = UserCreate(
         **test_user_data,
-        tasks=tasks
     )
     await user_service.crud_create_one(test_request, new_data, db_session=async_session)
     stmt = select(User).where(User.email == test_user_data["email"])
@@ -138,8 +108,8 @@ async def test_create_by_one_to_many(async_session, test_user_data, test_request
     fetched_record: User = result.unique().scalar_one_or_none()
     assert fetched_record is not None
     assert fetched_record.email == test_user_data["email"]
-    assert len(fetched_record.tasks) == len(tasks)
-    for index, task_item in enumerate(tasks):
+    assert len(fetched_record.tasks) == len(test_user_data["tasks"])
+    for index, task_item in enumerate(test_user_data["tasks"]):
         for key, value in task_item.items():
             assert getattr(fetched_record.tasks[index], key) == value
 
