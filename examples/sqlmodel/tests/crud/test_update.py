@@ -222,3 +222,20 @@ async def test_update_many(async_session, test_user_data, test_request, init_dat
         assert fetched_records[index].email == item.email
         for key, value in item.staff.model_dump().items():
             assert getattr(fetched_records[index].staff, key) == value
+
+
+@pytest.mark.asyncio
+async def test_update_many_id_model_length_mismatch(async_session, test_user_data, test_request, init_data):
+    user_service = UserService()
+    exist_user_ids = [test_user_data[0]["id"], test_user_data[1]["id"]]
+    update_data = [
+        UserUpdate(
+            email="bobnew@gmail.com",
+            staff={
+                "name": "bob new",
+                "position": "CEO new",
+                "job_title": "The Chief Executive Officer1 new"
+            })
+    ]
+    with pytest.raises(Exception) as exc_info:
+        await user_service.crud_update_many(test_request, exist_user_ids, update_data, db_session=async_session)
