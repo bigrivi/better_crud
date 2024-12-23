@@ -1,7 +1,6 @@
 import inspect
 from typing import (
     Any,
-    Optional,
     Callable,
     List,
     Type,
@@ -19,6 +18,7 @@ from fastapi import (
     Depends,
     Request,
     Path,
+    Query,
     HTTPException,
     BackgroundTasks
 )
@@ -49,6 +49,7 @@ UNBIND_KIND_TYPE = (
     inspect.Parameter.VAR_POSITIONAL,
     inspect.Parameter.VAR_KEYWORD
 )
+INCLUDE_DELETED_KEY = "include_deleted"
 
 
 def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
@@ -65,7 +66,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     async def get_many(
         self,
         request: Request,
-        include_deleted: Optional[bool] = False,
         search: Dict = Depends(
             GetQuerySearch(options.query.filter)
         ),
@@ -81,7 +81,8 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             search=search,
             sorts=sorts,
             soft_delete=options.query.soft_delete,
-            include_deleted=include_deleted
+            include_deleted=request.query_params.get(
+                INCLUDE_DELETED_KEY) == "true" if options.query.allow_include_deleted else False
         )
 
     async def get_one(
@@ -215,6 +216,8 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 if options.params:
                     for key in options.params.keys():
                         kwargs.pop(key)
+                if INCLUDE_DELETED_KEY in kwargs:
+                    kwargs.pop(INCLUDE_DELETED_KEY)
                 endpoint_output = await func(*args, **kwargs)
                 if response_schema_type:
                     return response_schema_type.create(endpoint_output)
@@ -253,9 +256,9 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 )
             )
         router.add_api_route(
-            schema["path"],
+            path,
             endpoint_wrapper,
-            methods=[schema["method"]],
+            methods=[method],
             summary=get_route_summary(route_options, options.summary_vars),
             dependencies=[
                 Depends(CrudAction(
@@ -295,5 +298,15 @@ def _update_route_endpoint_signature(
                 ]
             )
             new_parameters.append(new_param)
+    if endpoint == cls.get_many:
+        if options.query.allow_include_deleted:
+            new_param = inspect.Parameter(
+                INCLUDE_DELETED_KEY,
+                inspect.Parameter.KEYWORD_ONLY,
+                annotation=Annotated[bool, Query(
+                    description="include deleted data")]
+            )
+            new_parameters.append(new_param)
+
     new_signature = old_signature.replace(parameters=new_parameters)
     setattr(endpoint, "__signature__", new_signature)

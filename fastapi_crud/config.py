@@ -1,4 +1,4 @@
-from typing import Dict, Optional, ClassVar
+from typing import Dict, Optional, ClassVar, List
 from importlib import import_module
 from .models import (
     GlobalQueryOptions,
@@ -11,7 +11,8 @@ from .types import (
     GlobalQueryOptionsDict,
     RoutesModelDict,
     QueryDelimOptionsDict,
-    BackendConfigDict
+    BackendConfigDict,
+    RouteSchema
 )
 from .pagination import Page
 from fastapi_pagination.bases import AbstractPage
@@ -30,7 +31,7 @@ DEFAULT_ACTION_MAP = {
 }
 
 
-RoutesSchema = [
+RoutesSchema: List[RouteSchema] = [
     {
         "name": RoutesEnum.get_many,
         "path": '',

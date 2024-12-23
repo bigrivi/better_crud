@@ -37,6 +37,17 @@ ID_TYPE = Union[int, str]
 DBSessionFactory = Callable[..., Union[AsyncGenerator[Any, None], Any]]
 
 
+class RouteSchema(TypedDict):
+    name: str
+    path: str
+    method: Literal[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+    ]
+
+
 class RouteOptionsDict(TypedDict, total=False):
     dependencies: Optional[Sequence[params.Depends]] = None
     summary: Optional[str] = None
@@ -73,6 +84,7 @@ class PathParamDict(TypedDict):
 class GlobalQueryOptionsDict(TypedDict, total=False):
     soft_delete: Optional[bool] = False
     sort: Optional[List[QuerySortDict]] = None
+    allow_include_deleted: Optional[bool] = False
 
 
 class QueryDelimOptionsDict(TypedDict, total=False):
@@ -90,6 +102,7 @@ class JoinOptionsDict(TypedDict, total=False):
 class QueryOptionsDict(TypedDict, total=False):
     joins: Optional[Dict[str, JoinOptionsDict]] = None
     soft_delete: Optional[bool] = None
+    allow_include_deleted: Optional[bool] = False
     filter: Optional[Dict] = None
     sort: Optional[List[QuerySortDict]] = None
 
