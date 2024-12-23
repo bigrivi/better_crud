@@ -62,16 +62,16 @@ async def test_create_by_one_to_one(async_session, test_user_data, test_request)
     user_service = UserService()
 
     new_data = UserCreate(
-        **test_user_data,
+        **test_user_data[0],
     )
     await user_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(User).where(User.email == test_user_data["email"])
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
     stmt = stmt.options(joinedload(User.staff))
     result = await async_session.execute(stmt)
     fetched_record: User = result.scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.email == test_user_data["email"]
-    for key, value in test_user_data["staff"].items():
+    assert fetched_record.email == test_user_data[0]["email"]
+    for key, value in test_user_data[0]["staff"].items():
         assert getattr(fetched_record.staff, key) == value
 
 
@@ -80,18 +80,18 @@ async def test_create_by_many_to_one(async_session, test_user_data, test_request
     user_service = UserService()
 
     new_data = UserCreate(
-        **test_user_data,
+        **test_user_data[0],
     )
     res = await user_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(User).where(User.email == test_user_data["email"])
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
     stmt = stmt.options(joinedload(User.profile))
     stmt = stmt.execution_options(populate_existing=True)
     result = await async_session.execute(stmt)
     fetched_record: User = result.scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.email == test_user_data["email"]
+    assert fetched_record.email == test_user_data[0]["email"]
     assert fetched_record.profile_id == res.profile_id
-    for key, value in test_user_data["profile"].items():
+    for key, value in test_user_data[0]["profile"].items():
         assert getattr(fetched_record.profile, key) == value
 
 
@@ -99,17 +99,17 @@ async def test_create_by_many_to_one(async_session, test_user_data, test_request
 async def test_create_by_one_to_many(async_session, test_user_data, test_request):
     user_service = UserService()
     new_data = UserCreate(
-        **test_user_data,
+        **test_user_data[0],
     )
     await user_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(User).where(User.email == test_user_data["email"])
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
     stmt = stmt.options(joinedload(User.tasks))
     result = await async_session.execute(stmt)
     fetched_record: User = result.unique().scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.email == test_user_data["email"]
-    assert len(fetched_record.tasks) == len(test_user_data["tasks"])
-    for index, task_item in enumerate(test_user_data["tasks"]):
+    assert fetched_record.email == test_user_data[0]["email"]
+    assert len(fetched_record.tasks) == len(test_user_data[0]["tasks"])
+    for index, task_item in enumerate(test_user_data[0]["tasks"]):
         for key, value in task_item.items():
             assert getattr(fetched_record.tasks[index], key) == value
 
@@ -124,16 +124,16 @@ async def test_create_by_many_to_many(async_session, test_request, test_user_dat
     fetched_roles: List[Role] = result.unique().scalars().all()
     fetched_role_ids = [item.id for item in fetched_roles]
     new_data = UserCreate(
-        **test_user_data,
+        **test_user_data[0],
         roles=fetched_role_ids
     )
     await user_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(User).where(User.email == test_user_data["email"])
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
     stmt = stmt.options(joinedload(User.roles))
     result = await async_session.execute(stmt)
     fetched_record: User = result.unique().scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.email == test_user_data["email"]
+    assert fetched_record.email == test_user_data[0]["email"]
     assert len(fetched_record.roles) == len(fetched_roles)
     for index, role_item in enumerate(test_role_data):
         for key, value in role_item.items():

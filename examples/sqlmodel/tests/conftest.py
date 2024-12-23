@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Dict
 from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
@@ -40,42 +40,79 @@ async def async_session(
 
 
 @pytest.fixture(scope="function")
-def test_user_data() -> dict:
-    return {
-        "id": 1,
-        "email": "bob@gmail.com",
-        "password": "111111",
-        "is_active": True,
-        "profile": {
-            "name": "bob",
-            "gender": "male",
-            "phone": "111111",
-            "birthdate": "2020-01-01",
-            "hobby": "music",
-            "state": "nice",
-            "country": "china",
-            "address": "anhui"
-        },
-        "staff": {
-            "name": "bob",
-            "position": "CEO",
-            "job_title": "The Chief Executive Officer"
-        },
-        "tasks": [
-            {
-                "status": "pending",
-                "description": "pending task"
+def test_user_data() -> List[Dict]:
+    return [
+        {
+            "id": 1,
+            "email": "bob@gmail.com",
+            "password": "111111",
+            "is_active": True,
+            "profile": {
+                "name": "bob",
+                "gender": "male",
+                "phone": "111111",
+                "birthdate": "2020-01-01",
+                "hobby": "music",
+                "state": "nice",
+                "country": "china",
+                "address": "anhui"
             },
-            {
-                "status": "inprogress",
-                "description": "inprogress task"
+            "staff": {
+                "name": "bob",
+                "position": "CEO",
+                "job_title": "The Chief Executive Officer"
             },
-            {
-                "status": "completed",
-                "description": "completed task"
-            }
-        ]
-    }
+            "tasks": [
+                {
+                    "status": "pending",
+                    "description": "pending task"
+                },
+                {
+                    "status": "inprogress",
+                    "description": "inprogress task"
+                },
+                {
+                    "status": "completed",
+                    "description": "completed task"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "email": "alice@gmail.com",
+            "password": "111111",
+            "is_active": True,
+            "profile": {
+                "name": "alice",
+                "gender": "female",
+                "phone": "111111",
+                "birthdate": "2020-01-01",
+                "hobby": "music",
+                "state": "nice",
+                "country": "china",
+                "address": "anhui"
+            },
+            "staff": {
+                "name": "alice",
+                "position": "CFO",
+                "job_title": "Chief Financial Officer"
+            },
+            "tasks": [
+                {
+                    "status": "pending",
+                    "description": "pending task"
+                },
+                {
+                    "status": "inprogress",
+                    "description": "inprogress task"
+                },
+                {
+                    "status": "completed",
+                    "description": "completed task"
+                }
+            ]
+        }
+    ]
 
 
 @pytest.fixture(scope="function")
