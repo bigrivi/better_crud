@@ -436,6 +436,8 @@ class SqlalchemyCrudService(
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
+        if len(ids) != len(models):
+            raise Exception("The id and models length do not match")
         entities = []
         for index, model in enumerate(models):
             entity = await self.crud_update_one(
