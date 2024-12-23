@@ -79,6 +79,7 @@ class QueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     joins: Optional[JoinOptions] = None
     soft_delete: Optional[bool] = None
+    allow_include_deleted: Optional[bool] = False
     filter: Optional[Dict] = None
     sort: Optional[List[QuerySortModel]] = None
 
@@ -104,6 +105,7 @@ class GlobalQueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     soft_delete: Optional[bool] = False
     sort: Optional[List[QuerySortModel]] = None
+    allow_include_deleted: Optional[bool] = False
 
 
 class QueryDelimOptions(BaseModel):

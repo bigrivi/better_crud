@@ -1,1 +1,1 @@
-# Better CRUD Lib For FastAPI
+# A better CRUD library for FastAPI
