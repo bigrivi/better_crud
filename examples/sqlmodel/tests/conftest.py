@@ -9,6 +9,11 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from starlette.requests import Request
 from sqlalchemy.orm import sessionmaker
+from app.models.user import User
+from app.models.role import Role
+from app.models.user_task import UserTask
+from app.models.staff import Staff
+from app.models.user_profile import UserProfile
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
 import pytest_asyncio
@@ -134,6 +139,31 @@ def test_role_data() -> list[dict]:
             "description": "test3 des"
         }
     ]
+
+
+@pytest_asyncio.fixture(scope="function")
+async def init_data(async_session, test_user_data, test_role_data):
+    for user_data in test_user_data:
+        roles = []
+        for role_data in test_role_data:
+            role = Role()
+            role.name = role_data["name"]
+            role.description = role_data["description"]
+            async_session.add(role)
+            roles.append(role)
+        await async_session.flush()
+        user = User()
+        user.email = user_data["email"]
+        user.hashed_password = user_data["password"]
+        user.is_active = user_data["is_active"]
+        user.profile = UserProfile(**user_data["profile"])
+        user.staff = Staff(**user_data["staff"])
+        user.tasks = [UserTask(**task_data)
+                      for task_data in user_data["tasks"]]
+        user.roles = [roles[0]]
+        async_session.add(user)
+    await async_session.commit()
+    yield
 
 
 @pytest.fixture(scope="function")

@@ -12,31 +12,6 @@ from app.models.user_profile import UserProfile
 from app.services.user import UserService
 
 
-@pytest_asyncio.fixture(scope="function")
-async def init_data(async_session, test_user_data, test_role_data):
-    for user_data in test_user_data:
-        roles = []
-        for role_data in test_role_data:
-            role = Role()
-            role.name = role_data["name"]
-            role.description = role_data["description"]
-            async_session.add(role)
-            roles.append(role)
-        await async_session.flush()
-        user = User()
-        user.email = user_data["email"]
-        user.hashed_password = user_data["password"]
-        user.is_active = user_data["is_active"]
-        user.profile = UserProfile(**user_data["profile"])
-        user.staff = Staff(**user_data["staff"])
-        user.tasks = [UserTask(**task_data)
-                      for task_data in user_data["tasks"]]
-        user.roles = [roles[0]]
-        async_session.add(user)
-    await async_session.commit()
-    yield
-
-
 @pytest.mark.asyncio
 async def test_update_successful(async_session, test_user_data, test_request, init_data):
     user_service = UserService()
