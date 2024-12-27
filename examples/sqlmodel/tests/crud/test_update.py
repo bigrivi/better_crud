@@ -1,14 +1,10 @@
 import pytest
 from typing import List
-import pytest_asyncio
 from sqlalchemy import select
-from fastapi import HTTPException
+from fastapi_crud.exceptions import NotFoundException
 from sqlalchemy.orm import joinedload
 from app.models.user import User, UserUpdate
-from app.models.role import Role
 from app.models.user_task import UserTask
-from app.models.staff import Staff
-from app.models.user_profile import UserProfile
 from app.services.user import UserService
 
 
@@ -32,10 +28,8 @@ async def test_update_non_existent_record(async_session, test_request, init_data
     non_existent_id = 1000
     user_service = UserService()
     update_data = UserUpdate(email="updated@email.com", is_active=False)
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(NotFoundException) as exc_info:
         await user_service.crud_update_one(test_request, non_existent_id, update_data, db_session=async_session)
-    assert exc_info.value.status_code == 404
-    assert exc_info.value.detail == "Data not found"
     record = await async_session.execute(
         select(User).where(User.id == non_existent_id)
     )

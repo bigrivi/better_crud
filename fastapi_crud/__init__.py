@@ -7,6 +7,7 @@ from .pagination import Page, AbstractPage
 from .depends import GetQuerySearch, GetQuerySorts, GetQueryJoins, GetQueryLoads
 from .generator import crud_generator
 from .backend import register_backend
+from .exceptions import *
 
 __all__ = [
     "crud",
