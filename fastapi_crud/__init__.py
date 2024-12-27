@@ -9,6 +9,8 @@ from .generator import crud_generator
 from .backend import register_backend
 from .exceptions import *
 
+from ._version import __version__
+
 __all__ = [
     "crud",
     "crud_generator",
