@@ -15,8 +15,7 @@ from sqlalchemy.orm import MANYTOMANY, MANYTOONE, ONETOMANY, noload, joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy import or_, update, delete, and_, func, select
 from sqlalchemy.orm.interfaces import ORMOption
-from fastapi import Request, BackgroundTasks, status
-from fastapi.exceptions import HTTPException
+from fastapi import Request, BackgroundTasks
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
 from ...helper import decide_should_paginate, build_join_option_tree
@@ -34,10 +33,11 @@ from .helper import (
     inject_db_session,
     Provide
 )
-from .errors import (
-    UnSupportOperatorError,
-    InvalidFieldError,
-    UnSupportRelationshipQueryError
+from ...exceptions import (
+    NotSupportOperatorException,
+    InvalidFieldException,
+    NotSupportRelationshipQueryException,
+    NotFoundException
 )
 
 ModelType = TypeVar("ModelType")
@@ -273,7 +273,7 @@ class SqlalchemyCrudService(
         joins: Optional[JoinOptions] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
-        return await self._get(
+        entity = await self._get(
             id,
             db_session,
             options=self._create_join_options(
@@ -282,6 +282,9 @@ class SqlalchemyCrudService(
                 from_detail=True
             )
         )
+        if not entity:
+            raise NotFoundException()
+        return entity
 
     @inject_db_session
     async def crud_create_one(
@@ -380,11 +383,8 @@ class SqlalchemyCrudService(
             from_detail=True
         )
         entity = await self._get(id, db_session=db_session, options=options)
-        if entity is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Data not found"
-            )
+        if not entity:
+            raise NotFoundException()
         await self.on_before_update(
             entity,
             update_data=model_data,
@@ -598,15 +598,15 @@ class SqlalchemyCrudService(
         elif operator == "$any":
             primary_key = self.get_field_primary_key(field)
             if not primary_key:
-                raise UnSupportRelationshipQueryError(operator)
+                raise NotSupportRelationshipQueryException(operator)
             return field.any(**{primary_key: value})
         elif operator == "$notany":
             primary_key = self.get_field_primary_key(field)
             if not primary_key:
-                raise UnSupportRelationshipQueryError(operator)
+                raise NotSupportRelationshipQueryException(operator)
             return func.not_(field.any(**{primary_key: value}))
         else:
-            raise UnSupportOperatorError(operator)
+            raise NotSupportOperatorException(operator)
 
     def get_model_field(self, field):
         field_parts = field.split(".")
@@ -624,7 +624,7 @@ class SqlalchemyCrudService(
         else:
             model_field = getattr(self.entity, field, None)
         if not model_field:
-            raise InvalidFieldError(field)
+            raise InvalidFieldException(field)
         return model_field
 
     def get_model_class(self, field):

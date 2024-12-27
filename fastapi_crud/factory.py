@@ -42,6 +42,7 @@ from .depends import (
 )
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
+from .exceptions import NotFoundException
 
 T = TypeVar("T")
 CRUD_CLASS_KEY = "__crud_class__"
@@ -93,12 +94,13 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
-        entity = await self.service.crud_get_one(
-            request,
-            id,
-            joins=joins
-        )
-        if entity is None:
+        try:
+            entity = await self.service.crud_get_one(
+                request,
+                id,
+                joins=joins
+            )
+        except NotFoundException:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
                 detail="No data found"
@@ -138,12 +140,19 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         background_tasks: BackgroundTasks,
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
-        return await self.service.crud_update_one(
-            request,
-            id,
-            model,
-            background_tasks=background_tasks
-        )
+        try:
+            entity = await self.service.crud_update_one(
+                request,
+                id,
+                model,
+                background_tasks=background_tasks
+            )
+        except NotFoundException:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="No data found"
+            )
+        return entity
 
     async def update_many(
         self,
@@ -159,12 +168,19 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 status.HTTP_400_BAD_REQUEST,
                 detail="The id and payload length do not match"
             )
-        return await self.service.crud_update_many(
+        try:
+            entities = await self.service.crud_update_many(
             request,
             id_list,
             models,
             background_tasks=background_tasks
         )
+        except NotFoundException:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="No data found"
+            )
+        return entities
 
     async def delete_many(
         self,
