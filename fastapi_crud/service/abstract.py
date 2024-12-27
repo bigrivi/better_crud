@@ -56,7 +56,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         id: ID_TYPE,
         model: UpdateSchemaType,
         background_tasks: Optional[BackgroundTasks] = None
-    ):
+    ) -> ModelType:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -66,7 +66,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         ids: List[ID_TYPE],
         model: List[UpdateSchemaType],
         background_tasks: Optional[BackgroundTasks] = None
-    ):
+    ) -> List[ModelType]:
         raise NotImplementedError
 
     @abc.abstractmethod
