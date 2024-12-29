@@ -13,46 +13,30 @@ from app.services.user_task import UserTaskService, UserTask
 
 
 @pytest.mark.asyncio
-async def test_create_successful(async_session, test_request):
+async def test_create_successful(async_session, test_request, test_company_data):
     company_service = CompanyService()
-    new_data = CompanyCreate(name="New Company", domain="test", description="")
+    new_data = CompanyCreate(**test_company_data[0])
     await company_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(Company).where(Company.name == "New Company")
+    stmt = select(Company).where(Company.name == test_company_data[0]["name"])
     result = await async_session.execute(stmt)
-    fetched_record = result.scalar_one_or_none()
+    fetched_record: Company = result.scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.name == "New Company"
-    assert fetched_record.domain == "test"
+    assert fetched_record.name == test_company_data[0]["name"]
+    assert fetched_record.domain == test_company_data[0]["domain"]
+    assert fetched_record.description == test_company_data[0]["description"]
 
 
 @pytest.mark.asyncio
-async def test_create_many_successful(async_session, test_request):
+async def test_create_many_successful(async_session, test_request, test_company_data):
     company_service = CompanyService()
-    test_data = [
-        {
-            "name": "New Company1",
-            "domain": "domain1",
-            "description": "description1"
-        },
-        {
-            "name": "New Company2",
-            "domain": "domain2",
-            "description": "description2"
-        },
-        {
-            "name": "New Company3",
-            "domain": "domain3",
-            "description": "description3"
-        }
-    ]
-    new_data = [CompanyCreate(**item) for item in test_data]
+    new_data = [CompanyCreate(**item) for item in test_company_data]
     await company_service.crud_create_many(test_request, new_data, db_session=async_session)
     stmt = select(Company).where(
         Company.name.in_([item.name for item in new_data]))
     result = await async_session.execute(stmt)
     fetched_records: List[Company] = result.scalars().all()
-    assert len(fetched_records) == len(test_data)
-    for index, item in enumerate(test_data):
+    assert len(fetched_records) == len(test_company_data)
+    for index, item in enumerate(test_company_data):
         for key, value in item.items():
             assert getattr(fetched_records[index], key) == value
 
