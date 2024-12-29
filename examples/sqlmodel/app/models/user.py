@@ -10,13 +10,14 @@ from .staff import Staff, StaffPublic, StaffCreate
 
 
 class UserBase(SQLModel):
-    email: Optional[str] = Field(default=True)
+    email: Optional[str] = Field(default=None)
     is_active: Optional[bool] = Field(default=True)
     is_superuser: Optional[bool] = Field(default=False)
 
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_name: str
     hashed_password: str
     profile_id: Optional[int] = Field(
         default=None, foreign_key="user_profile.id")
@@ -37,6 +38,9 @@ class User(UserBase, table=True):
     deleted_at: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
+    created_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
 
 
 class UserPublic(UserBase):
@@ -52,6 +56,7 @@ class UserPublic(UserBase):
 
 
 class UserCreate(UserBase):
+    user_name: str
     password: str
     profile: Optional[UserProfileCreate] = None
     roles: Optional[List[int]] = None

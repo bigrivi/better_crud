@@ -11,6 +11,7 @@ from starlette.requests import Request
 from sqlalchemy.orm import sessionmaker
 from app.models.user import User
 from app.models.role import Role
+from app.models.company import Company
 from app.models.user_task import UserTask
 from app.models.staff import Staff
 from app.models.user_profile import UserProfile
@@ -18,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
 import pytest_asyncio
 import pytest
+from .data import USER_DATA, ROLE_DATA, COMPANY_DATA
 
 
 @asynccontextmanager
@@ -46,121 +48,47 @@ async def async_session(
 
 @pytest.fixture(scope="function")
 def test_user_data() -> List[Dict]:
-    return [
-        {
-            "id": 1,
-            "email": "bob@gmail.com",
-            "password": "111111",
-            "is_active": True,
-            "profile": {
-                "name": "bob",
-                "gender": "male",
-                "phone": "111111",
-                "birthdate": "2020-01-01",
-                "hobby": "music",
-                "state": "nice",
-                "country": "china",
-                "address": "anhui"
-            },
-            "staff": {
-                "name": "bob",
-                "position": "CEO",
-                "job_title": "The Chief Executive Officer"
-            },
-            "tasks": [
-                {
-                    "status": "pending",
-                    "description": "pending task"
-                },
-                {
-                    "status": "inprogress",
-                    "description": "inprogress task"
-                },
-                {
-                    "status": "completed",
-                    "description": "completed task"
-                }
-            ]
-        },
-        {
-            "id": 2,
-            "email": "alice@gmail.com",
-            "password": "111111",
-            "is_active": True,
-            "profile": {
-                "name": "alice",
-                "gender": "female",
-                "phone": "111111",
-                "birthdate": "2020-01-01",
-                "hobby": "music",
-                "state": "nice",
-                "country": "china",
-                "address": "anhui"
-            },
-            "staff": {
-                "name": "alice",
-                "position": "CFO",
-                "job_title": "Chief Financial Officer"
-            },
-            "tasks": [
-                {
-                    "status": "pending",
-                    "description": "pending task"
-                },
-                {
-                    "status": "inprogress",
-                    "description": "inprogress task"
-                },
-                {
-                    "status": "completed",
-                    "description": "completed task"
-                }
-            ]
-        }
-    ]
+    return USER_DATA
 
 
 @pytest.fixture(scope="function")
 def test_role_data() -> list[dict]:
-    return [
-        {
-            "id": 1,
-            "name": "test1",
-            "description": "test1 des"
-        },
-        {
-            "id": 2,
-            "name": "test2",
-            "description": "test2 des"
-        },
-        {
-            "id": 3,
-            "name": "test3",
-            "description": "test3 des"
-        }
-    ]
+    return ROLE_DATA
+
+
+@pytest.fixture(scope="function")
+def test_company_data() -> list[dict]:
+    return COMPANY_DATA
 
 
 @pytest_asyncio.fixture(scope="function")
-async def init_data(async_session, test_user_data, test_role_data):
+async def init_data(async_session, test_user_data, test_role_data, test_company_data):
+    for company_data in test_company_data:
+        company = Company()
+        company.id = company_data["id"]
+        company.name = company_data["name"]
+        company.domain = company_data["domain"]
+        company.description = company_data["description"]
+        async_session.add(company)
+    for role_data in test_role_data:
+        role = Role()
+        role.id = role_data["id"]
+        role.name = role_data["name"]
+        role.description = role_data["description"]
+        async_session.add(role)
+    await async_session.commit()
     for user_data in test_user_data:
-        roles = []
-        for role_data in test_role_data:
-            role = Role()
-            role.name = role_data["name"]
-            role.description = role_data["description"]
-            async_session.add(role)
-            roles.append(role)
-        await async_session.flush()
         user = User()
         user.email = user_data["email"]
+        user.company_id = user_data["company_id"]
+        user.user_name = user_data["user_name"]
         user.hashed_password = user_data["password"]
         user.is_active = user_data["is_active"]
+        user.is_superuser = user_data["is_superuser"]
         user.profile = UserProfile(**user_data["profile"])
         user.staff = Staff(**user_data["staff"])
         user.tasks = [UserTask(**task_data)
                       for task_data in user_data["tasks"]]
-        user.roles = [roles[0]]
         async_session.add(user)
     await async_session.commit()
     yield
