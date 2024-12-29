@@ -1,20 +1,20 @@
 COMPANY_DATA = [
     {
         "id": 1,
-        "name": "company1",
-        "domain": "domain1",
-        "description": "description1"
+        "name": "Gonzalez Inc",
+        "domain": "bailey",
+        "description": "brand 24/365 convergence"
     },
     {
         "id": 2,
-        "name": "company2",
-        "domain": "domain2",
-        "description": "description2"
+        "name": "Cunningham Inc",
+        "domain": "morris-mccall",
+        "description": "maximize cross-platform ROI"
     },
     {
         "id": 3,
-        "name": "company3",
-        "domain": "domain3",
-        "description": "description3"
+        "name": "Mcpherson Inc",
+        "domain": "hayes-solis",
+        "description": "brand 24/365 portals"
     }
 ]

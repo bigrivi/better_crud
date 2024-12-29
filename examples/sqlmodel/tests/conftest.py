@@ -89,6 +89,7 @@ async def init_data(async_session, test_user_data, test_role_data, test_company_
         user.staff = Staff(**user_data["staff"])
         user.tasks = [UserTask(**task_data)
                       for task_data in user_data["tasks"]]
+        user.roles = [await async_session.get(Role, role_id) for role_id in user_data["role_ids"]]
         async_session.add(user)
     await async_session.commit()
     yield

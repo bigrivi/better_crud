@@ -7,6 +7,7 @@ USER_DATA = [
         "is_active": True,
         "is_superuser": True,
         "company_id": 1,
+        "role_ids": [1, 2],
         "profile": {
             "name": "bob",
             "gender": "male",
@@ -45,6 +46,7 @@ USER_DATA = [
         "is_active": True,
         "is_superuser": False,
         "company_id": 2,
+        "role_ids": [2, 3],
         "profile": {
             "name": "alice",
             "gender": "female",
