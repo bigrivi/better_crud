@@ -239,6 +239,7 @@ class SqlalchemyCrudService(
         stmt = stmt.distinct()
         stmt = stmt.where(*conds)
         stmt = self.prepare_order(stmt, sorts)
+        stmt = stmt.execution_options(populate_existing=True)
         return stmt
 
     @inject_db_session
@@ -498,7 +499,7 @@ class SqlalchemyCrudService(
         db_session: AsyncSession,
         options: Optional[Sequence[ORMOption]] = None,
     ) -> ModelType:
-        return await db_session.get(self.entity, id, options=options)
+        return await db_session.get(self.entity, id, options=options, populate_existing=True)
 
     async def _soft_delete(
         self,

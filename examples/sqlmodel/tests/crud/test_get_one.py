@@ -41,12 +41,12 @@ async def test_get_one_relations(async_session, test_user_data, test_request, in
     fetched_record = await user_service.crud_get_one(test_request, exist_user_id, db_session=async_session, joins=joins)
     assert fetched_record is not None
     assert len(fetched_record.projects) > 0
+    assert fetched_record.projects[0].company is not None
     assert fetched_record.profile is not None
     assert len(fetched_record.tasks) > 0
     assert fetched_record.company is not None
     assert len(fetched_record.roles) > 0
     assert fetched_record.staff is None
-    assert fetched_record.projects[0].company is not None
 
 
 @pytest.mark.asyncio
