@@ -67,6 +67,10 @@ def filter_fn(request: Request):
             },
             "projects": {
                 "select": True,
+            },
+            "projects.company": {
+                "select": True,
+                "join": False
             }
         },
         "soft_delete": True,

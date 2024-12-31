@@ -4,6 +4,7 @@ from .user_project import UserProjectLink
 if TYPE_CHECKING:
     from .user import User
     from .company import Company
+from .company import CompanyPublic
 
 
 class ProjectBase(SQLModel):
@@ -20,11 +21,12 @@ class Project(ProjectBase, table=True):
     users: List["User"] = Relationship(
         back_populates="projects", sa_relationship_kwargs={"viewonly": True}, link_model=UserProjectLink)
     company: "Company" = Relationship(
-        sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
+        sa_relationship_kwargs={"uselist": False, "viewonly": True, "lazy": "noload"})
 
 
 class ProjectPublic(ProjectBase):
     id: Optional[int]
+    company: Optional[CompanyPublic]
 
 
 class ProjectCreate(ProjectBase):

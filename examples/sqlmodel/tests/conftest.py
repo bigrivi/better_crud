@@ -77,7 +77,6 @@ async def init_data(async_session, test_user_data, test_role_data, test_company_
         company.domain = company_data["domain"]
         company.description = company_data["description"]
         async_session.add(company)
-    await async_session.flush()
     for project_data in test_project_data:
         project = Project()
         project.id = project_data["id"]
@@ -86,7 +85,6 @@ async def init_data(async_session, test_user_data, test_role_data, test_company_
         project.company_id = project_data["company_id"]
         project.is_active = project_data["is_active"]
         async_session.add(project)
-    await async_session.flush()
     for role_data in test_role_data:
         role = Role()
         role.id = role_data["id"]
