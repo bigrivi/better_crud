@@ -4,7 +4,9 @@ from datetime import datetime
 from .user_profile import UserProfile, UserProfileList, UserProfileCreate
 from .company import Company, CompanyPublic
 from .user_role import UserRoleLink
+from .user_project import UserProjectLink
 from .role import Role, RolePublic
+from .project import Project, ProjectPublic
 from .user_task import UserTask, UserTaskList, UserTaskCreate
 from .staff import Staff, StaffPublic, StaffCreate
 
@@ -35,6 +37,8 @@ class User(UserBase, table=True):
         sa_relationship_kwargs={"uselist": False, "lazy": "noload"})
     roles: List["Role"] = Relationship(back_populates="users", sa_relationship_kwargs={
                                        "lazy": "noload"}, link_model=UserRoleLink)
+    projects: List["Project"] = Relationship(back_populates="users", sa_relationship_kwargs={
+        "lazy": "noload"}, link_model=UserProjectLink)
     deleted_at: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
@@ -47,6 +51,7 @@ class UserPublic(UserBase):
     id: int
     profile: Optional[UserProfileList] = None
     roles: List[RolePublic] = None
+    projects: List[ProjectPublic] = None
     company: Optional[CompanyPublic] = None
     profile_id: Optional[int] = Field(
         default=None, foreign_key="user_profile.id")
@@ -63,6 +68,7 @@ class UserCreate(UserBase):
     tasks: Optional[List[UserTaskCreate]] = None
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
+    projects: Optional[List[int]] = None
 
 
 class UserUpdate(UserBase):
@@ -72,3 +78,4 @@ class UserUpdate(UserBase):
     tasks: Optional[List[UserTaskCreate]] = None
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
+    projects: Optional[List[int]] = None

@@ -64,6 +64,9 @@ def filter_fn(request: Request):
             },
             "staff": {
                 "select": True,
+            },
+            "projects": {
+                "select": True,
             }
         },
         "soft_delete": True,

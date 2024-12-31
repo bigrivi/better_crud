@@ -3,6 +3,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
+from sqlalchemy.orm import noload
 from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
@@ -12,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from app.models.user import User
 from app.models.role import Role
 from app.models.company import Company
+from app.models.project import Project
 from app.models.user_task import UserTask
 from app.models.staff import Staff
 from app.models.user_profile import UserProfile
@@ -19,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
 import pytest_asyncio
 import pytest
-from .data import USER_DATA, ROLE_DATA, COMPANY_DATA
+from .data import USER_DATA, ROLE_DATA, COMPANY_DATA, PROJECT_DATA
 
 
 @asynccontextmanager
@@ -61,8 +63,13 @@ def test_company_data() -> list[dict]:
     return COMPANY_DATA
 
 
+@pytest.fixture(scope="function")
+def test_project_data() -> list[dict]:
+    return PROJECT_DATA
+
+
 @pytest_asyncio.fixture(scope="function")
-async def init_data(async_session, test_user_data, test_role_data, test_company_data):
+async def init_data(async_session, test_user_data, test_role_data, test_company_data, test_project_data):
     for company_data in test_company_data:
         company = Company()
         company.id = company_data["id"]
@@ -70,6 +77,16 @@ async def init_data(async_session, test_user_data, test_role_data, test_company_
         company.domain = company_data["domain"]
         company.description = company_data["description"]
         async_session.add(company)
+    await async_session.flush()
+    for project_data in test_project_data:
+        project = Project()
+        project.id = project_data["id"]
+        project.name = project_data["name"]
+        project.description = project_data["description"]
+        project.company_id = project_data["company_id"]
+        project.is_active = project_data["is_active"]
+        async_session.add(project)
+    await async_session.flush()
     for role_data in test_role_data:
         role = Role()
         role.id = role_data["id"]
@@ -90,6 +107,7 @@ async def init_data(async_session, test_user_data, test_role_data, test_company_
         user.tasks = [UserTask(**task_data)
                       for task_data in user_data["tasks"]]
         user.roles = [await async_session.get(Role, role_id) for role_id in user_data["role_ids"]]
+        user.projects = [await async_session.get(Project, project_id) for project_id in user_data["project_ids"]]
         async_session.add(user)
     await async_session.commit()
     yield
