@@ -53,7 +53,7 @@ USER_DATA = [
             "name": "alice",
             "gender": "female",
             "phone": "111111",
-            "birthdate": "2020-01-01",
+            "birthdate": "2010-01-01",
             "hobby": "music",
             "state": "nice",
             "country": "china",
@@ -93,7 +93,7 @@ USER_DATA = [
             "name": "jim",
             "gender": "male",
             "phone": "111111",
-            "birthdate": "2020-01-01",
+            "birthdate": "2022-01-01",
             "hobby": "music",
             "state": "nice",
             "country": "china",
@@ -129,7 +129,7 @@ USER_DATA = [
             "hobby": "music",
             "state": "nice",
             "country": "china",
-            "address": "jiangsu"
+            "address": None
         },
         "staff": {
             "name": "tom",
