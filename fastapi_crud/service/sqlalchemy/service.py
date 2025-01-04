@@ -578,9 +578,9 @@ class SqlalchemyCrudService(
             return field.startswith(value)
         elif operator == "$ends":
             return field.endswith(value)
-        elif operator == "$doesNotBeginWith":
+        elif operator == "$notstarts":
             return field.notlike('{}%'.format(value))
-        elif operator == "$doesNotEndWith":
+        elif operator == "$notends":
             return field.notlike('%{}'.format(value))
         elif operator == "$isnull":
             return field.is_(None)
@@ -628,16 +628,6 @@ class SqlalchemyCrudService(
             raise InvalidFieldException(field)
         return model_field
 
-    def get_model_class(self, field):
-        field_parts = field.split(".")
-        relationships = self.entity.__mapper__.relationships
-        if len(field_parts) > 1:
-            relation_cls = None
-            for field_part in field_parts:
-                relation_cls = relationships[field_part].mapper.entity
-                relationships = relation_cls.__mapper__.relationships
-            return relation_cls
-        return relationships[field].mapper.entity
 
     def get_field_primary_key(self, field):
         try:
