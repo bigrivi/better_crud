@@ -296,11 +296,13 @@ class SqlalchemyCrudService(
         db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
         relationships = self.entity.__mapper__.relationships
-        model_data = model.model_dump(exclude_unset=True)
-        await self.on_before_create(
-            model_data,
+        extra_data = await self.on_before_create(
+            model,
             background_tasks=background_tasks
         )
+        model_data: Dict = model.model_dump(exclude_unset=True)
+        if extra_data:
+            model_data.update(extra_data)
         if request:
             if hasattr(request.state, "auth_persist"):
                 model_data.update(request.state.auth_persist)
@@ -334,7 +336,7 @@ class SqlalchemyCrudService(
                         relation_cls,
                         value
                     )
-        entity = self.entity(**model_data)
+        entity: ModelType = self.entity(**model_data)
         db_session.add(entity)
         await db_session.flush()
         await self.on_after_create(entity, background_tasks=background_tasks)
@@ -386,11 +388,13 @@ class SqlalchemyCrudService(
         entity = await self._get(id, db_session=db_session, options=options)
         if not entity:
             raise NotFoundException()
-        await self.on_before_update(
+        extra_data = await self.on_before_update(
             entity,
-            update_data=model_data,
+            model,
             background_tasks=background_tasks
         )
+        if extra_data:
+            model_data.update(extra_data)
         relationships = self.entity.__mapper__.relationships
         for key, value in model_data.items():
             if key in relationships:
@@ -516,9 +520,9 @@ class SqlalchemyCrudService(
 
     async def on_before_create(
         self,
-        create_data: dict,
+        model: CreateSchemaType,
         background_tasks: Optional[BackgroundTasks] = None
-    ) -> None:
+    ) -> Union[Dict[str, Any], None]:
         pass
 
     async def on_after_create(
@@ -531,9 +535,9 @@ class SqlalchemyCrudService(
     async def on_before_update(
         self,
         entity: ModelType,
-        update_data: Dict,
+        model: UpdateSchemaType,
         background_tasks: BackgroundTasks
-    ) -> None:
+    ) -> Union[Dict[str, Any], None]:
         pass
 
     async def on_after_update(
@@ -627,7 +631,6 @@ class SqlalchemyCrudService(
         if not model_field:
             raise InvalidFieldException(field)
         return model_field
-
 
     def get_field_primary_key(self, field):
         try:

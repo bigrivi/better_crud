@@ -1,7 +1,7 @@
 import pytest
 from app.services.user import UserService
 from sqlalchemy import select
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from fastapi_crud.models import JoinOptionModel
 from fastapi_crud.exceptions import (
     NotSupportOperatorException,
@@ -27,6 +27,48 @@ async def test_get_many_basic_filter(async_session, test_user_data, test_request
     }
     fetched_records = await user_service.crud_get_many(test_request, search=search, db_session=async_session)
     assert len(fetched_records) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "search,expected_count",
+    [
+        ({
+            "$or": [
+                {
+                    "user_name": {
+                        "$eq": "bob"
+                    }
+                }
+            ],
+            "is_active": True,
+        }, 1),
+        ({
+            "$or": [
+                {
+                    "user_name": {
+                        "$eq": "bob"
+                    }
+                },
+                {
+                    "user_name": {
+                        "$eq": "alice"
+                    }
+                },
+                {
+                    "user_name": {
+                        "$eq": "jim"
+                    }
+                }
+            ],
+            "is_active": True,
+        }, 3)
+    ]
+)
+async def test_get_many_basic_filter_with_or(async_session, test_user_data, test_request, init_data, search, expected_count):
+    user_service = UserService()
+    fetched_records = await user_service.crud_get_many(test_request, search=search, db_session=async_session)
+    assert len(fetched_records) == expected_count
 
 
 @pytest.mark.asyncio
@@ -74,7 +116,7 @@ async def test_get_many_filter_with_operator(
             select=False,
             join=True
         ),
-        "roles":JoinOptionModel(
+        "roles": JoinOptionModel(
             select=True,
             join=False
         ),
@@ -87,6 +129,7 @@ async def test_get_many_filter_with_operator(
     fetched_records = await user_service.crud_get_many(test_request, search=search, joins=joins, db_session=async_session)
     assert len(fetched_records) == expected_count
 
+
 @pytest.mark.asyncio
 async def test_get_many_filter_with_invalid_operator(async_session, test_user_data, test_request, init_data):
     user_service = UserService()
@@ -97,6 +140,7 @@ async def test_get_many_filter_with_invalid_operator(async_session, test_user_da
     }
     with pytest.raises(NotSupportOperatorException):
         await user_service.crud_get_many(test_request, search=search, db_session=async_session)
+
 
 @pytest.mark.asyncio
 async def test_get_many_filter_with_invalid_field(async_session, test_user_data, test_request, init_data):
@@ -109,6 +153,7 @@ async def test_get_many_filter_with_invalid_field(async_session, test_user_data,
     with pytest.raises(InvalidFieldException):
         await user_service.crud_get_many(test_request, search=search, db_session=async_session)
 
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "operator",
@@ -117,7 +162,7 @@ async def test_get_many_filter_with_invalid_field(async_session, test_user_data,
         ("$notany"),
     ]
 )
-async def test_get_many_filter_with_invalid_field(async_session, test_request, init_data,operator):
+async def test_get_many_filter_with_invalid_field(async_session, test_request, init_data, operator):
     user_service = UserService()
     search = {
         "user_name": {
@@ -127,13 +172,14 @@ async def test_get_many_filter_with_invalid_field(async_session, test_request, i
     with pytest.raises(NotSupportRelationshipQueryException):
         await user_service.crud_get_many(test_request, search=search, db_session=async_session)
 
+
 @pytest.mark.asyncio
 async def test_get_many_filter_with_soft_delete(async_session, test_user_data, test_request, init_data):
     user_service = UserService()
     stmt = select(User).where(User.user_name == "jim")
     result = await async_session.execute(stmt)
     user: User = result.scalar_one_or_none()
-    user.deleted_at = datetime.now()+timedelta(-1,0)
+    user.deleted_at = datetime.now()+timedelta(-1, 0)
     async_session.add(user)
     await async_session.commit()
     search = {
@@ -141,5 +187,29 @@ async def test_get_many_filter_with_soft_delete(async_session, test_user_data, t
             "$eq": "jim"
         }
     }
-    fetched_records = await user_service.crud_get_many(test_request,soft_delete=True,include_deleted=False, search=search, db_session=async_session)
+    fetched_records = await user_service.crud_get_many(test_request, soft_delete=True, include_deleted=False, search=search, db_session=async_session)
     assert len(fetched_records) == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "field,sort,expected_first_id",
+    [
+        ("id", "ASC", 1),
+        ("id", "DESC", 4),
+        ("user_name", "ASC", 2),
+        ("user_name", "DESC", 4),
+    ]
+)
+async def test_get_many_with_order(async_session, test_request, init_data, field, sort, expected_first_id):
+    user_service = UserService()
+    fetched_records = await user_service.crud_get_many(
+        test_request,
+        soft_delete=True,
+        include_deleted=False,
+        db_session=async_session,
+        sorts=[
+            {"field": field, "sort": sort}
+        ]
+    )
+    assert fetched_records[0].id == expected_first_id
