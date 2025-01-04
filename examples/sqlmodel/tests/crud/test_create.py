@@ -9,7 +9,7 @@ from app.models.user_task import UserTaskCreateWithoutId
 from app.services.company import CompanyService
 from app.services.user import UserService
 from app.services.role import RoleService
-from app.services.user_task import UserTaskService, UserTask
+from app.services.user_task import UserTaskService
 
 
 @pytest.mark.asyncio
@@ -62,7 +62,6 @@ async def test_create_by_one_to_one(async_session, test_user_data, test_request)
 @pytest.mark.asyncio
 async def test_create_by_many_to_one(async_session, test_user_data, test_request):
     user_service = UserService()
-
     new_data = UserCreate(
         **test_user_data[0],
     )
