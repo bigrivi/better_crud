@@ -153,7 +153,11 @@ async def test_get_many_basic_filter_with_or(async_session, test_user_data, test
                 {
                     "profile.name": {
                         "$eq": "bob",
-                        "$starts": "bob"
+                        "$starts": "bob",
+                        "$or": {
+                            "$eq": "bob",
+                            "$length": 3
+                        }
                     }
                 }
             ]
