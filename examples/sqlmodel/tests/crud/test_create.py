@@ -2,11 +2,9 @@ import pytest
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from app.models.company import Company, CompanyCreate
 from app.models.user import User, UserCreate
 from app.models.role import RoleCreate, Role
 from app.models.user_task import UserTaskCreateWithoutId
-from app.services.company import CompanyService
 from app.services.user import UserService
 from app.services.role import RoleService
 from app.services.user_task import UserTaskService
@@ -34,7 +32,7 @@ async def test_create_many_successful(async_session, test_request, test_user_dat
     new_data = [UserCreate(**item) for item in test_user_data]
     await user_service.crud_create_many(test_request, new_data, db_session=async_session)
     stmt = select(User).where(
-        User.user_name.in_([item.user_name for item in new_data]))
+        User.user_name.in_([item["user_name"] for item in test_user_data]))
     result = await async_session.execute(stmt)
     fetched_records: List[User] = result.scalars().all()
     assert len(fetched_records) == len(test_user_data)
