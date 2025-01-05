@@ -82,48 +82,49 @@ class SqlalchemyCrudService(
         self,
         logical_operator: str,
         field: str,
-        obj: Any
+        obj: Dict[str, Any]
     ):
         logical_operator = logical_operator or LOGICAL_OPERATOR_AND
-        if isinstance(obj, dict):
-            model_field = self.get_model_field(field)
-            keys = list(obj.keys())
-            if len(keys) == 1:
-                if keys[0] == LOGICAL_OPERATOR_OR:
-                    return self.create_search_field_object_condition(
-                        LOGICAL_OPERATOR_OR,
-                        field,
-                        obj.get(LOGICAL_OPERATOR_OR)
-                    )
-                else:
-                    return self.build_query_expression(
-                        model_field,
-                        keys[0],
-                        obj[keys[0]]
-                    )
+        if not isinstance(obj, dict):
+            return None
+        model_field = self.get_model_field(field)
+        keys = list(obj.keys())
+        if len(keys) == 1:
+            if keys[0] == LOGICAL_OPERATOR_OR:
+                return self.create_search_field_object_condition(
+                    LOGICAL_OPERATOR_OR,
+                    field,
+                    obj.get(LOGICAL_OPERATOR_OR)
+                )
             else:
-                if logical_operator == LOGICAL_OPERATOR_OR:
-                    return or_(*(self.build_query_expression(
-                        model_field,
-                        operator,
-                        obj[operator]
-                    ) for operator in keys))
-                elif logical_operator == LOGICAL_OPERATOR_AND:
-                    clauses = []
-                    for operator in keys:
-                        is_or = operator == LOGICAL_OPERATOR_OR
-                        if isinstance(obj[operator], dict) and is_or:
-                            clauses.append(
-                                self.create_search_field_object_condition(
-                                    LOGICAL_OPERATOR_OR,
-                                    field,
-                                    obj.get(operator)
-                                )
+                return self.build_query_expression(
+                    model_field,
+                    keys[0],
+                    obj[keys[0]]
+                )
+        else:
+            if logical_operator == LOGICAL_OPERATOR_OR:
+                return or_(*(self.build_query_expression(
+                    model_field,
+                    operator,
+                    obj[operator]
+                ) for operator in keys))
+            elif logical_operator == LOGICAL_OPERATOR_AND:
+                clauses = []
+                for operator in keys:
+                    is_or = operator == LOGICAL_OPERATOR_OR
+                    if isinstance(obj[operator], dict) and is_or:
+                        clauses.append(
+                            self.create_search_field_object_condition(
+                                LOGICAL_OPERATOR_OR,
+                                field,
+                                obj.get(operator)
                             )
-                        else:
-                            clauses.append(self.build_query_expression(
-                                model_field, operator, obj[operator]))
-                    return and_(*clauses)
+                        )
+                    else:
+                        clauses.append(self.build_query_expression(
+                            model_field, operator, obj[operator]))
+                return and_(*clauses)
 
     def create_search_condition(self, search: Dict) -> List[Any]:
         if not isinstance(search, dict) or not search:
