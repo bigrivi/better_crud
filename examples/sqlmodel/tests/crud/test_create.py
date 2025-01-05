@@ -13,33 +13,35 @@ from app.services.user_task import UserTaskService
 
 
 @pytest.mark.asyncio
-async def test_create_successful(async_session, test_request, test_company_data):
-    company_service = CompanyService()
-    new_data = CompanyCreate(**test_company_data[0])
-    await company_service.crud_create_one(test_request, new_data, db_session=async_session)
-    stmt = select(Company).where(Company.name == test_company_data[0]["name"])
+async def test_create_successful(async_session, test_request,test_user_data):
+    first_test_user_data = test_user_data[0]
+    user_service = UserService()
+    user_create = UserCreate(**first_test_user_data)
+    await user_service.crud_create_one(test_request, user_create, db_session=async_session)
+    stmt = select(User).where(User.user_name == first_test_user_data["user_name"])
     result = await async_session.execute(stmt)
-    fetched_record: Company = result.scalar_one_or_none()
+    fetched_record: User = result.scalar_one_or_none()
     assert fetched_record is not None
-    assert fetched_record.name == test_company_data[0]["name"]
-    assert fetched_record.domain == test_company_data[0]["domain"]
-    assert fetched_record.description == test_company_data[0]["description"]
+    assert fetched_record.user_name == first_test_user_data["user_name"]
+    assert fetched_record.email == first_test_user_data["email"]
+    assert fetched_record.company_id == first_test_user_data["company_id"]
+
 
 
 @pytest.mark.asyncio
-async def test_create_many_successful(async_session, test_request, test_company_data):
-    company_service = CompanyService()
-    new_data = [CompanyCreate(**item) for item in test_company_data]
-    await company_service.crud_create_many(test_request, new_data, db_session=async_session)
-    stmt = select(Company).where(
-        Company.name.in_([item.name for item in new_data]))
+async def test_create_many_successful(async_session, test_request, test_user_data):
+    user_service = UserService()
+    new_data = [UserCreate(**item) for item in test_user_data]
+    await user_service.crud_create_many(test_request, new_data, db_session=async_session)
+    stmt = select(User).where(
+        User.user_name.in_([item.user_name for item in new_data]))
     result = await async_session.execute(stmt)
-    fetched_records: List[Company] = result.scalars().all()
-    assert len(fetched_records) == len(test_company_data)
-    for index, item in enumerate(test_company_data):
-        for key, value in item.items():
-            assert getattr(fetched_records[index], key) == value
-
+    fetched_records: List[User] = result.scalars().all()
+    assert len(fetched_records) == len(test_user_data)
+    for index, item in enumerate(test_user_data):
+        assert fetched_records[index].user_name == item["user_name"]
+        assert fetched_records[index].email == item["email"]
+        assert fetched_records[index].company_id == item["company_id"]
 
 @pytest.mark.asyncio
 async def test_create_by_one_to_one(async_session, test_user_data, test_request):
