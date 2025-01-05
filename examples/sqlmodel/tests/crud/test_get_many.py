@@ -71,6 +71,111 @@ async def test_get_many_basic_filter_with_or(async_session, test_user_data, test
     assert len(fetched_records) == expected_count
 
 
+@ pytest.mark.asyncio
+@ pytest.mark.parametrize(
+    "search,expected_count",
+    [
+        ({
+            "$and": [
+                {
+                    "is_superuser": {
+                        "$eq": True
+                    }
+                }
+            ]
+        }, 2),
+        ({
+            "$and": [
+                {
+                    "user_name": {
+                        "$eq": "bob"
+                    }
+                },
+                {
+                    "is_superuser": {
+                        "$eq": True
+                    }
+                },
+                {
+                    "profile.hobby": {
+                        "$eq": "music"
+                    }
+                }
+            ]
+        }, 1),
+        ({
+            "$and": [
+                {
+                    "user_name": "bob",
+                    "is_superuser": True,
+                    "profile.hobby": "music"
+                }
+            ]
+        }, 1),
+        ({
+            "$and": [
+                {
+                    "is_active": True,
+                    "$or": [
+                        {
+                            "user_name": {
+                                "$eq": "bob"
+                            }
+                        },
+                        {
+                            "user_name": {
+                                "$eq": "alice"
+                            }
+                        },
+                        {
+                            "user_name": {
+                                "$eq": "jim"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }, 3),
+        ({
+            "$and": [
+                {
+                    "profile.name": {
+                        "$or": {
+                            "$eq": "bob",
+                            "$starts": "bob"
+                        }
+                    }
+                }
+            ]
+        }, 1),
+        ({
+            "$and": [
+                {
+                    "profile.name": {
+                        "$eq": "bob",
+                        "$starts": "bob"
+                    }
+                }
+            ]
+        }, 1)
+    ]
+)
+async def test_get_many_basic_filter_with_and(async_session, test_user_data, test_request, init_data, search, expected_count):
+    user_service = UserService()
+    joins = {
+        "profile": JoinOptionModel(
+            select=False,
+            join=True
+        ),
+        "roles": JoinOptionModel(
+            select=True,
+            join=False
+        ),
+    }
+    fetched_records = await user_service.crud_get_many(test_request, search=search, joins=joins, db_session=async_session)
+    assert len(fetched_records) == expected_count
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "field,operator,value,expected_count",
