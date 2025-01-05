@@ -464,8 +464,8 @@ class SqlalchemyCrudService(
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
-        returns = [await self._get(id, db_session) for id in ids]
-        await self.on_before_delete(ids, background_tasks=background_tasks)
+        entities = [await self._get(id, db_session) for id in ids]
+        await self.on_before_delete(entities, background_tasks=background_tasks)
         if soft_delete:
             await self._soft_delete(ids, db_session=db_session)
         else:
@@ -473,8 +473,8 @@ class SqlalchemyCrudService(
                 getattr(self.entity, self.primary_key).in_(ids),
                 db_session=db_session
             )
-        await self.on_after_delete(ids, background_tasks=background_tasks)
-        return returns
+        await self.on_after_delete(entities, background_tasks=background_tasks)
+        return entities
 
     def _guess_should_load_relationship_fields(self, model_data: Dict):
         relationships = self.entity.__mapper__.relationships
@@ -549,14 +549,14 @@ class SqlalchemyCrudService(
 
     async def on_before_delete(
         self,
-        ids: List[ID_TYPE],
+        entities: List[ModelType],
         background_tasks: BackgroundTasks
     ) -> None:
         pass
 
     async def on_after_delete(
         self,
-        ids: List[ID_TYPE],
+        entities: List[ModelType],
         background_tasks: BackgroundTasks
     ) -> None:
         pass
