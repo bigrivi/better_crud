@@ -162,7 +162,7 @@ async def test_get_many_filter_with_invalid_field(async_session, test_user_data,
         ("$notany"),
     ]
 )
-async def test_get_many_filter_with_invalid_field(async_session, test_request, init_data, operator):
+async def test_get_many_filter_with_invalid_any_field(async_session, test_request, init_data, operator):
     user_service = UserService()
     search = {
         "user_name": {

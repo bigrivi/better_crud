@@ -125,49 +125,48 @@ class SqlalchemyCrudService(
                                 model_field, operator, obj[operator]))
                     return and_(*clauses)
 
-    def create_search_condition(self, search: Dict):
+    def create_search_condition(self, search: Dict) -> List[Any]:
+        if not isinstance(search, dict) or not search:
+            return []
         conds = []
-        if isinstance(search, dict):
-            keys = list(search.keys())
-            if len(keys) > 0:
-                if LOGICAL_OPERATOR_AND in search:  # {$and: [...], ...}
-                    and_values = search.get(LOGICAL_OPERATOR_AND)
-                    if len(and_values) == 1:  # {$and: [{}]}
+        if LOGICAL_OPERATOR_AND in search:  # {$and: [...], ...}
+            and_values = search.get(LOGICAL_OPERATOR_AND)
+            if len(and_values) == 1:  # {$and: [{}]}
+                conds.append(
+                    and_(*self.create_search_condition(and_values[0])))
+            else:  # {$and: [{},{},...]}
+                clauses = [
+                    and_(*self.create_search_condition(and_value))
+                    for and_value in and_values
+                ]
+                conds.append(and_(*clauses))
+        else:
+            for field, value in search.items():
+                field_is_or = field == LOGICAL_OPERATOR_OR
+                if field_is_or and isinstance(value, list):
+                    if len(value) == 1:
                         conds.append(
-                            and_(*self.create_search_condition(and_values[0])))
-                    else:  # {$and: [{},{},...]}
-                        clauses = [
-                            and_(*self.create_search_condition(and_value))
-                            for and_value in and_values
-                        ]
-                        conds.append(and_(*clauses))
-                else:
-                    for field, value in search.items():
-                        field_is_or = field == LOGICAL_OPERATOR_OR
-                        if field_is_or and isinstance(value, list):
-                            if len(value) == 1:
-                                conds.append(
-                                    and_(
-                                        *self.create_search_condition(value[0])
-                                    )
-                                )
-                            else:
-                                clauses = [
-                                    and_(
-                                        *self.create_search_condition(or_value)
-                                    ) for or_value in value
-                                ]
-                                conds.append(or_(*clauses))
-                        elif isinstance(value, Dict):
-                            conds.append(
-                                self.create_search_field_object_condition(
-                                    LOGICAL_OPERATOR_AND,
-                                    field,
-                                    value
-                                )
+                            and_(
+                                *self.create_search_condition(value[0])
                             )
-                        else:
-                            conds.append(self.get_model_field(field) == value)
+                        )
+                    else:
+                        clauses = [
+                            and_(
+                                *self.create_search_condition(or_value)
+                            ) for or_value in value
+                        ]
+                        conds.append(or_(*clauses))
+                elif isinstance(value, Dict):
+                    conds.append(
+                        self.create_search_field_object_condition(
+                            LOGICAL_OPERATOR_AND,
+                            field,
+                            value
+                        )
+                    )
+                else:
+                    conds.append(self.get_model_field(field) == value)
         return conds
 
     def _create_join_options(
