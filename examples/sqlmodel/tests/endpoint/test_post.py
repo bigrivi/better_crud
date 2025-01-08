@@ -2,13 +2,7 @@ from fastapi.testclient import TestClient
 import pytest
 from typing import List
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
-from app.models.user import User, UserCreate
-from app.models.role import RoleCreate, Role
-from app.models.user_task import UserTaskCreateWithoutId
-from app.services.user import UserService
-from app.services.role import RoleService
-from app.services.user_task import UserTaskService
+from app.models.user import User
 
 
 

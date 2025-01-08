@@ -221,7 +221,7 @@ class SqlalchemyCrudService(
             soft_deleted_field = FastAPICrudGlobalConfig.soft_deleted_field_key
             if not include_deleted:
                 conds.append(or_(
-                    getattr(self.entity, soft_deleted_field) > func.now(),
+                    getattr(self.entity, soft_deleted_field) > datetime.now(),
                     getattr(self.entity, soft_deleted_field).is_(None)
                 ))
         stmt = select(self.entity)
@@ -513,7 +513,7 @@ class SqlalchemyCrudService(
         stmt = update(self.entity).where(
             getattr(self.entity, self.primary_key)
             .in_(id_list)).values({
-                FastAPICrudGlobalConfig.soft_deleted_field_key: datetime.now()
+                FastAPICrudGlobalConfig.soft_deleted_field_key: datetime.now().replace(microsecond=0)
             })
         await db_session.execute(stmt)
         await db_session.commit()
