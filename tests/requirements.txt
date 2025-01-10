@@ -1,0 +1,21 @@
+fastapi
+sqlalchemy==2.0.30
+
+# Testing
+pytest
+pytest-asyncio
+
+# Linting
+flake8
+flake8-black
+flake8-bugbear
+flake8-import-order
+flake8-bandit
+flake8-annotations
+flake8-builtins
+flake8-variables-names
+flake8-functions
+flake8-expression-complexity
+
+# Typing
+mypy==0.910
