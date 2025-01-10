@@ -7,6 +7,8 @@ pydantic==2.7.3
 sqlmodel==0.0.22
 sqlalchemy_utils==0.41.2
 passlib==1.7.4
+aiosqlite==0.20.0
+
 # Testing
 pytest
 pytest-asyncio
