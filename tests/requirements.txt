@@ -1,4 +1,5 @@
 fastapi
+httpx
 sqlalchemy==2.0.30
 fastapi_pagination==0.12.24
 pydantic==2.7.3
