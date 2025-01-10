@@ -12,4 +12,5 @@ aiosqlite==0.20.0
 # Testing
 pytest
 pytest-asyncio
+pytest-cov
 
