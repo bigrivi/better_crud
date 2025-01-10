@@ -3,6 +3,7 @@ import pytest
 from typing import List
 from sqlalchemy import select
 from app.models.user import User
+from sqlalchemy.orm import joinedload
 
 
 
@@ -32,3 +33,15 @@ async def test_post_many_successful(client: TestClient,async_session, test_user_
         assert fetched_records[index].user_name == item["user_name"]
         assert fetched_records[index].email == item["email"]
         assert fetched_records[index].company_id == item["company_id"]
+
+@pytest.mark.asyncio
+async def test_post_by_one_to_one(client: TestClient,async_session, test_user_data):
+    client.post("/user", json=test_user_data[0])
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
+    stmt = stmt.options(joinedload(User.staff))
+    result = await async_session.execute(stmt)
+    fetched_record: User = result.scalar_one_or_none()
+    assert fetched_record is not None
+    assert fetched_record.email == test_user_data[0]["email"]
+    for key, value in test_user_data[0]["staff"].items():
+        assert getattr(fetched_record.staff, key) == value
