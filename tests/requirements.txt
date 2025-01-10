@@ -3,7 +3,9 @@ httpx
 sqlalchemy==2.0.30
 fastapi_pagination==0.12.24
 pydantic==2.7.3
+
 sqlmodel==0.0.22
+sqlalchemy_utils==0.41.2
 
 # Testing
 pytest
