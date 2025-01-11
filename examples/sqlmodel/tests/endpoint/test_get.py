@@ -82,6 +82,13 @@ async def test_get_many_with_sort(client: TestClient, test_user_data, init_data,
 
 
 @pytest.mark.asyncio
+async def test_get_many_with_invalid_sort(client: TestClient, test_user_data, init_data):
+    with pytest.raises(Exception):
+        response = client.get("/user", params={"sort": f"user_name"})
+        data = response.json()
+
+
+@pytest.mark.asyncio
 async def test_get_one_basic(client: TestClient, async_session, test_user_data, init_data):
     response = client.get("/user/1")
     data = response.json()
