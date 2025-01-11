@@ -170,11 +170,11 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             )
         try:
             entities = await self.service.crud_update_many(
-            request,
-            id_list,
-            models,
-            background_tasks=background_tasks
-        )
+                request,
+                id_list,
+                models,
+                background_tasks=background_tasks
+            )
         except NotFoundException:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
