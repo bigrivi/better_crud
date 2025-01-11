@@ -7,42 +7,20 @@ from app.core.depends import JWTDepend, ACLDepend
 
 router = APIRouter()
 
-
-def persist_fn(request: Request):
-    return {}
-
-
-def filter_fn(request: Request):
-    return {
-        "id": 100
-    }
-
-
 @crud(
     router,
     feature="user",
-    #   params={
-    #       "companyid": {
-    #           "field": "company_id",
-    #           "type": "str"
-    #       }
-    #   },
     routes={
-        # "dependencies":[JWTDepend,ACLDepend],
-        # "only":["get_many","create_one"]
         "get_many": {
             "summary": ""
         }
     },
     summary_vars={
-        "name": "sun"
+        "name": "test"
     },
     dto={"create": UserCreate, "update": UserUpdate},
     serialize={
         "base": UserPublic,
-    },
-    auth={
-        # "filter":filter_fn
     },
     query={
         "joins": {

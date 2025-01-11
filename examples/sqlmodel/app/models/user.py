@@ -49,6 +49,7 @@ class User(UserBase, table=True):
 
 class UserPublic(UserBase):
     id: int
+    user_name: Optional[str] = None
     profile: Optional[UserProfileList] = None
     roles: List[RolePublic] = None
     projects: List[ProjectPublic] = None

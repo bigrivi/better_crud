@@ -4,7 +4,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
 from sqlalchemy.orm import noload
-from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel
+from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel,crud
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
@@ -14,9 +14,10 @@ from app.models.user import User
 from app.models.role import Role
 from app.models.company import Company
 from app.models.project import Project
-from app.models.user_task import UserTask
+from app.models.user_task import UserTask,UserTaskCreateWithoutId,UserTaskPublic
 from app.models.staff import Staff
 from app.models.user_profile import UserProfile
+from app.services.user_task import UserTaskService
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
 import pytest_asyncio
@@ -133,5 +134,72 @@ def client(
     from app.routers.users import router as user_router
     api_router = APIRouter()
     api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    return TestClient(app)
+
+
+@pytest.fixture
+def auth_client(
+    async_session
+):
+    app = FastAPI()
+    FastAPICrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_task_router = APIRouter()
+    @crud(
+        user_task_router,
+        feature="user_task",
+        dto={"create": UserTaskCreateWithoutId, "update": UserTaskCreateWithoutId},
+        serialize={
+            "base": UserTaskPublic,
+        },
+        auth={
+            "persist":lambda x:{"user_id":1}
+        }
+    )
+    class UserTaskController():
+        service: UserTaskService = Depends(UserTaskService)
+    api_router = APIRouter()
+    api_router.include_router(user_task_router, prefix="/user_task")
+    app.include_router(api_router)
+    return TestClient(app)
+
+
+@pytest.fixture
+def params_client(
+    async_session
+):
+    app = FastAPI()
+    FastAPICrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_task_router = APIRouter()
+    @crud(
+        user_task_router,
+        feature="user_task",
+        dto={"create": UserTaskCreateWithoutId, "update": UserTaskCreateWithoutId},
+        serialize={
+            "base": UserTaskPublic,
+        },
+        params={
+            "user_id":{
+                "field":"user_id",
+                "type":"int"
+            }
+        }
+    )
+    class UserTaskController():
+        service: UserTaskService = Depends(UserTaskService)
+    api_router = APIRouter()
+    api_router.include_router(user_task_router, prefix="/{user_id}/user_task")
     app.include_router(api_router)
     return TestClient(app)

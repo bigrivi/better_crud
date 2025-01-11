@@ -47,7 +47,7 @@ def filter_to_search(filter_str: str) -> Dict:
 
 
 def parse_query_search(
-    search_spec: Optional[str] = None,
+    search_spec: Optional[Dict] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
     option_filter: Optional[Dict] = None,
@@ -57,24 +57,16 @@ def parse_query_search(
     search = None
     search_list = []
     if search_spec:
-        try:
-            search = json.loads(search_spec)
-            search_list = [search]
-        except Exception:
-            search_list = None
+        search_list = [search_spec]
     elif filters and ors:
         if len(filters) == 1 and len(ors) == 1:
             search_list = [{
                 "$or": [
                     {
-                        filter_to_search(
-                            filters[0],
-                            delim=FastAPICrudGlobalConfig.delim_config.delim)
+                        **filter_to_search(filters[0])
                     },
                     {
-                        filter_to_search(
-                            ors[0],
-                            delim=FastAPICrudGlobalConfig.delim_config.delim)
+                        **filter_to_search(ors[0])
                     }
                 ]
             }]
@@ -94,8 +86,7 @@ def parse_query_search(
         search_list = list(map(filter_to_search, filters))
     elif ors and len(ors) > 0:
         if len(ors) == 1:
-            search_list = [filter_to_search(
-                ors[0])]
+            search_list = [filter_to_search(ors[0])]
         else:
             search_list = [{
                 "$or": list(map(filter_to_search, ors))

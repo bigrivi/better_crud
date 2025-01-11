@@ -28,6 +28,9 @@ class UserTask(UserTaskBase, table=True):
 class UserTaskList(UserTaskBase):
     id: int
 
+class UserTaskPublic(UserTaskBase):
+    id: int
+    user_id: Optional[int]
 
 class UserTaskCreate(UserTaskBase):
     id: Optional[int] = None
