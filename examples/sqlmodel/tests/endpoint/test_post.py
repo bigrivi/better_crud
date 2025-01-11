@@ -3,6 +3,7 @@ import pytest
 from typing import List
 from sqlalchemy import select
 from app.models.user import User
+from app.models.user_task import UserTask
 from sqlalchemy.orm import joinedload
 
 
@@ -45,3 +46,21 @@ async def test_post_by_one_to_one(client: TestClient,async_session, test_user_da
     assert fetched_record.email == test_user_data[0]["email"]
     for key, value in test_user_data[0]["staff"].items():
         assert getattr(fetched_record.staff, key) == value
+
+@pytest.mark.asyncio
+async def test_post_by_auth_persist(auth_client: TestClient,async_session, test_request):
+    res = auth_client.post("/user_task", json=dict(status="pending", description="pending task"))
+    task_id = res.json()["id"]
+    stmt = select(UserTask).where(UserTask.id == task_id)
+    result = await async_session.execute(stmt)
+    fetched_record: UserTask = result.scalar_one_or_none()
+    assert fetched_record.user_id == 1
+
+@pytest.mark.asyncio
+async def test_post_by_params_persist(params_client: TestClient,async_session, test_request):
+    res = params_client.post("/2/user_task", json=dict(status="pending", description="pending task"))
+    task_id = res.json()["id"]
+    stmt = select(UserTask).where(UserTask.id == task_id)
+    result = await async_session.execute(stmt)
+    fetched_record: UserTask = result.scalar_one_or_none()
+    assert fetched_record.user_id == 2
