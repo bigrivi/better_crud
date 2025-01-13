@@ -465,6 +465,9 @@ class SqlalchemyCrudService(
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
         entities = [await self._get(id, db_session) for id in ids]
+        for entity in entities:
+            if not entity:
+                raise NotFoundException()
         await self.on_before_delete(entities, background_tasks=background_tasks)
         if soft_delete:
             await self._soft_delete(ids, db_session=db_session)

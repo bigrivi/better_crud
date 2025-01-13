@@ -95,7 +95,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
         try:
-            entity = await self.service.crud_get_one(
+            return await self.service.crud_get_one(
                 request,
                 id,
                 joins=joins
@@ -105,7 +105,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 status.HTTP_404_NOT_FOUND,
                 detail="No data found"
             )
-        return entity
 
     async def create_one(
         self,
@@ -113,12 +112,11 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         request: Request,
         background_tasks: BackgroundTasks
     ):
-        entity = await self.service.crud_create_one(
+        return await self.service.crud_create_one(
             request,
             model,
             background_tasks=background_tasks
         )
-        return entity
 
     async def create_many(
         self,
@@ -126,12 +124,11 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         request: Request,
         background_tasks: BackgroundTasks
     ):
-        entities = await self.service.crud_create_many(
+        return await self.service.crud_create_many(
             request,
             model,
             background_tasks=background_tasks
         )
-        return entities
 
     async def update_one(
         self,
@@ -141,7 +138,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         id: Union[int, str] = Path(..., title="The ID of the item to get")
     ):
         try:
-            entity = await self.service.crud_update_one(
+            return await self.service.crud_update_one(
                 request,
                 id,
                 model,
@@ -152,7 +149,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 status.HTTP_404_NOT_FOUND,
                 detail="No data found"
             )
-        return entity
 
     async def update_many(
         self,
@@ -169,7 +165,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 detail="The id and payload length do not match"
             )
         try:
-            entities = await self.service.crud_update_many(
+            return await self.service.crud_update_many(
                 request,
                 id_list,
                 models,
@@ -180,7 +176,6 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 status.HTTP_404_NOT_FOUND,
                 detail="No data found"
             )
-        return entities
 
     async def delete_many(
         self,
@@ -190,12 +185,18 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                         description="Primary key values, use commas to separate multiple values")
     ):
         id_list = ids.split(",")
-        return await self.service.crud_delete_many(
-            request,
-            id_list,
-            soft_delete=options.query.soft_delete,
-            background_tasks=background_tasks
-        )
+        try:
+            return await self.service.crud_delete_many(
+                request,
+                id_list,
+                soft_delete=options.query.soft_delete,
+                background_tasks=background_tasks
+            )
+        except NotFoundException:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="No data found"
+            )
 
     cls.get_many = get_many
     cls.create_one = create_one
