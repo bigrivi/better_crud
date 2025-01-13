@@ -7,10 +7,6 @@ from fastapi import FastAPI, Depends, APIRouter
 from app.services.user import UserService
 from app.models.user import UserPublic
 
-
-
-
-
 def test_only(async_session):
     app = FastAPI()
     FastAPICrudGlobalConfig.init(
