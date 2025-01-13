@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from starlette.requests import Request
 from sqlalchemy.orm import sessionmaker
-from app.models.user import User
+from app.models.user import User, UserPublic
 from app.models.role import Role
 from app.models.company import Company
 from app.models.project import Project
@@ -18,6 +18,7 @@ from app.models.user_task import UserTask, UserTaskCreateWithoutId, UserTaskPubl
 from app.models.staff import Staff
 from app.models.user_profile import UserProfile
 from app.services.user_task import UserTaskService
+from app.services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
 import pytest_asyncio
@@ -132,6 +133,7 @@ def client(
         }
     )
     from app.routers.users import router as user_router
+    from app.routers.company import router as company_router
     api_router = APIRouter()
     api_router.include_router(user_router, prefix="/user")
     app.include_router(api_router)
@@ -162,7 +164,8 @@ def auth_client(
             "base": UserTaskPublic,
         },
         auth={
-            "persist": lambda x: {"user_id": 1}
+            "persist": lambda x: {"user_id": 1},
+            "filter": lambda x: {"user_id": 1},
         }
     )
     class UserTaskController():
@@ -207,6 +210,41 @@ def params_client(
         service: UserTaskService = Depends(UserTaskService)
     api_router = APIRouter()
     api_router.include_router(user_task_router, prefix="/{user_id}/user_task")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def fixed_filter_client(
+    async_session
+):
+    app = FastAPI()
+    FastAPICrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        query={
+            "filter": {
+                "is_active": True,
+            },
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client
