@@ -1,9 +1,7 @@
 import pytest
-from typing import List
-import pytest_asyncio
 from sqlalchemy import select
-from fastapi import HTTPException
-from app.models.user import User, UserUpdate
+from fastapi_crud.exceptions import NotFoundException
+from app.models.user import User
 from app.services.user import UserService
 
 
@@ -30,3 +28,11 @@ async def test_soft_delete_successful(async_session, test_user_data, test_reques
     fetched_record: User = result.scalar_one_or_none()
     assert fetched_record is not None
     assert fetched_record.deleted_at is not None
+
+
+@pytest.mark.asyncio
+async def test_delete_non_existent_record(async_session, test_user_data, test_request, init_data):
+    user_service = UserService()
+    non_existent_id = 1000
+    with pytest.raises(NotFoundException):
+        await user_service.crud_delete_many(test_request, [non_existent_id], db_session=async_session)

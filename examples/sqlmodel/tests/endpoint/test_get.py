@@ -89,6 +89,60 @@ async def test_get_many_with_invalid_sort(client: TestClient, test_user_data, in
 
 
 @pytest.mark.asyncio
+async def test_get_many_filters_with_params(params_client: TestClient, test_user_data, init_data):
+    response = params_client.get("/1/user_task")
+    data = response.json()
+    assert len(data) == 3
+
+
+@pytest.mark.asyncio
+async def test_get_many_filters_with_auth(auth_client: TestClient, test_user_data, init_data):
+    response = auth_client.get("/user_task")
+    data = response.json()
+    assert len(data) == 3
+
+
+@pytest.mark.asyncio
+async def test_get_many_filters_with_fixed(fixed_filter_client: TestClient, test_user_data, init_data):
+    response = fixed_filter_client.get("/user")
+    data = response.json()
+    assert len(data) == 3
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "page,size,expected_pages,expected_size,expected_first_id",
+    [
+        (1,1,4,1,4),
+        (1,2,2,2,4),
+        (1,3,2,3,4),
+        (1,4,1,4,4),
+        (2,1,4,1,3),
+        (2,2,2,2,2),
+        (2,3,2,1,1)
+    ]
+)
+async def test_get_many_pagination(
+    client: TestClient,
+    test_user_data,
+    init_data,
+    page,
+    size,
+    expected_pages,
+    expected_size,
+    expected_first_id
+):
+    response = client.get("/user",params={
+        "page":page,
+        "size":size,
+        "sort": "id,DESC"
+    })
+    data = response.json()
+    assert data["total"] == len(test_user_data)
+    assert data["pages"] == expected_pages
+    assert len(data["items"]) == expected_size
+    assert data["items"][0]["id"] == expected_first_id
+
+@pytest.mark.asyncio
 async def test_get_one_basic(client: TestClient, async_session, test_user_data, init_data):
     response = client.get("/user/1")
     data = response.json()
