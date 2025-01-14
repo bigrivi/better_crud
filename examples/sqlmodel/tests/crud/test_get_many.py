@@ -322,3 +322,18 @@ async def test_get_many_with_sort(async_session, test_request, init_data, field,
         ]
     )
     assert fetched_records[0].id == expected_first_id
+
+
+@pytest.mark.asyncio
+async def test_get_relations_with_only_detail(async_session, test_user_data, test_request, init_data):
+    user_service = UserService()
+    joins = {
+        "roles": JoinOptionModel(
+            select=True,
+            select_only_detail=True,
+        ),
+    }
+    exist_user_id = test_user_data[0]["id"]
+    fetched_record = await user_service.crud_get_many(test_request, exist_user_id, db_session=async_session, joins=joins)
+    assert fetched_record is not None
+    assert len(fetched_record[0].roles)==0
