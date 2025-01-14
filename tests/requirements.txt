@@ -13,4 +13,5 @@ aiosqlite==0.20.0
 pytest
 pytest-asyncio
 pytest-cov
+pytest-order
 
