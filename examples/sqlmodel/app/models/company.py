@@ -3,9 +3,9 @@ from sqlmodel import Field, SQLModel, Relationship
 
 
 class CompanyBase(SQLModel):
-    name: str | None = None
-    domain: str | None = None
-    description: str | None = Field(default=None)
+    name: Optional[str] = None
+    domain: Optional[str] = None
+    description: Optional[str] = Field(default=None)
 
 
 class Company(CompanyBase, table=True):

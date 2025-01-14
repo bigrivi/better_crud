@@ -15,12 +15,12 @@ class UserProfileBase(SQLModel):
         default=IGenderEnum.other,
         sa_column=Column(ChoiceType(IGenderEnum, impl=String(20))),
     )
-    phone: str | None = None
+    phone: Optional[str] = None
     birthdate:str = Field(default=None)
-    hobby:str | None = Field(default=None)
-    state: str | None = None
-    country: str | None = None
-    address: str | None = None
+    hobby:Optional[str] = Field(default=None)
+    state: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
 
 
 class UserProfile(UserProfileBase, table=True):

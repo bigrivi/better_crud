@@ -15,19 +15,19 @@ def async_return(result: Optional[Any] = None):
 
 class Entity(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str | None = None
-    description: str | None = None
-    key: str | None = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    key: Optional[str] = None
 
 
 class EntityCreate(SQLModel):
-    name: str | None = None
-    description: str | None = None
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 
 class EntityUpdate(SQLModel):
-    name: str | None = None
-    description: str | None = None
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 
 class EntityService(SqlalchemyCrudService[Entity]):
