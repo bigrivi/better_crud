@@ -6,7 +6,6 @@ from typing import (
     Callable,
     Sequence,
     Literal,
-    TypeAlias,
     Union,
     AsyncGenerator,
     TypeVar
@@ -16,7 +15,7 @@ from fastapi import params
 from pydantic import BaseModel
 
 
-RoutesEnumType: TypeAlias = Literal[
+RoutesEnumType = Literal[
     "get_many",
     "get_one",
     "create_one",
@@ -26,7 +25,7 @@ RoutesEnumType: TypeAlias = Literal[
     "delete_many"
 ]
 
-BackendType: TypeAlias = Literal[
+BackendType = Literal[
     "sqlalchemy",
     "custom"
 ]
