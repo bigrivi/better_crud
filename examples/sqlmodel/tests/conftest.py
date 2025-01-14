@@ -248,3 +248,91 @@ def fixed_filter_client(
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def include_deleted_client(
+    async_session
+):
+    app = FastAPI()
+    FastAPICrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        query={
+           "allow_include_deleted":True,
+           "soft_delete":True
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+
+@pytest.fixture
+def join_config_client(
+    async_session
+):
+    app = FastAPI()
+    FastAPICrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        query={
+           "joins": {
+                "profile": {
+                    "select": True,
+                    "join": False
+                },
+                "tasks": {
+                    "select": True,
+                    "join": False
+                },
+                "company": {
+                    "select": True,
+                    "join": False
+                },
+                "projects": {
+                    "select": True,
+                },
+                "projects.company": {
+                    "select": True,
+                    "join": False
+                }
+        },
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client

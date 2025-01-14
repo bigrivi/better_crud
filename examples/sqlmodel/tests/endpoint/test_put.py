@@ -32,7 +32,7 @@ async def test_put_non_existent_record(client: TestClient, async_session, test_r
 
 
 @pytest.mark.asyncio
-async def test_put_by_one_to_one(client: TestClient, async_session, test_user_data, test_request, init_data):
+async def test_put_by_one_to_one(client: TestClient, async_session, test_user_data, init_data):
     exist_user_id = test_user_data[0]["id"]
     update_staff = {
         "name": "bob1 new",
@@ -53,7 +53,7 @@ async def test_put_by_one_to_one(client: TestClient, async_session, test_user_da
 
 
 @pytest.mark.asyncio
-async def test_put_by_many_to_one(client: TestClient, async_session, test_user_data, test_request, init_data):
+async def test_put_by_many_to_one(client: TestClient, async_session, test_user_data, init_data):
     exist_user_id = test_user_data[0]["id"]
     update_profile = {
         "name": "andy",
@@ -79,7 +79,7 @@ async def test_put_by_many_to_one(client: TestClient, async_session, test_user_d
 
 
 @pytest.mark.asyncio
-async def test_put_by_one_to_many(client: TestClient, async_session, test_user_data, test_request, init_data):
+async def test_put_by_one_to_many(client: TestClient, async_session, test_user_data, init_data):
     exist_user_id = test_user_data[0]["id"]
     new_tasks = [
         {
@@ -129,7 +129,7 @@ async def test_put_by_one_to_many(client: TestClient, async_session, test_user_d
 
 
 @pytest.mark.asyncio
-async def test_put_by_many_to_many(client: TestClient, async_session, test_user_data, test_role_data, test_request, init_data):
+async def test_put_by_many_to_many(client: TestClient, async_session, test_user_data, test_role_data, init_data):
     exist_user_id = test_user_data[0]["id"]
     new_roles = [
         2, 3
@@ -152,7 +152,7 @@ async def test_put_by_many_to_many(client: TestClient, async_session, test_user_
 
 
 @pytest.mark.asyncio
-async def test_put_many(client: TestClient, async_session, test_user_data, test_request, init_data):
+async def test_put_many(client: TestClient, async_session, test_user_data, init_data):
     exist_user_ids = [test_user_data[0]["id"], test_user_data[1]["id"]]
     update_data = [
         dict(
@@ -171,7 +171,7 @@ async def test_put_many(client: TestClient, async_session, test_user_data, test_
             })
     ]
     exist_user_ids_str = ",".join(map(str, exist_user_ids))
-    client.put(f"/user/{exist_user_ids_str}/bulk", json=update_data)
+    res = client.put(f"/user/{exist_user_ids_str}/bulk", json=update_data)
     stmt = select(User).where(User.id.in_(exist_user_ids))
     stmt = stmt.options(joinedload(User.staff))
     stmt = stmt.execution_options(populate_existing=True)
@@ -181,3 +181,46 @@ async def test_put_many(client: TestClient, async_session, test_user_data, test_
         assert fetched_records[index].email == item["email"]
         for key, value in item["staff"].items():
             assert getattr(fetched_records[index].staff, key) == value
+
+
+@pytest.mark.asyncio
+async def test_put_many_mismatch_length(client: TestClient, async_session, test_user_data, init_data):
+    exist_user_ids = [test_user_data[0]["id"], test_user_data[1]["id"]]
+    update_data = [
+        dict(
+            email="bobnew@gmail.com",
+            staff={
+                "name": "bob new",
+                "position": "CEO new",
+                "job_title": "The Chief Executive Officer1 new"
+            })
+    ]
+    exist_user_ids_str = ",".join(map(str, exist_user_ids))
+    response = client.put(f"/user/{exist_user_ids_str}/bulk", json=update_data)
+    assert response.status_code == 400
+    assert response.json() == {"detail": "The id and payload length do not match"}
+
+
+@pytest.mark.asyncio
+async def test_put_many_non_existent_record(client: TestClient, async_session, init_data):
+    not_exist_user_ids = [1000, 1001]
+    update_data = [
+        dict(
+            email="bobnew@gmail.com",
+            staff={
+                "name": "bob new",
+                "position": "CEO new",
+                "job_title": "The Chief Executive Officer1 new"
+            }),
+        dict(
+            email="alicenew@gmail.com",
+            staff={
+                "name": "alice new",
+                "position": "CFO new",
+                "job_title": "Chief Financial Officer new"
+            })
+    ]
+    not_exist_user_ids_str = ",".join(map(str, not_exist_user_ids))
+    response = client.put(f"/user/{not_exist_user_ids_str}/bulk", json=update_data)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "No data found"}

@@ -85,8 +85,18 @@ async def test_get_many_with_sort(client: TestClient, test_user_data, init_data,
 async def test_get_many_with_invalid_sort(client: TestClient, test_user_data, init_data):
     with pytest.raises(Exception):
         response = client.get("/user", params={"sort": f"user_name"})
-        data = response.json()
+        response.json()
 
+@pytest.mark.asyncio
+async def test_get_many_with_include_delete(include_deleted_client: TestClient, test_user_data, init_data):
+    exist_user_id = test_user_data[0]["id"]
+    include_deleted_client.delete(f"/user/{exist_user_id}")
+    response = include_deleted_client.get("/user", params={"include_deleted": False})
+    data = response.json()
+    assert len(data) == len(test_user_data)-1
+    response = include_deleted_client.get("/user", params={"include_deleted": True})
+    data = response.json()
+    assert len(data) == len(test_user_data)
 
 @pytest.mark.asyncio
 async def test_get_many_filters_with_params(params_client: TestClient, test_user_data, init_data):
@@ -142,6 +152,35 @@ async def test_get_many_pagination(
     assert len(data["items"]) == expected_size
     assert data["items"][0]["id"] == expected_first_id
 
+
+@pytest.mark.asyncio
+async def test_get_many_select_relation(join_config_client: TestClient, test_user_data,test_company_data, init_data):
+    response = join_config_client.get("/user",params={
+        "load":["roles","company"]
+    })
+    data = response.json()
+    assert len(data) == len(test_user_data)
+    assert len(data[0]["roles"]) == len(test_user_data[0]["role_ids"])
+    assert data[0]["company"]["name"] == test_company_data[0]["name"]
+
+@pytest.mark.asyncio
+@pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
+async def test_get_many_join_relation(join_config_client: TestClient, test_user_data,test_company_data, init_data):
+    response = join_config_client.get("/user",
+        params={
+            "filter":["staff.position||$eq||CFO","company.name||$eq||Cunningham Inc"]
+        },
+    )
+    assert len(response.json()) == len(test_user_data)
+    response = join_config_client.get("/user",
+        params={
+            "join":["staff","company"],
+            "filter":["staff.position||$eq||CFO","company.name||$eq||Cunningham Inc"]
+        },
+    )
+    assert len(response.json()) == 1
+
+
 @pytest.mark.asyncio
 async def test_get_one_basic(client: TestClient, async_session, test_user_data, init_data):
     response = client.get("/user/1")
@@ -158,3 +197,13 @@ async def test_get_one_non_existent_record(client: TestClient, async_session, te
     response = client.get(f"/user/{non_existent_id}")
     assert response.status_code == 404
     assert response.json() == {"detail": "No data found"}
+
+
+@pytest.mark.asyncio
+async def test_get_one_load_relation(join_config_client: TestClient, test_user_data,test_company_data, init_data):
+    response = join_config_client.get(f"/user/1",params={
+        "load":["roles","company"]
+    })
+    data = response.json()
+    assert len(data["roles"]) == len(test_user_data[0]["role_ids"])
+    assert data["company"]["name"] == test_company_data[0]["name"]
