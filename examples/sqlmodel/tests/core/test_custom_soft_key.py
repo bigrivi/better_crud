@@ -12,7 +12,7 @@ class PersonBase(SQLModel):
     name: Optional[str] = None
     gender: Optional[str] = None
     nick_name: Optional[str] = None
-    expiry_at: datetime | None = Field(
+    expiry_at: Optional[datetime] = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
 

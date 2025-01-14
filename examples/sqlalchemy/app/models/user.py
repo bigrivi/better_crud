@@ -29,7 +29,7 @@ class User(Base):
     company_id: Mapped[int] = mapped_column(Integer, ForeignKey("company.id"))
     profile: Mapped[UserProfile | None] = relationship(
         uselist=False, lazy="noload")
-    staff: Mapped[Staff | None] = relationship(
+    staff: Mapped[Optional[Staff]] = relationship(
         uselist=False, lazy="noload")
     tasks: Mapped[List[UserTask]] = relationship(
         uselist=True, cascade="all, delete-orphan", lazy="noload")
@@ -38,7 +38,7 @@ class User(Base):
     roles: Mapped[List[Role]] = relationship(
         back_populates="users", lazy="noload", secondary=UserRoleLink)
 
-    deleted_at: Mapped[datetime | None] = mapped_column()
+    deleted_at: Mapped[Optional[datetime]] = mapped_column()
 
 
 class UserPublic(UserBase):

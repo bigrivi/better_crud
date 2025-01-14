@@ -39,10 +39,10 @@ class User(UserBase, table=True):
                                        "lazy": "noload"}, link_model=UserRoleLink)
     projects: List["Project"] = Relationship(back_populates="users", sa_relationship_kwargs={
         "lazy": "noload"}, link_model=UserProjectLink)
-    deleted_at: datetime | None = Field(
+    deleted_at: Optional[datetime] = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
-    created_at: datetime | None = Field(
+    created_at: Optional[datetime] = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
 
