@@ -13,9 +13,9 @@ class Company(Base):
 
 
 class CompanyBase(BaseModel):
-    name: str | None = None
-    domain: str | None = None
-    description: str | None = None
+    name: Optional[str] = None
+    domain: Optional[str] = None
+    description: Optional[str] = None
 
 
 class CompanyPublic(CompanyBase):

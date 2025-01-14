@@ -8,8 +8,8 @@ from .company import CompanyPublic
 
 
 class ProjectBase(SQLModel):
-    name: str | None = None
-    description: str | None = Field(default=None)
+    name: Optional[str] = None
+    description: Optional[str] = Field(default=None)
     company_id: Optional[int] = Field(
         default=None, foreign_key="company.id"
     )

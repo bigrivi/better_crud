@@ -17,11 +17,11 @@ def find(data: List[FindType], fun: Callable[[FindType], bool]) -> FindType:
             return item
 
 
-def get_feature(request: Request) -> str | None:
+def get_feature(request: Request) -> Optional[str]:
     return getattr(request.state, 'feature', None)
 
 
-def get_action(request: Request) -> str | None:
+def get_action(request: Request) -> Optional[str]:
     return getattr(request.state, 'action', None)
 
 

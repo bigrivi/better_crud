@@ -15,12 +15,12 @@ class IGenderEnum(str, Enum):
 
 class UserProfileBase(BaseModel):
     name: str
-    phone: str | None = None
+    phone: Optional[str] = None
     birthdate: str = None
-    hobby: str | None = None
-    state: str | None = None
-    country: str | None = None
-    address: str | None = None
+    hobby: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
     gender: Optional[IGenderEnum] = None
 
 
@@ -31,13 +31,13 @@ class UserProfile(Base):
         ChoiceType(IGenderEnum, impl=String(20)),
         default=IGenderEnum.other,
     )
-    name: Mapped[str | None] = mapped_column(String(50))
-    phone: Mapped[str | None] = mapped_column(String(50))
-    birthdate: Mapped[str | None] = mapped_column(String(50))
-    hobby: Mapped[str | None] = mapped_column(String(50))
-    state: Mapped[str | None] = mapped_column(String(50))
-    country: Mapped[str | None] = mapped_column(String(50))
-    address: Mapped[str | None] = mapped_column(String(50))
+    name: Mapped[Optional[str]] = mapped_column(String(50))
+    phone: Mapped[Optional[str]] = mapped_column(String(50))
+    birthdate: Mapped[Optional[str]] = mapped_column(String(50))
+    hobby: Mapped[Optional[str]] = mapped_column(String(50))
+    state: Mapped[Optional[str]] = mapped_column(String(50))
+    country: Mapped[Optional[str]] = mapped_column(String(50))
+    address: Mapped[Optional[str]] = mapped_column(String(50))
 
 
 class UserProfilePublic(UserProfileBase):
