@@ -27,7 +27,7 @@ class UserProfileBase(BaseModel):
 class UserProfile(Base):
     __tablename__ = "user_profile"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    gender: Mapped[IGenderEnum | None] = mapped_column(
+    gender: Mapped[Optional[IGenderEnum]] = mapped_column(
         ChoiceType(IGenderEnum, impl=String(20)),
         default=IGenderEnum.other,
     )

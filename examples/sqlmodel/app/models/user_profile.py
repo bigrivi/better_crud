@@ -11,7 +11,7 @@ class IGenderEnum(str, Enum):
 
 class UserProfileBase(SQLModel):
     name: str
-    gender: IGenderEnum | None = Field(
+    gender: Optional[IGenderEnum] = Field(
         default=IGenderEnum.other,
         sa_column=Column(ChoiceType(IGenderEnum, impl=String(20))),
     )
