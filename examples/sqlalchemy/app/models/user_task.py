@@ -22,7 +22,7 @@ class UserTask(Base):
     __tablename__ = "user_task"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
-    status: Mapped[TaskStatusEnum | None] = mapped_column(
+    status: Mapped[Optional[TaskStatusEnum]] = mapped_column(
         ChoiceType(TaskStatusEnum, impl=String(20))
     )
     description: Mapped[str] = mapped_column(String(200))

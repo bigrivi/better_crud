@@ -12,7 +12,7 @@ class TaskStatusEnum(str, Enum):
 
 class UserTaskBase(SQLModel):
     description: str
-    status: TaskStatusEnum | None = Field(
+    status: Optional[TaskStatusEnum] = Field(
         sa_column=Column(ChoiceType(TaskStatusEnum, impl=String(20))),
     )
 
