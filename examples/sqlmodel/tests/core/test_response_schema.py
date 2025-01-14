@@ -9,7 +9,7 @@ T = TypeVar("T")
 class ResponseModel(AbstractResponseModel,Generic[T]):
     code: int = 200
     msg: str = "success"
-    data: T | None = None
+    data: Optional[T] = None
 
     @classmethod
     def create(cls, content: Any):
