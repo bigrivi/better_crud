@@ -1,5 +1,3 @@
-from typing import Optional, Any
-from asyncio import Future
 from unittest.mock import MagicMock
 from fastapi_crud import FastAPICrudGlobalConfig, crud
 from fastapi.testclient import TestClient
