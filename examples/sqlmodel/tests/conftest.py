@@ -21,32 +21,17 @@ from app.services.user_task import UserTaskService
 from app.services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from contextlib import asynccontextmanager
+from .helper import setup_database
 import pytest_asyncio
 import pytest
 from .data import USER_DATA, ROLE_DATA, COMPANY_DATA, PROJECT_DATA
-
-
-@asynccontextmanager
-async def _setup_database(url: str) -> AsyncGenerator[AsyncSession, None]:
-    engine = create_async_engine(url, echo=False, future=True)
-    session_maker = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False)
-    async with session_maker() as session:
-        async with engine.begin() as conn:
-            await conn.run_sync(SQLModel.metadata.create_all)
-        try:
-            yield session
-        finally:
-            async with engine.begin() as conn:
-                await conn.run_sync(SQLModel.metadata.drop_all)
-    await engine.dispose()
 
 
 @pytest_asyncio.fixture(scope="function")
 async def async_session(
     request: pytest.FixtureRequest,
 ) -> AsyncGenerator[AsyncSession, None]:  # pragma: no cover
-    async with _setup_database("sqlite+aiosqlite:///:memory:") as session:
+    async with setup_database("sqlite+aiosqlite:///:memory:") as session:
         yield session
 
 
@@ -268,8 +253,8 @@ def include_deleted_client(
         user_router,
         feature="user",
         query={
-           "allow_include_deleted":True,
-           "soft_delete":True
+            "allow_include_deleted": True,
+            "soft_delete": True
         },
         serialize={
             "base": UserPublic,
@@ -282,7 +267,6 @@ def include_deleted_client(
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client
-
 
 
 @pytest.fixture
@@ -303,7 +287,7 @@ def join_config_client(
         user_router,
         feature="user",
         query={
-           "joins": {
+            "joins": {
                 "profile": {
                     "select": True,
                     "join": False
@@ -323,7 +307,7 @@ def join_config_client(
                     "select": True,
                     "join": False
                 }
-        },
+            },
         },
         serialize={
             "base": UserPublic,
