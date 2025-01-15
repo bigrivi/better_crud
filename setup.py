@@ -16,6 +16,7 @@ INSTALL_REQUIRES = [
 
 setuptools.setup(
     name=NAME,
+    keywords=["fastapi", "crud", "async", "sqlalchemy", "pydantic"],
     version=VERSION,
     description="A better CRUD library for FastAPI.",
     url="https://github.com/bigrivi/better_crud",
