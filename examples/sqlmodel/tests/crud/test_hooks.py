@@ -4,7 +4,7 @@ from typing import Optional, Any
 from unittest.mock import MagicMock
 from sqlalchemy import select
 from sqlmodel import SQLModel, Field
-from fastapi_crud.service.sqlalchemy import SqlalchemyCrudService
+from better_crud.service.sqlalchemy import SqlalchemyCrudService
 
 
 def async_return(result: Optional[Any] = None):

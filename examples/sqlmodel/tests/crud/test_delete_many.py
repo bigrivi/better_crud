@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy import select
-from fastapi_crud.exceptions import NotFoundException
+from better_crud.exceptions import NotFoundException
 from app.models.user import User
 from app.services.user import UserService
 

@@ -105,4 +105,4 @@ class FastAPICrudGlobalConfig:
         cls.backend_config = BackendConfigModel(**backend_config)
         if cls.backend_config.backend != "custom":
             import_module(
-                f".service.{cls.backend_config.backend}", package="fastapi_crud")
+                f".service.{cls.backend_config.backend}", package="better_crud")

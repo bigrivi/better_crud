@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from fastapi_crud import crud
+from better_crud import crud
 from app.models.project import ProjectPublic, ProjectCreate, ProjectUpdate
 from app.services.project import ProjectService
 router = APIRouter()

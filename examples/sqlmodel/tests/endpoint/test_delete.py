@@ -2,14 +2,14 @@ import pytest
 from typing import List
 from fastapi.testclient import TestClient
 from sqlalchemy import select
-from fastapi_crud.exceptions import NotFoundException
+from better_crud.exceptions import NotFoundException
 from sqlalchemy.orm import joinedload
 from app.models.user import User
 from app.models.user_task import UserTask
 
 
 @pytest.mark.asyncio
-async def test_delete_successful(client: TestClient, async_session,test_user_data):
+async def test_delete_successful(client: TestClient, async_session, test_user_data):
     exist_user_id = test_user_data[0]["id"]
     client.delete(f"/user/{exist_user_id}")
     stmt = select(User).where(User.id == exist_user_id)

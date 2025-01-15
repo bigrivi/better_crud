@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, Query
-from fastapi_crud import crud, crud
+from better_crud import crud, crud
 from app.models.user import UserPublic, UserCreate, User, UserUpdate
 from app.services.user import UserService
 from app.core.depends import JWTDepend, ACLDepend

@@ -1,6 +1,6 @@
 import pytest
-from fastapi_crud.exceptions import NotFoundException
-from fastapi_crud.models import JoinOptionModel
+from better_crud.exceptions import NotFoundException
+from better_crud.models import JoinOptionModel
 from app.services.user import UserService
 from app.models.role import Role
 

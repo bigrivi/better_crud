@@ -2,7 +2,7 @@ import pytest
 from typing import List
 from fastapi.testclient import TestClient
 from sqlalchemy import select
-from fastapi_crud.exceptions import NotFoundException
+from better_crud.exceptions import NotFoundException
 from sqlalchemy.orm import joinedload
 from app.models.user import User
 from app.models.user_task import UserTask
@@ -198,7 +198,8 @@ async def test_put_many_mismatch_length(client: TestClient, async_session, test_
     exist_user_ids_str = ",".join(map(str, exist_user_ids))
     response = client.put(f"/user/{exist_user_ids_str}/bulk", json=update_data)
     assert response.status_code == 400
-    assert response.json() == {"detail": "The id and payload length do not match"}
+    assert response.json() == {
+        "detail": "The id and payload length do not match"}
 
 
 @pytest.mark.asyncio
@@ -221,6 +222,7 @@ async def test_put_many_non_existent_record(client: TestClient, async_session, i
             })
     ]
     not_exist_user_ids_str = ",".join(map(str, not_exist_user_ids))
-    response = client.put(f"/user/{not_exist_user_ids_str}/bulk", json=update_data)
+    response = client.put(
+        f"/user/{not_exist_user_ids_str}/bulk", json=update_data)
     assert response.status_code == 404
     assert response.json() == {"detail": "No data found"}

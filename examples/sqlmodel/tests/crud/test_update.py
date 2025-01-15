@@ -1,7 +1,7 @@
 import pytest
 from typing import List
 from sqlalchemy import select
-from fastapi_crud.exceptions import NotFoundException
+from better_crud.exceptions import NotFoundException
 from sqlalchemy.orm import joinedload
 from app.models.user import User, UserUpdate
 from app.models.user_task import UserTask
