@@ -2,7 +2,7 @@ import pytest
 from typing import AsyncGenerator
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi_crud import FastAPICrudGlobalConfig, crud
+from better_crud import FastAPICrudGlobalConfig, crud
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from examples.sqlmodel.tests.helper import setup_database

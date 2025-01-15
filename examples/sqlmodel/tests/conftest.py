@@ -4,7 +4,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
 from sqlalchemy.orm import noload
-from fastapi_crud import FastAPICrudGlobalConfig, AbstractResponseModel, crud
+from better_crud import FastAPICrudGlobalConfig, AbstractResponseModel, crud
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter

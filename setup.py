@@ -4,7 +4,7 @@ import setuptools
 
 VERSION = "0.0.1"
 
-NAME = "fastapi_crud"
+NAME = "better_crud"
 
 INSTALL_REQUIRES = [
     "fastapi>=0.111.0",
@@ -18,9 +18,9 @@ setuptools.setup(
     name=NAME,
     version=VERSION,
     description="A better CRUD library for FastAPI.",
-    url="https://github.com/bigrivi/fastapi_crud",
+    url="https://github.com/bigrivi/better_crud",
     project_urls={
-        "Source Code": "https://github.com/bigrivi/fastapi_crud",
+        "Source Code": "https://github.com/bigrivi/better_crud",
     },
     author="bigrivi",
     author_email="sunjianghong@gmail.com",
@@ -41,7 +41,7 @@ setuptools.setup(
     ],
     python_requires=">=3.9",
     install_requires=INSTALL_REQUIRES,
-    packages=["fastapi_crud"],
+    packages=["better_crud"],
     long_description=Path("README.md").read_text(),
     long_description_content_type="text/markdown",
 )

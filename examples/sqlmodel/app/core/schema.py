@@ -1,8 +1,10 @@
 
-from typing import Any,TypeVar,Generic
-from fastapi_crud import AbstractResponseModel
+from typing import Any, TypeVar, Generic
+from better_crud import AbstractResponseModel
 T = TypeVar("T")
-class ResponseSchema(AbstractResponseModel,Generic[T]):
+
+
+class ResponseSchema(AbstractResponseModel, Generic[T]):
     data: T
     msg: str
 

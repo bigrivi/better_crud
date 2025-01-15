@@ -1,12 +1,13 @@
-from typing import Optional, Any,Generic,TypeVar
-from fastapi_crud import FastAPICrudGlobalConfig, crud,AbstractResponseModel
+from typing import Optional, Any, Generic, TypeVar
+from better_crud import FastAPICrudGlobalConfig, crud, AbstractResponseModel
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from app.services.user import UserService
 from app.models.user import UserPublic
 T = TypeVar("T")
 
-class ResponseModel(AbstractResponseModel,Generic[T]):
+
+class ResponseModel(AbstractResponseModel, Generic[T]):
     code: int = 200
     msg: str = "success"
     data: Optional[T] = None
@@ -17,6 +18,7 @@ class ResponseModel(AbstractResponseModel,Generic[T]):
             data=content,
             msg="success"
         )
+
 
 def test_custom_response_schema(async_session):
     app = FastAPI()
@@ -48,7 +50,3 @@ def test_custom_response_schema(async_session):
     with TestClient(app) as test_client:
         response = test_client.get("/user")
         assert response.json() == {'code': 200, 'msg': 'success', 'data': []}
-
-
-
-

@@ -1,11 +1,11 @@
 from asyncio import Future
 from typing import Optional, Any
 from unittest.mock import MagicMock
-from fastapi_crud import FastAPICrudGlobalConfig, crud_generator
+from better_crud import FastAPICrudGlobalConfig, crud_generator
 from sqlalchemy import select
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
-from app.models.company import CompanyCreate,CompanyUpdate,CompanyPublic,Company
+from app.models.company import CompanyCreate, CompanyUpdate, CompanyPublic, Company
 import pytest
 
 
@@ -14,12 +14,14 @@ def async_return(result: Optional[Any] = None):
     f.set_result(result)
     return f
 
-on_before_create=MagicMock(return_value=async_return())
-on_after_create=MagicMock(return_value=async_return())
-on_before_update=MagicMock(return_value=async_return())
-on_after_update=MagicMock(return_value=async_return())
-on_before_delete=MagicMock(return_value=async_return())
-on_after_delete=MagicMock(return_value=async_return())
+
+on_before_create = MagicMock(return_value=async_return())
+on_after_create = MagicMock(return_value=async_return())
+on_before_update = MagicMock(return_value=async_return())
+on_after_update = MagicMock(return_value=async_return())
+on_before_delete = MagicMock(return_value=async_return())
+on_after_delete = MagicMock(return_value=async_return())
+
 
 @pytest.fixture
 def company_client(
@@ -54,18 +56,20 @@ def company_client(
     with TestClient(app) as test_client:
         yield test_client
 
+
 @pytest.mark.asyncio
-async def test_get_many(company_client: TestClient,test_company_data,init_data):
+async def test_get_many(company_client: TestClient, test_company_data, init_data):
     response = company_client.get("/company")
     data = response.json()
     assert len(data) == len(test_company_data)
 
+
 @pytest.mark.asyncio
-async def test_get_one(company_client: TestClient, async_session,init_data,test_company_data):
+async def test_get_one(company_client: TestClient, async_session, init_data, test_company_data):
     exist_id = 1
     response = company_client.get(f"/company/{exist_id}")
     assert response.status_code == 200
-    data =  response.json()
+    data = response.json()
     assert data["id"] == exist_id
     assert data["name"] == test_company_data[0]["name"]
 
@@ -73,7 +77,7 @@ async def test_get_one(company_client: TestClient, async_session,init_data,test_
 @pytest.mark.asyncio
 async def test_post(company_client: TestClient, async_session):
     test_data = {
-        "name":"new company"
+        "name": "new company"
     }
     response = company_client.post("/company", json=test_data)
     assert response.status_code == 200

@@ -2,8 +2,8 @@ import pytest
 from app.services.user import UserService
 from sqlalchemy import select
 from datetime import datetime, timedelta
-from fastapi_crud.models import JoinOptionModel
-from fastapi_crud.exceptions import (
+from better_crud.models import JoinOptionModel
+from better_crud.exceptions import (
     NotSupportOperatorException,
     InvalidFieldException,
     NotSupportRelationshipQueryException
@@ -336,4 +336,4 @@ async def test_get_relations_with_only_detail(async_session, test_user_data, tes
     exist_user_id = test_user_data[0]["id"]
     fetched_record = await user_service.crud_get_many(test_request, exist_user_id, db_session=async_session, joins=joins)
     assert fetched_record is not None
-    assert len(fetched_record[0].roles)==0
+    assert len(fetched_record[0].roles) == 0

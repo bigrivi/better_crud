@@ -1,4 +1,4 @@
-from fastapi_crud.service.sqlalchemy import SqlalchemyCrudService
+from better_crud.service.sqlalchemy import SqlalchemyCrudService
 from app.models.project import Project
 
 
