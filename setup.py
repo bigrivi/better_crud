@@ -2,7 +2,7 @@ from pathlib import Path
 
 import setuptools
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 NAME = "better_crud"
 
@@ -41,7 +41,8 @@ setuptools.setup(
     ],
     python_requires=">=3.9",
     install_requires=INSTALL_REQUIRES,
-    packages=["better_crud"],
+    packages=["better_crud", "better_crud/service",
+              "better_crud/service/sqlalchemy"],
     long_description=Path("README.md").read_text(),
     long_description_content_type="text/markdown",
 )
