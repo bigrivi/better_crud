@@ -3,7 +3,7 @@ import inspect
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...helper import find, update_entity_attr
-from ...config import FastAPICrudGlobalConfig
+from ...config import BetterCrudGlobalConfig
 
 
 class Provide:
@@ -75,7 +75,7 @@ def inject_db_session(f):
         for param in sig.parameters.values():
             if isinstance(param.default, Provide):
                 if kwargs.get(param.name) is None:
-                    sqlalchemy_config = FastAPICrudGlobalConfig.backend_config.sqlalchemy
+                    sqlalchemy_config = BetterCrudGlobalConfig.backend_config.sqlalchemy
                     if inspect.isasyncgenfunction(sqlalchemy_config.db_session):
                         DBSession = asynccontextmanager(
                             sqlalchemy_config.db_session)

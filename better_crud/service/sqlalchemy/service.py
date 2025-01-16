@@ -24,7 +24,7 @@ from ...types import QuerySortDict, ID_TYPE, CreateSchemaType, UpdateSchemaType
 from ...models import JoinOptions, JoinOptionModel
 from ...backend import register_backend
 
-from ...config import FastAPICrudGlobalConfig
+from ...config import BetterCrudGlobalConfig
 from .helper import (
     create_many_to_many_instances,
     create_one_to_many_instances,
@@ -63,7 +63,7 @@ class SqlalchemyCrudService(
         self.entity = entity
         self.primary_key = entity.__mapper__.primary_key[0].name
         self.entity_has_delete_column = hasattr(
-            self.entity, FastAPICrudGlobalConfig.soft_deleted_field_key)
+            self.entity, BetterCrudGlobalConfig.soft_deleted_field_key)
 
     def prepare_order(self, query, sorts: List[QuerySortDict]):
         order_bys = []
@@ -218,7 +218,7 @@ class SqlalchemyCrudService(
         if search:
             conds = conds + self.create_search_condition(search)
         if self.entity_has_delete_column and soft_delete:
-            soft_deleted_field = FastAPICrudGlobalConfig.soft_deleted_field_key
+            soft_deleted_field = BetterCrudGlobalConfig.soft_deleted_field_key
             if not include_deleted:
                 conds.append(or_(
                     getattr(self.entity, soft_deleted_field) > datetime.now(),
@@ -516,7 +516,7 @@ class SqlalchemyCrudService(
         stmt = update(self.entity).where(
             getattr(self.entity, self.primary_key)
             .in_(id_list)).values({
-                FastAPICrudGlobalConfig.soft_deleted_field_key: datetime.now().replace(microsecond=0)
+                BetterCrudGlobalConfig.soft_deleted_field_key: datetime.now().replace(microsecond=0)
             })
         await db_session.execute(stmt)
         await db_session.commit()

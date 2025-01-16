@@ -30,7 +30,7 @@ from .models import (
     JoinOptions
 )
 from .types import QuerySortDict, CreateSchemaType, UpdateSchemaType
-from .config import FastAPICrudGlobalConfig, RoutesSchema
+from .config import BetterCrudGlobalConfig, RoutesSchema
 from .helper import get_serialize_model, get_route_summary
 from .depends import (
     CrudAction,
@@ -56,10 +56,10 @@ INCLUDE_DELETED_KEY = "include_deleted"
 def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     create_schema_type = cast(CreateSchemaType, options.dto.create)
     update_schema_type = cast(UpdateSchemaType, options.dto.update)
-    page_schema_type = cast(AbstractPage, FastAPICrudGlobalConfig.page_schema)
+    page_schema_type = cast(AbstractPage, BetterCrudGlobalConfig.page_schema)
     response_schema_type = cast(
         AbstractResponseModel,
-        FastAPICrudGlobalConfig.response_schema
+        BetterCrudGlobalConfig.response_schema
     )
 
     serialize = options.serialize
@@ -269,7 +269,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         if router_name == RoutesEnum.get_many:
             dependencies.append(
                 Depends(
-                    pagination_ctx(FastAPICrudGlobalConfig.page_schema)
+                    pagination_ctx(BetterCrudGlobalConfig.page_schema)
                 )
             )
         router.add_api_route(
@@ -280,7 +280,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             dependencies=[
                 Depends(CrudAction(
                     options.feature,
-                    FastAPICrudGlobalConfig.action_map,
+                    BetterCrudGlobalConfig.action_map,
                     router_name
                 )),
                 *dependencies,

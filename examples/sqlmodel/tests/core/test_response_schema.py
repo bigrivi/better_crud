@@ -1,5 +1,5 @@
 from typing import Optional, Any, Generic, TypeVar
-from better_crud import FastAPICrudGlobalConfig, crud, AbstractResponseModel
+from better_crud import BetterCrudGlobalConfig, crud, AbstractResponseModel
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from app.services.user import UserService
@@ -22,7 +22,7 @@ class ResponseModel(AbstractResponseModel, Generic[T]):
 
 def test_custom_response_schema(async_session):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         response_schema=ResponseModel,
         backend_config={
             "sqlalchemy": {

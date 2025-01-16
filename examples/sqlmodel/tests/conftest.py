@@ -3,13 +3,10 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
-from sqlalchemy.orm import noload
-from better_crud import FastAPICrudGlobalConfig, AbstractResponseModel, crud
-from sqlmodel import SQLModel
+from better_crud import BetterCrudGlobalConfig, crud
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from starlette.requests import Request
-from sqlalchemy.orm import sessionmaker
 from app.models.user import User, UserPublic
 from app.models.role import Role
 from app.models.company import Company
@@ -20,7 +17,6 @@ from app.models.user_profile import UserProfile
 from app.services.user_task import UserTaskService
 from app.services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from contextlib import asynccontextmanager
 from .helper import setup_database
 import pytest_asyncio
 import pytest
@@ -110,7 +106,7 @@ def client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -131,7 +127,7 @@ def auth_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -167,7 +163,7 @@ def params_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -205,7 +201,7 @@ def fixed_filter_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -240,7 +236,7 @@ def include_deleted_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -274,7 +270,7 @@ def join_config_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session

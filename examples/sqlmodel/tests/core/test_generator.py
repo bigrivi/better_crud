@@ -1,7 +1,7 @@
 from asyncio import Future
 from typing import Optional, Any
 from unittest.mock import MagicMock
-from better_crud import FastAPICrudGlobalConfig, crud_generator
+from better_crud import BetterCrudGlobalConfig, crud_generator
 from sqlalchemy import select
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
@@ -28,7 +28,7 @@ def company_client(
     async_session
 ):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session

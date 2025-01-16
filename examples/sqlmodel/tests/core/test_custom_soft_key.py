@@ -3,7 +3,7 @@ import pytest
 from sqlmodel import Field, SQLModel, Relationship, Column, DateTime
 from datetime import datetime
 from sqlalchemy import select
-from better_crud import FastAPICrudGlobalConfig, crud
+from better_crud import BetterCrudGlobalConfig, crud
 from better_crud.service.sqlalchemy import SqlalchemyCrudService
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
@@ -40,7 +40,7 @@ class PersonService(SqlalchemyCrudService[Person]):
 @pytest.mark.asyncio
 async def test_custom_soft_key(async_session):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session

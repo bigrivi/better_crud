@@ -70,7 +70,7 @@ RoutesSchema: List[RouteSchema] = [
 ]
 
 
-class FastAPICrudGlobalConfig:
+class BetterCrudGlobalConfig:
     query: ClassVar[GlobalQueryOptions] = GlobalQueryOptions()
     routes: ClassVar[Optional[RoutesModel]] = RoutesModel()
     delim_config: ClassVar[Optional[QueryDelimOptions]] = None

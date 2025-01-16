@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 from fastapi import FastAPI, Request, status, HTTPException, Depends
 from app.core.depends import JWTDepend, ACLDepend
-from better_crud import FastAPICrudGlobalConfig, get_action, get_feature
+from better_crud import BetterCrudGlobalConfig, get_action, get_feature
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware, db
 from app.core.schema import ResponseSchema
 from app.db.session import engine
@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 import gc
 
 
-FastAPICrudGlobalConfig.init(
+BetterCrudGlobalConfig.init(
     backend_config={
         "sqlalchemy": {
             "db_session": lambda: db.session
