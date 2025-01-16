@@ -1,6 +1,6 @@
 from .decorator import crud
 from .models import AbstractResponseModel, JoinOptionModel
-from .config import FastAPICrudGlobalConfig
+from .config import BetterCrudGlobalConfig
 from .helper import get_feature, get_action, decide_should_paginate
 from .types import QuerySortDict
 from .pagination import Page, AbstractPage
@@ -16,7 +16,7 @@ __all__ = [
     "crud_generator",
     "AbstractResponseModel",
     "JoinOptionModel",
-    "FastAPICrudGlobalConfig",
+    "BetterCrudGlobalConfig",
     "get_feature",
     "get_action",
     "decide_should_paginate",

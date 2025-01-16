@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from better_crud import FastAPICrudGlobalConfig, crud
+from better_crud import BetterCrudGlobalConfig, crud
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from app.services.user import UserService
@@ -8,7 +8,7 @@ from app.models.user import UserPublic
 
 def test_only(async_session):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -43,7 +43,7 @@ def test_only(async_session):
 
 def test_exclude(async_session):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -76,7 +76,7 @@ def test_exclude(async_session):
 
 def test_override(async_session, init_data):
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -113,7 +113,7 @@ def test_dependencies(async_session):
     async def depend_fn():
         depend_fn_mock()
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session
@@ -152,7 +152,7 @@ def test_dependencies_override(async_session):
     async def depend_fn2():
         depend_fn_mock2()
     app = FastAPI()
-    FastAPICrudGlobalConfig.init(
+    BetterCrudGlobalConfig.init(
         backend_config={
             "sqlalchemy": {
                 "db_session": lambda: async_session

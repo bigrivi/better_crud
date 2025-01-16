@@ -7,7 +7,7 @@ from .types import QuerySortDict
 from .models import SerializeModel, RouteOptions, PathParamModel, JoinOptions
 from .enums import RoutesEnum
 
-from .config import FastAPICrudGlobalConfig
+from .config import BetterCrudGlobalConfig
 FindType = TypeVar('FindType')
 
 
@@ -26,7 +26,7 @@ def get_action(request: Request) -> Optional[str]:
 
 
 def filter_to_search(filter_str: str) -> Dict:
-    filters = filter_str.split(FastAPICrudGlobalConfig.delim_config.delim)
+    filters = filter_str.split(BetterCrudGlobalConfig.delim_config.delim)
     field = filters[0]
     operator = filters[1]
     value = filters[2] if len(filters) == 3 else None
@@ -108,10 +108,10 @@ def parse_query_sort(
 ) -> List[QuerySortDict]:
     sorts = []
     for item in raw_query_sorts:
-        if FastAPICrudGlobalConfig.delim_config.delim_str not in item:
+        if BetterCrudGlobalConfig.delim_config.delim_str not in item:
             raise Exception("invalid query sort")
         field, sort = item.split(
-            FastAPICrudGlobalConfig.delim_config.delim_str
+            BetterCrudGlobalConfig.delim_config.delim_str
         )
         sorts.append(QuerySortDict(field=field, sort=sort))
     return sorts

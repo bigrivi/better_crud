@@ -22,7 +22,7 @@ from .types import (
     SerializeModelDict,
     PathParamDict
 )
-from .config import FastAPICrudGlobalConfig
+from .config import BetterCrudGlobalConfig
 from .factory import crud_routes_factory
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
@@ -55,8 +55,8 @@ def crud(
             params=params,
             serialize=serialize,
             summary_vars=summary_vars,
-            routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
-            query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
+            routes={**BetterCrudGlobalConfig.routes.model_dump(), **routes},
+            query={**BetterCrudGlobalConfig.query.model_dump(), **query}
         )
         _init_cbv(cls)
         return crud_routes_factory(router, cls, options)

@@ -17,7 +17,7 @@ from .types import (
     SerializeModelDict,
     PathParamDict
 )
-from .config import FastAPICrudGlobalConfig
+from .config import BetterCrudGlobalConfig
 from .factory import crud_routes_factory
 from .service.abstract import AbstractCrudService
 from .backend import get_backend
@@ -52,10 +52,10 @@ def crud_generator(
         params=params,
         serialize=serialize,
         summary_vars=summary_vars,
-        routes={**FastAPICrudGlobalConfig.routes.model_dump(), **routes},
-        query={**FastAPICrudGlobalConfig.query.model_dump(), **query}
+        routes={**BetterCrudGlobalConfig.routes.model_dump(), **routes},
+        query={**BetterCrudGlobalConfig.query.model_dump(), **query}
     )
-    backend_name = FastAPICrudGlobalConfig.backend_config.backend
+    backend_name = BetterCrudGlobalConfig.backend_config.backend
     backend_cls = get_backend(backend_name)
 
     class LocalCrudService(backend_cls[model]):
