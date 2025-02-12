@@ -96,6 +96,7 @@ class JoinOptionsDict(TypedDict, total=False):
     join: Optional[bool] = True
     select_only_detail: Optional[bool] = False
     additional_filter_fn: Optional[Callable[[Any], List[Any]]] = None
+    alias: Optional[Any] = None
 
 
 class QueryOptionsDict(TypedDict, total=False):
