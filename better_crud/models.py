@@ -70,6 +70,7 @@ class JoinOptionModel(BaseModel):
     join: Optional[bool] = True
     select_only_detail: Optional[bool] = False
     additional_filter_fn: Optional[Callable[[Any], List[Any]]] = None
+    alias: Any = None
 
 
 JoinOptions = Dict[str, JoinOptionModel]

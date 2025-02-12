@@ -126,7 +126,11 @@ class SqlalchemyCrudService(
                             model_field, operator, obj[operator]))
                 return and_(*clauses)
 
-    def create_search_condition(self, search: Dict) -> List[Any]:
+    def create_search_condition(
+        self,
+        search: Dict,
+        joins: Optional[JoinOptions] = None,
+    ) -> List[Any]:
         if not isinstance(search, dict) or not search:
             return []
         conds = []
@@ -134,10 +138,10 @@ class SqlalchemyCrudService(
             and_values = search.get(LOGICAL_OPERATOR_AND)
             if len(and_values) == 1:  # {$and: [{}]}
                 conds.append(
-                    and_(*self.create_search_condition(and_values[0])))
+                    and_(*self.create_search_condition(and_values[0], joins)))
             else:  # {$and: [{},{},...]}
                 clauses = [
-                    and_(*self.create_search_condition(and_value))
+                    and_(*self.create_search_condition(and_value, joins))
                     for and_value in and_values
                 ]
                 conds.append(and_(*clauses))
@@ -148,13 +152,13 @@ class SqlalchemyCrudService(
                     if len(value) == 1:
                         conds.append(
                             and_(
-                                *self.create_search_condition(value[0])
+                                *self.create_search_condition(value[0], joins)
                             )
                         )
                     else:
                         clauses = [
                             and_(
-                                *self.create_search_condition(or_value)
+                                *self.create_search_condition(or_value, joins)
                             ) for or_value in value
                         ]
                         conds.append(or_(*clauses))
@@ -167,7 +171,7 @@ class SqlalchemyCrudService(
                         )
                     )
                 else:
-                    conds.append(self.get_model_field(field) == value)
+                    conds.append(self.get_model_field(field, joins) == value)
         return conds
 
     def _create_join_options(
@@ -216,7 +220,7 @@ class SqlalchemyCrudService(
         conds = []
         options: Sequence[ORMOption] = []
         if search:
-            conds = conds + self.create_search_condition(search)
+            conds = conds + self.create_search_condition(search, joins)
         if self.entity_has_delete_column and soft_delete:
             soft_deleted_field = BetterCrudGlobalConfig.soft_deleted_field_key
             if not include_deleted:
@@ -229,6 +233,8 @@ class SqlalchemyCrudService(
             for field_key, config in joins.items():
                 if config.join:
                     join_field = self.get_model_field(field_key)
+                    if config.alias:
+                        join_field = join_field.of_type(config.alias)
                     stmt = stmt.join(join_field, isouter=True)
             options = self._create_join_options(
                 build_join_option_tree(joins),
@@ -616,13 +622,21 @@ class SqlalchemyCrudService(
         else:
             raise NotSupportOperatorException(operator)
 
-    def get_model_field(self, field):
+    def get_model_field(
+        self,
+        field,
+        joins: Optional[JoinOptions] = None
+    ):
         field_parts = field.split(".")
         model_field = None
         if len(field_parts) > 1:
             relation_cls = None
             relationships = self.entity.__mapper__.relationships
             for index, field_part in enumerate(field_parts):
+                # query in alias
+                if joins and field_part in joins and joins.get(field_part).alias:
+                    relation_cls = joins.get(field_part).alias
+                    continue
                 if relation_cls:
                     model_field = getattr(relation_cls, field_part, None)
                     if index == len(field_parts)-1:
