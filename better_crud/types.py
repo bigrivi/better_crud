@@ -61,6 +61,7 @@ class RoutesModelDict(TypedDict, total=False):
     create_one: Optional[RouteOptionsDict] = None
     create_many: Optional[RouteOptionsDict] = None
     update_one: Optional[RouteOptionsDict] = None
+    update_many: Optional[RouteOptionsDict] = None
     delete_many: Optional[RouteOptionsDict] = None
 
 
