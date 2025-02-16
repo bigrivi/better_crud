@@ -47,6 +47,8 @@ nav:
   - Usage:
       - Global Config: usage/global_config.md
       - CRUD Decorator: usage/crud.md
+      - Filter: usage/filter.md
+      - Pagination: usage/pagination.md
   - Advanced:
       - Overview: advanced/overview.md
       - Custom Endpoints: advanced/endpoint.md

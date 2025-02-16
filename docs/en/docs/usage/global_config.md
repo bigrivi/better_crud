@@ -48,6 +48,9 @@ register_router()
   - [2. Custom Your Backend](#2-custom-your-backend)
 - [query](#query)
 - [routes](#routes)
+  - [1. Set global dependencies](#1-set-global-dependencies)
+  - [2. Only Get Many,Get One route](#2-only-get-manyget-one-route)
+  - [3. Exclude Create Many route](#3-exclude-create-many-route)
 - [delim\_config](#delim_config)
 - [soft\_deleted\_field\_key](#soft_deleted_field_key)
 - [action\_map](#action_map)
@@ -167,7 +170,111 @@ QuerySortDict
 
 ## routes
 
+
+| Name         | Type                     | Description                     |
+| ------------ | ------------------------ | ------------------------------- |
+| dependencies | Sequence[params.Depends] | Set the depends of the route    |
+| only         | List[RoutesEnumType]     | Only contain routes             |
+| exclude      | List[RoutesEnumType]     | Routes that need to be excluded |
+| get_many     | RouteOptionsDict         | Route config for get_many       |
+| get_one      | RouteOptionsDict         | Route config for get_one        |
+| create_one   | RouteOptionsDict         | Route config for create_one     |
+| create_many  | RouteOptionsDict         | Route config for create_many    |
+| update_one   | RouteOptionsDict         | Route config for update_one     |
+| update_many  | RouteOptionsDict         | Route config for update_many    |
+| delete_many  | RouteOptionsDict         | Route config for delete_many    |
+
+```python
+
+RoutesEnumType = Literal[
+    "get_many",
+    "get_one",
+    "create_one",
+    "create_many",
+    "update_one",
+    "update_many",
+    "delete_many"
+]
+
+class RouteOptionsDict(TypedDict, total=False):
+    dependencies: Optional[Sequence[params.Depends]] = None
+    summary: Optional[str] = None
+
+```
+
+RouteOptionsDict
+
+| Name         | Type                     | Description                    |
+| ------------ | ------------------------ | ------------------------------ |
+| dependencies | Sequence[params.Depends] | Set the depends of the route   |
+| summary      | str                      | Set the summary of the swagger |
+
+### 1. Set global dependencies
+
+```python
+from fastapi.security import HTTPBearer
+from fastapi import Depends
+JWTDepend = Depends(HTTPBearer())
+
+BetterCrudGlobalConfig.init(
+    routes={
+        "dependencies":[JWTDepend],
+    }
+)
+
+```
+
+### 2. Only Get Many,Get One route
+
+```python
+from fastapi.security import HTTPBearer
+from fastapi import Depends
+JWTDepend = Depends(HTTPBearer())
+
+BetterCrudGlobalConfig.init(
+    routes={
+        "only":["get_many","get_one"]
+    }
+)
+
+```
+
+### 3. Exclude Create Many route
+
+
+```python
+from fastapi.security import HTTPBearer
+from fastapi import Depends
+JWTDepend = Depends(HTTPBearer())
+
+BetterCrudGlobalConfig.init(
+    routes={
+        "exclude":["create_many"]
+    }
+)
+
+```
+
+
 ## delim_config
+
+Splitter config
+```python
+class QueryDelimOptionsDict(TypedDict, total=False):
+    delim: Optional[str] = "||"
+    delim_str: Optional[str] = ","
+```
+delim is used to split multiple query criteria
+
+- ?filter=field||condition||value
+- ?filter=user_name||$eq||alice
+- ?filter=age||$gt||20
+
+delim_str is used to split order field and sort by
+
+- ?order=age,ASC
+- ?order=id,DESC
+
 
 ## soft_deleted_field_key
 

@@ -4,6 +4,13 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.0.6] - Feb 16, 2025
+
+#### Fixed
+- Sorting can't use the Related Table alias field
+- Under certain conditions, queries using alias tables are invalid
+
+___
 ## [0.0.5] - Feb 12, 2025
 
 #### Added
