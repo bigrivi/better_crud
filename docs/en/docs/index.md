@@ -43,7 +43,7 @@
 | /resource/{id}       | **GET**    | Get One     |
 | /resource            | **POST**   | Create One  |
 | /resource/bulk       | **POST**   | Create Many |
-| /resource            | **PUT**    | Update One  |
+| /resource/{id}       | **PUT**    | Update One  |
 | /resource/{ids}/bulk | **PUT**    | Update Many |
 | /resource/{ids}      | **DELETE** | Delete Many |
 
