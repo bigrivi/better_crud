@@ -65,11 +65,16 @@ class SqlalchemyCrudService(
         self.entity_has_delete_column = hasattr(
             self.entity, BetterCrudGlobalConfig.soft_deleted_field_key)
 
-    def prepare_order(self, query, sorts: List[QuerySortDict]):
+    def prepare_order(
+            self,
+            query,
+            sorts: List[QuerySortDict],
+            joins: Optional[JoinOptions] = None
+        ):
         order_bys = []
         if sorts:
             for sort_item in sorts:
-                field = self.get_model_field(sort_item["field"])
+                field = self.get_model_field(sort_item["field"],joins)
                 sort = sort_item["sort"]
                 if sort == "ASC":
                     order_bys.append(field.asc())
@@ -82,19 +87,21 @@ class SqlalchemyCrudService(
         self,
         logical_operator: str,
         field: str,
-        obj: Dict[str, Any]
+        obj: Dict[str, Any],
+        joins: Optional[JoinOptions] = None,
     ):
         logical_operator = logical_operator or LOGICAL_OPERATOR_AND
         if not isinstance(obj, dict):
             return None
-        model_field = self.get_model_field(field)
+        model_field = self.get_model_field(field,joins)
         keys = list(obj.keys())
         if len(keys) == 1:
             if keys[0] == LOGICAL_OPERATOR_OR:
                 return self.create_search_field_object_condition(
                     LOGICAL_OPERATOR_OR,
                     field,
-                    obj.get(LOGICAL_OPERATOR_OR)
+                    obj.get(LOGICAL_OPERATOR_OR),
+                    joins
                 )
             else:
                 return self.build_query_expression(
@@ -118,7 +125,8 @@ class SqlalchemyCrudService(
                             self.create_search_field_object_condition(
                                 LOGICAL_OPERATOR_OR,
                                 field,
-                                obj.get(operator)
+                                obj.get(operator),
+                                joins
                             )
                         )
                     else:
@@ -167,7 +175,8 @@ class SqlalchemyCrudService(
                         self.create_search_field_object_condition(
                             LOGICAL_OPERATOR_AND,
                             field,
-                            value
+                            value,
+                            joins
                         )
                     )
                 else:
@@ -244,7 +253,7 @@ class SqlalchemyCrudService(
             stmt = stmt.options(*options)
         stmt = stmt.distinct()
         stmt = stmt.where(*conds)
-        stmt = self.prepare_order(stmt, sorts)
+        stmt = self.prepare_order(stmt, sorts,joins)
         stmt = stmt.execution_options(populate_existing=True)
         return stmt
 
