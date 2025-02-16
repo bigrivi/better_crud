@@ -20,12 +20,26 @@
  </a>
 </p>
 
+---
+
+**Documentation**: <a href="https://bigrivi.github.io/better_crud/" target="_blank">https://bigrivi.github.io/better_crud/</a>
+
+**Source Code**: <a href="https://github.com/bigrivi/better_crud" target="_blank">https://github.com/bigrivi/better_crud</a>
+
+---
+
+
 
 ## Requirements
 - **Python:** Version 3.9 or newer.
 - **FastAPI:** BetterCRUD is built to work with FastAPI, so having FastAPI in your project is essential.
 - <b>SQLAlchemy:</b> Version 2.0.30 or newer. BetterCRUD uses SQLAlchemy for database operations.
 - <b>Pydantic:</b> Version 2.7.3 or newer. BetterCRUD leverages Pydantic models for data validation and serialization.
+
+## Installation
+```bash
+pip install better-crud
+```
 
 ## Features
 - Fully Async, Synchronization is not supported
@@ -54,10 +68,6 @@
 | /resource/{ids}      | **DELETE** | Delete Many |
 
 
-## Installation
-```bash
-pip install better-crud
-```
 
 ## Minimal Example
 
