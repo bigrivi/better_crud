@@ -312,7 +312,9 @@ def join_config_client(
     class UserController():
         service: UserService = Depends(UserService)
     api_router = APIRouter()
+    from app.routers.post import router as post_router
     api_router.include_router(user_router, prefix="/user")
+    api_router.include_router(post_router, prefix="/posts")
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client

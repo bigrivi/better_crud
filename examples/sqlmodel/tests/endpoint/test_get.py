@@ -181,6 +181,30 @@ async def test_get_many_join_relation(join_config_client: TestClient, test_user_
     assert len(response.json()) == 1
 
 
+
+@pytest.mark.asyncio
+async def test_get_many_join_with_alias(async_session,join_config_client: TestClient, init_data):
+    from app.models.post import Post
+    post = Post()
+    post.title = "test"
+    post.creater_user_id = 1
+    post.modifier_user_id = 2
+    async_session.add(post)
+    await async_session.commit()
+    # response = join_config_client.get("/posts",
+    #     params={
+    #         "filter":["creater_user.user_name||$eq||bob"]
+    #     },
+    # )
+    # assert len(response.json()) == 1
+    response = join_config_client.get("/posts",
+        params={
+            "filter":["modifier_user.user_name||$eq||alice"]
+        },
+    )
+    assert len(response.json()) == 1
+
+
 @pytest.mark.asyncio
 async def test_get_one_basic(client: TestClient, async_session, test_user_data, init_data):
     response = client.get("/user/1")
