@@ -21,12 +21,6 @@
 </p>
 
 
-## Requirements
-- **Python:** Version 3.9 or newer.
-- **FastAPI:** BetterCRUD is built to work with FastAPI, so having FastAPI in your project is essential.
-- <b>SQLAlchemy:</b> Version 2.0.30 or newer. BetterCRUD uses SQLAlchemy for database operations.
-- <b>Pydantic:</b> Version 2.7.3 or newer. BetterCRUD leverages Pydantic models for data validation and serialization.
-
 ## Features
 - Fully Async, Synchronization is not supported
 - Less boilerplate code
@@ -54,16 +48,13 @@
 | /resource/{ids}      | **DELETE** | Delete Many |
 
 
-## Installation
-```bash
-pip install better-crud
-```
 
 ## Minimal Example
 
-Prerequisites,Prepare our db, Only asynchronous mode is supported,aiomysql or aiosqlite
-**db.py**
-```python
+!!! warning
+    Prerequisites,Prepare our db, Only asynchronous mode is supported,aiomysql or aiosqlite
+
+```python title="db.py"
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 from typing import AsyncGenerator
 from sqlalchemy.orm import sessionmaker
@@ -108,8 +99,7 @@ async def init_db():
 
 First Define Your Model And Schema
 
-**model.py**
-```python
+```python title="model.py"
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from .db import Base
@@ -123,8 +113,7 @@ class Pet(Base):
 
 ```
 
-**schema.py**
-```python
+```python title="schema.py"
 from typing import Optional, List
 from pydantic import BaseModel
 
@@ -149,8 +138,7 @@ class PetUpdate(PetBase):
 
 Next we need to create a service:
 
-**service.py**
-```python
+```python title="service.py"
 from better_crud.service.sqlalchemy import SqlalchemyCrudService
 from .model import Pet
 
@@ -163,8 +151,8 @@ class PetService(SqlalchemyCrudService[Pet]):
 
 Next we need to define the controller and decorate it with the crud decorator
 Sure the controller is just a normal class,The crud decorator gives it super powers
-**controller.py**
-```python
+
+```python title="controller.py"
 from fastapi import APIRouter, Depends
 from better_crud import crud
 from .schema import PetCreate, PetUpdate, PetPublic
@@ -190,8 +178,7 @@ class PetController():
 
 Next we can register router to the fastapi routing system
 
-**main.py**
-```python
+```python title="main.py" hl_lines="24-33"
 from better_crud import BetterCrudGlobalConfig
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
@@ -229,24 +216,6 @@ Congratulations, your first CRUD route has been created！
 
 ![OpenAPI Route Overview](https://raw.githubusercontent.com/bigrivi/better_crud/main/resources/RouteOverview.png)
 
-
-## Author
-
-👤 **bigrivi**
-* GitHub: [bigrivi](https://github.com/bigrivi)
-
-## 🤝 Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## License
 
