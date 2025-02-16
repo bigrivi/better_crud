@@ -1,0 +1,58 @@
+# BetterCRUD Changelog
+
+## Introduction
+
+The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
+___
+## [0.0.5] - Feb 12, 2025
+
+#### Added
+- Add model alias to query,avoid Not unique table/alias errors
+
+
+###### Usage Example
+
+
+```python  hl_lines="34"
+from sqlalchemy.orm import aliased
+
+ModifierUser = aliased(User)
+
+class Post(PostBase, table=True):
+    __tablename__ = "post"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    creater_user_id: Optional[int] = Field(
+        default=None, foreign_key="user.id"
+    )
+    modifier_user_id: Optional[int] = Field(
+        default=None, foreign_key="user.id"
+    )
+
+    creater_user: User = Relationship(
+        sa_relationship_kwargs={"uselist": False, "lazy": "noload", "foreign_keys": "[Post.creater_user_id]"})
+
+    modifier_user: User = Relationship(
+        sa_relationship_kwargs={"uselist": False, "lazy": "noload", "foreign_keys": "[Post.modifier_user_id]"})
+
+@crud(
+    router,
+    dto={"create": PostCreate, "update": PostUpdate},
+    serialize={"base": PostPublic},
+    query={
+        "joins": {
+            "creater_user": {
+                "select": True,
+                "join": True
+            },
+            "modifier_user": {
+                "select": True,
+                "join": True,
+                "alias": ModifierUser
+            }
+        },
+    }
+)
+class PostController():
+    service: PostService = Depends(PostService)
+
+```

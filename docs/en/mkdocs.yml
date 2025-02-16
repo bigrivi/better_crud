@@ -1,0 +1,77 @@
+site_name: BetterCRUD
+site_author: bigrivi
+
+theme:
+  name: material
+  font:
+    text: Ubuntu
+  language: en
+  icon:
+    repo: fontawesome/brands/github-alt
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.tabs
+    - navigation.indexes
+    - search.suggest
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_source: true
+nav:
+  - BetterCRUD: index.md
+  - Installing: installing.md
+  - Quick-Start: quick-start.md
+  - Using SQLModel: sqlmodel.md
+  - Usage:
+      - Global Config: usage/global_config.md
+      - CRUD Decorator: usage/crud.md
+  - Advanced:
+      - Overview: advanced/overview.md
+      - Custom Endpoints: advanced/endpoint.md
+      - Advanced CRUD Usage: advanced/crud.md
+      - Joining Models: advanced/joins.md
+  - Community:
+      - Overview: community/overview.md
+      - Contributing: community/CONTRIBUTING.md
+      - Code of Conduct: community/CODE_OF_CONDUCT.md
+      - License: community/LICENSE.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - pymdownx.details:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+repo_name: bigrivi/better_crud
+repo_url: https://github.com/bigrivi/better_crud
