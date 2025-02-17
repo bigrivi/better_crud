@@ -21,13 +21,44 @@
 </p>
 
 
+---
+
+**Documentation**: <a href="https://bigrivi.github.io/better_crud/" target="_blank">https://bigrivi.github.io/better_crud/</a>
+
+**Source Code**: <a href="https://github.com/bigrivi/better_crud" target="_blank">https://github.com/bigrivi/better_crud</a>
+
+---
+
+BetterCRUD is a library that can quickly generate CRUD routes for you without any intrusion to your code. You can still control everything. When you are troubled by a large number of repeated CRUD routes, I believe it can help you and bring you a different development experience, saving you a lot of time and allowing you to focus more on business logic.
+
+BetterCRUD is reliable, fully tested, and used in project production environments.
+
+BetterCRUD is a way to dynamically generate routes by combining your model with the crud decorator,I believe bring you a different development experience
+
+```python
+@crud(
+    router,
+    dto={
+        "create": PetCreate,
+        "update": PetUpdate
+    },
+    serialize={
+        "base": PetPublic,
+    },
+    **other_options
+)
+class PetController():
+    service: PetService = Depends(PetService)
+
+```
+
 ## Features
 - Fully Async, Synchronization is not supported
 - Less boilerplate code
 - Configuring static type support
 - More flexible custom configuration，Less invasive
 - Compatible with both class views and functional views
-- Rich filter, paging, and sorting support
+- Rich filter, pagination, and sorting support
 - Automated relationship support, query, auto-build and update
 - Extensible custom backend
 
