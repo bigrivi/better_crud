@@ -278,8 +278,73 @@ delim_str is used to split order field and sort by
 
 ## soft_deleted_field_key
 
+To set up a soft-delete field, you can use e.g. deleted_at, expiry_at,Represents a timestamp,When the data was deleted
+
 ## action_map
+
+Default ACL action map
+
+| Route       | Action     |
+| ----------- | ---------- |
+| get_many    | **read**   |
+| read_one    | **read**   |
+| create_one  | **create** |
+| create_many | **create** |
+| update_one  | **update** |
+| update_many | **update** |
+| delete_many | **delete** |
+
+Your can custom your action map
+
+```python
+
+BetterCrudGlobalConfig.init(
+    action_map={
+        RoutesEnum.get_many: "read-all",
+        RoutesEnum.get_one: "read-one",
+        RoutesEnum.create_one:"create-one"
+        RoutesEnum.create_many: "create-many",
+        RoutesEnum.update_one: "update-one",
+        RoutesEnum.update_many: "update-many",
+        RoutesEnum.delete_many: "delete-many"
+    }
+)
+
+
+```
 
 ## page_schema
 
 ## response_schema
+
+Configure global response schema
+
+```python
+
+from typing import Any, TypeVar, Generic
+from better_crud import AbstractResponseModel
+T = TypeVar("T")
+
+class ResponseModel(AbstractResponseModel, Generic[T]):
+
+    code: int = 200
+    msg: str = "Success"
+    data: T | None = None
+
+    @classmethod
+    def create(
+        cls, content: Any
+    ):
+        return cls(
+            data=content,
+            msg="success"
+        )
+
+
+BetterCrudGlobalConfig.init(
+    response_schema=ResponseModel,
+)
+
+
+
+```
