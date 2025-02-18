@@ -47,12 +47,11 @@ nav:
   - Usage:
       - Global Config: usage/global_config.md
       - CRUD Decorator: usage/crud.md
-      - Filter: usage/filter.md
-      - Pagination: usage/pagination.md
+      - Routing: usage/routing.md
+      - Query params: usage/query_params.md
   - Advanced:
       - Overview: advanced/overview.md
-      - Custom Endpoints: advanced/endpoint.md
-      - Advanced CRUD Usage: advanced/crud.md
+      - Function based view: advanced/function_based_view.md
       - Joining Models: advanced/joins.md
   - Community:
       - Overview: community/overview.md
