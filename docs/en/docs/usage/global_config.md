@@ -315,9 +315,85 @@ BetterCrudGlobalConfig.init(
 
 ## page_schema
 
+BetterCRUD uses [fastapi-pagination](https://github.com/uriyyo/fastapi-pagination)
+ as the built-in paging method, so you can customize your paging model more flexibly
+
+By default, page and size are used as paging query parameters.
+
+?page=1&size=10
+
+Of course you can change this behavior,the following example uses page1 and size1 as URL query parameters
+
+```python title="pagination.py"
+from __future__ import annotations
+
+import math
+from typing import Generic, Sequence, TypeVar, Optional, Any
+from fastapi import Query
+from fastapi_pagination.bases import AbstractPage, AbstractParams, RawParams
+from pydantic import BaseModel
+
+
+T = TypeVar('T')
+
+
+class Params(BaseModel, AbstractParams):
+    page1: Optional[int] = Query(
+        default=None, gte=0, description='Page number')
+    size1: Optional[int] = Query(
+        default=None,
+        gte=0,
+        le=100,
+        description='Page size'
+    )
+
+    def to_raw_params(self) -> RawParams:
+        return RawParams(
+            limit=self.size1,
+            offset=self.size1 * (self.page1 - 1),
+        )
+
+
+class Page(AbstractPage[T], Generic[T]):
+    records: Sequence[T]
+    total: int
+    page: int
+    size: int
+    pages: int
+    __params_type__ = Params
+
+    @classmethod
+    def create(
+        cls,
+        items: Sequence[T],
+        params: Params,
+        *,
+        total: Optional[int] = None,
+        **kwargs: Any,
+    ) -> Page[T]:
+        size = params.size1 if params.size1 is not None else (total or None)
+        page = params.page1 if params.page1 is not None else 1
+        if size in {0, None}:
+            pages = 0
+        elif total is not None:
+            pages = math.ceil(total / size)
+        else:
+            pages = None
+        return cls(records=items, total=total, page=page, size=size, pages=pages)
+
+```
+
+```python title="main.py"
+
+BetterCrudGlobalConfig.init(
+    page_schema=Page
+)
+
+```
+
 ## response_schema
 
-Configure global response schema
+Configure your response schema
 
 ```python
 
