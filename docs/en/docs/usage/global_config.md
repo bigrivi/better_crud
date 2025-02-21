@@ -129,9 +129,16 @@ Your backend class inherits AbstractCrudService and implements its abstract meth
 
 The business service inherits from it
 ```python title="service.py"
-from better_crud.service.sqlalchemy import SqlalchemyCrudService
+from better_crud import register_backend
+from better_crud.service.abstract import AbstractCrudService
 from .model import Pet
 
+@register_backend("custom")
+class YourCustomCrudService(
+    Generic[ModelType],
+    AbstractCrudService[ModelType]
+):
+    pass
 
 class PetService(YourCustomCrudService[Pet]):
     def __init__(self):
@@ -170,6 +177,7 @@ QuerySortDict
 
 ## routes
 
+Used to exclude or include only some routes, and to set route dependencies
 
 | Name         | Type                     | Description                     |
 | ------------ | ------------------------ | ------------------------------- |
@@ -284,6 +292,7 @@ To set up a soft-delete field, you can use e.g. deleted_at, expiry_at,Represents
 
 Default ACL action map
 
+
 | Route       | Action     |
 | ----------- | ---------- |
 | get_many    | **read**   |
@@ -312,6 +321,9 @@ BetterCrudGlobalConfig.init(
 
 
 ```
+
+Used to set the value returned by the corresponding route get_action function in [ACL Guard](/advanced/acl_guard)
+
 
 ## page_schema
 

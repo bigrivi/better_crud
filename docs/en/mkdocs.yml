@@ -12,7 +12,11 @@ theme:
     - navigation.instant
     - navigation.instant.prefetch
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
     - search.suggest
     - content.code.copy
   palette:
@@ -51,6 +55,7 @@ nav:
       - Query params: usage/query_params.md
   - Advanced:
       - Overview: advanced/overview.md
+      - ACL Guard: advanced/acl_guard.md
       - Function based view: advanced/function_based_view.md
       - Joining Models: advanced/joins.md
   - Community:
