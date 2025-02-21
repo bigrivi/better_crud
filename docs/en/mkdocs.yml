@@ -3,8 +3,6 @@ site_author: bigrivi
 
 theme:
   name: material
-  font:
-    text: Ubuntu
   language: en
   icon:
     repo: fontawesome/brands/github-alt
