@@ -27,7 +27,7 @@ BetterCrudGlobalConfig.init(
 
 ```
 
-### 2. Disable a specific route
+### 2. Disable in specific routes
 ```python
 
 @crud(
