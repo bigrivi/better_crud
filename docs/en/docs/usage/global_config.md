@@ -336,7 +336,7 @@ By default, page and size are used as paging query parameters.
 
 Of course you can change this behavior,the following example uses page1 and size1 as URL query parameters
 
-```python title="pagination.py"
+```python title="pagination.py" hl_lines="14-21"
 from __future__ import annotations
 
 import math
