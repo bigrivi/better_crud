@@ -12,9 +12,3 @@ To install, just run:
 ```sh
 pip install better-crud
 ```
-
-Or, if using poetry:
-
-```sh
-poetry add better-crud
-```
