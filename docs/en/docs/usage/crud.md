@@ -186,7 +186,7 @@ class QueryOptionsDict(TypedDict, total=False):
 
 | Name                  | Type                       | Description                                        |
 | --------------------- | -------------------------- | -------------------------------------------------- |
-| joins                 | Dict[str, JoinOptionsDict] | Set the depends of the route                       |
+| joins                 | Dict[str, JoinOptionsDict] | [Set the depends of the route](/advanced/joins)    |
 | soft_delete           | bool                       | Whether to allow soft deletion                     |
 | allow_include_deleted | bool                       | Set whether to allow the inclusion of deleted data |
 | filter                | Dict                       | Some filter conditions                             |

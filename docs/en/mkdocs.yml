@@ -52,11 +52,10 @@ nav:
       - Routing: usage/routing.md
       - Query params: usage/query_params.md
   - Advanced:
-      - Overview: advanced/overview.md
       - ACL Guard: advanced/acl_guard.md
       - Function based view: advanced/function_based_view.md
       - Joining Models: advanced/joins.md
-      - Hooks: advanced/hooks.md
+      - CRUD Hooks: advanced/hooks.md
   - Community:
       - Overview: community/overview.md
       - Contributing: community/CONTRIBUTING.md
