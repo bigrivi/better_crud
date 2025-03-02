@@ -2,7 +2,7 @@ In real projects, models are related and may reference each other. This is very 
 
 If there is a user model, similar to the following structure
 
-```python hl_lines="13-26"
+```python hl_lines="13-27"
 
 class UserBase(SQLModel):
     email: Optional[str] = Field(default=None)

@@ -1,3 +1,4 @@
+If you use SQLModel, please go directly to the [SQLModel](/sqlmodel/) chapter
 
 ## Minimal Example
 
