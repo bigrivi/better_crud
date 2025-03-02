@@ -69,7 +69,7 @@ pip install better-crud
 - More flexible custom configuration，Less invasive
 - Compatible with both class views and functional views
 - Rich filter, pagination, and sorting support
-- Automated relationship support, query, auto-build and update
+- Automated relationship support, query and storage
 - Extensible custom backend
 
 

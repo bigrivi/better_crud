@@ -20,16 +20,16 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: deep purple
+      primary: teal
+      accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
 
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: deep purple
+      primary: black
+      accent: black
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -56,11 +56,7 @@ nav:
       - Function based view: advanced/function_based_view.md
       - Joining Models: advanced/joins.md
       - CRUD Hooks: advanced/hooks.md
-  - Community:
-      - Overview: community/overview.md
-      - Contributing: community/CONTRIBUTING.md
-      - Code of Conduct: community/CODE_OF_CONDUCT.md
-      - License: community/LICENSE.md
+      - Relationship Storage: advanced/relationship.md
   - Changelog: changelog.md
 
 markdown_extensions:
