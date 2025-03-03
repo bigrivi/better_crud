@@ -137,7 +137,7 @@ api_router.include_router(user_task_router, prefix="/{user_id}/user_task")
 
 ## routes
 
-The function is the same as routes in [Global Config](/usage/global_config/#routes)
+The function is the same as routes in [Global Config](global_config.md/#routes)
 
 ## dto
 
@@ -186,7 +186,7 @@ class QueryOptionsDict(TypedDict, total=False):
 
 | Name                  | Type                       | Description                                        |
 | --------------------- | -------------------------- | -------------------------------------------------- |
-| joins                 | Dict[str, JoinOptionsDict] | [Set the depends of the route](/advanced/joins)    |
+| joins                 | Dict[str, JoinOptionsDict] | [Set the depends of the route](../advanced/joins.md)    |
 | soft_delete           | bool                       | Whether to allow soft deletion                     |
 | allow_include_deleted | bool                       | Set whether to allow the inclusion of deleted data |
 | filter                | Dict                       | Some filter conditions                             |
