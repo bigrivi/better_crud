@@ -3,6 +3,31 @@
 ## Introduction
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
+
+___
+## [0.0.7] - Mar 11, 2025
+#### Fixed
+- Support model alias in nested relationship
+
+```python  hl_lines="34"
+from sqlalchemy.orm import aliased
+
+ModifierUser = aliased(User)
+
+query={
+    "joins": {
+        "user": {
+            "join": True,
+            "select": True
+        },
+        "user.modifier": {
+            "join": True,
+            "alias": ModifierUser
+        }
+    }
+}
+
+```
 ___
 ## [0.0.6] - Feb 16, 2025
 
