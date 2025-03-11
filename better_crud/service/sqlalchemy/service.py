@@ -641,10 +641,12 @@ class SqlalchemyCrudService(
         if len(field_parts) > 1:
             relation_cls = None
             relationships = self.entity.__mapper__.relationships
+            # heads = []
             for index, field_part in enumerate(field_parts):
+                join_key = ".".join(field_parts[0:index+1])
                 # query in alias
-                if joins and field_part in joins and joins.get(field_part).alias:
-                    relation_cls = joins.get(field_part).alias
+                if joins and join_key in joins and joins.get(join_key).alias:
+                    relation_cls = joins.get(join_key).alias
                     continue
                 if relation_cls:
                     model_field = getattr(relation_cls, field_part, None)
