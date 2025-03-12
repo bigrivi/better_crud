@@ -71,6 +71,16 @@ class UserCreate(UserBase):
     company_id: Optional[int] = None
     projects: Optional[List[int]] = None
 
+class UserCreateWithRolesDict(UserBase):
+    user_name: str
+    password: str
+    profile: Optional[UserProfileCreate] = None
+    roles: Optional[List[dict]] = None
+    tasks: Optional[List[UserTaskCreate]] = None
+    staff: Optional[StaffCreate] = None
+    company_id: Optional[int] = None
+    projects: Optional[List[int]] = None
+
 
 class UserUpdate(UserBase):
     password: Optional[str] = None
