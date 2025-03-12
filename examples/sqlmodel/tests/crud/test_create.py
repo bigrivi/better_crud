@@ -2,7 +2,7 @@ import pytest
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate,UserCreateWithRolesDict
 from app.models.role import RoleCreate, Role
 from app.models.user_task import UserTaskCreateWithoutId
 from app.services.user import UserService
@@ -123,6 +123,32 @@ async def test_create_by_many_to_many(async_session, test_request, test_user_dat
             assert getattr(fetched_record.roles[index], key) == value
         assert fetched_record.roles[index].id == fetched_role_ids[index]
 
+
+@pytest.mark.asyncio
+async def test_create_by_many_to_many_dict(async_session, test_request, test_user_data, test_role_data):
+    user_service = UserService()
+    role_service = RoleService()
+    for role_data in test_role_data:
+        await role_service.crud_create_one(test_request, RoleCreate(**role_data), db_session=async_session)
+    result = await async_session.execute(select(Role))
+    fetched_roles: List[Role] = result.unique().scalars().all()
+    fetched_roles_with_id = [{"id":item.id} for item in fetched_roles]
+    new_data = UserCreateWithRolesDict(
+        **test_user_data[0],
+        roles=fetched_roles_with_id
+    )
+    await user_service.crud_create_one(test_request, new_data, db_session=async_session)
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
+    stmt = stmt.options(joinedload(User.roles))
+    result = await async_session.execute(stmt)
+    fetched_record: User = result.unique().scalar_one_or_none()
+    assert fetched_record is not None
+    assert fetched_record.email == test_user_data[0]["email"]
+    assert len(fetched_record.roles) == len(fetched_roles)
+    for index, role_item in enumerate(test_role_data):
+        for key, value in role_item.items():
+            assert getattr(fetched_record.roles[index], key) == value
+        assert fetched_record.roles[index].id == fetched_roles_with_id[index]["id"]
 
 @pytest.mark.asyncio
 async def test_create_by_auth_persist(async_session, test_request):

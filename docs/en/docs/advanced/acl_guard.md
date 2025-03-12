@@ -1,7 +1,7 @@
 Sometimes we want to implement an ACL Guard function
 ```python title="acl.py"
 from fastapi import Depends, Request
-from better_crud import get_feature
+from better_crud import get_feature,get_action
 
 async def acl(request: Request):
     feature = get_feature(request)

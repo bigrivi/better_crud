@@ -250,6 +250,16 @@ async def test_get_many_filter_with_invalid_operator(async_session, test_user_da
     with pytest.raises(NotSupportOperatorException):
         await user_service.crud_get_many(test_request, search=search, db_session=async_session)
 
+@pytest.mark.asyncio
+async def test_get_many_filter_with_invalid_value(async_session, test_user_data, test_request, init_data):
+    user_service = UserService()
+    search = {
+        "user_name": {
+            "$or": ["jim"]
+        }
+    }
+    fetched_records = await user_service.crud_get_many(test_request, search=search, db_session=async_session)
+    assert len(fetched_records) == 0
 
 @pytest.mark.asyncio
 async def test_get_many_filter_with_invalid_field(async_session, test_user_data, test_request, init_data):
