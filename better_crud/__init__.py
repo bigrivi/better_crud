@@ -9,7 +9,16 @@ from .generator import crud_generator
 from .backend import register_backend
 from .exceptions import *
 
-from ._version import __version__
+from ._version import (
+    __author__,
+    __author_email__,
+    __copyright__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+)
 
 __all__ = [
     "crud",

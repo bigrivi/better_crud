@@ -1,1 +1,8 @@
 __version__ = "0.0.7"
+__title__ = "better_crud"
+__author__ = "bigrivi"
+__author_email__ = "sunjianghong@gmail.com"
+__copyright__ = "Copyright 2024 bigrivi"
+__description__ = "A better CRUD library for FastAPI."
+__url__ = "https://github.com/bigrivi/better_crud"
+__license__ = "Apache License 2.0"

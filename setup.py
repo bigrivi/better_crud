@@ -1,10 +1,6 @@
 from pathlib import Path
-
+import os
 import setuptools
-
-VERSION = "0.0.7"
-
-NAME = "better_crud"
 
 INSTALL_REQUIRES = [
     "fastapi>=0.111.0",
@@ -12,20 +8,25 @@ INSTALL_REQUIRES = [
     "fastapi_pagination>=0.12.24",
     "pydantic>=2.7.3"
 ]
-
+about = {}
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, "better_crud", "_version.py"), "r", encoding="utf-8") as f:
+    exec(f.read(), about)
 
 setuptools.setup(
-    name=NAME,
-    keywords=["fastapi", "crud", "async", "sqlalchemy", "pydantic"],
-    version=VERSION,
-    description="A better CRUD library for FastAPI.",
-    url="https://github.com/bigrivi/better_crud",
+    name=about["__title__"],
+    keywords=["fastapi", "better-crud", "crud",
+              "async", "sqlalchemy", "pydantic"],
+    version=about["__version__"],
+    description=about["__description__"],
+    url=about["__url__"],
     project_urls={
+        "Documentation": "https://bigrivi.github.io/better_crud",
         "Source Code": "https://github.com/bigrivi/better_crud",
     },
-    author="bigrivi",
-    author_email="sunjianghong@gmail.com",
-    license="Apache License 2.0",
+    author=about["__author__"],
+    author_email=about["__author_email__"],
+    license=about["__license__"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
