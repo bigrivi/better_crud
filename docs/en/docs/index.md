@@ -35,6 +35,8 @@ BetterCRUD is reliable, fully tested, and used in project production environment
 
 BetterCRUD is a way to dynamically generate routes by combining your model with the crud decorator,I believe bring you a different development experience
 
+You only need to configure some crud options and define your model to produce powerful CRUD functions
+
 ```python
 @crud(
     router,
