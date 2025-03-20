@@ -257,6 +257,7 @@ register_router()
 
 Congratulations, your first CRUD route has been created！
 
+
 ![OpenAPI Route Overview](https://raw.githubusercontent.com/bigrivi/better_crud/main/resources/RouteOverview.png)
 
 ## Author
