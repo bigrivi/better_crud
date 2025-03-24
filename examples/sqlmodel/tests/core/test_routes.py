@@ -41,6 +41,43 @@ def test_only(async_session):
         assert response.status_code == 404
 
 
+def test_only_empty(async_session):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        routes={
+            "only": []
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        response = test_client.get("/user")
+        assert response.status_code == 404
+        response = test_client.post("/user")
+        assert response.status_code == 404
+        response = test_client.delete("/user/1")
+        assert response.status_code == 404
+        response = test_client.put("/user/1")
+        assert response.status_code == 404
+
+
 def test_exclude(async_session):
     app = FastAPI()
     BetterCrudGlobalConfig.init(

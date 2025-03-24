@@ -215,7 +215,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         router_name = schema["name"].value
         path = schema["path"]
         method = schema["method"]
-        if options.routes and options.routes.only:
+        if options.routes and options.routes.only is not None:
             if router_name not in options.routes.only:
                 continue
         if options.routes and options.routes.exclude:

@@ -3,7 +3,18 @@
 ## Introduction
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
-
+___
+## [0.0.8] - Mar 24, 2025
+#### Fixed
+- routes options **only** set to empty list does not take effect
+```python
+@crud(
+    user_router,
+    routes={
+        "only": []
+    }
+)
+```
 ___
 ## [0.0.7] - Mar 11, 2025
 #### Fixed
