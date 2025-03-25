@@ -5,6 +5,12 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.0] - Mar 25, 2025
+
+#### Added
+- Keep the s and filter query conditions not mutually exclusive and can be run in parallel
+
+___
 ## [0.0.9] - Mar 25, 2025
 
 #### Added

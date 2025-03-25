@@ -57,10 +57,10 @@ def parse_query_search(
     search = {"$and": []}
     search_list = []
     if search_spec:
-        search_list = [search_spec]
-    elif filters and ors:
+        search_list.append(search_spec)
+    if filters and ors:
         if len(filters) == 1 and len(ors) == 1:
-            search_list = [{
+            search_list.append({
                 "$or": [
                     {
                         **filter_to_search(filters[0])
@@ -69,9 +69,9 @@ def parse_query_search(
                         **filter_to_search(ors[0])
                     }
                 ]
-            }]
+            })
         else:
-            search_list = [{
+            search_list.append({
                 "$or": [
                     {
                         "$and": list(map(filter_to_search, filters))
@@ -80,18 +80,16 @@ def parse_query_search(
                         "$and": list(map(filter_to_search, ors))
                     }
                 ]
-            }]
-
+            })
     elif filters and len(filters) > 0:
-        search_list = list(map(filter_to_search, filters))
+        search_list = search_list + list(map(filter_to_search, filters))
     elif ors and len(ors) > 0:
         if len(ors) == 1:
-            search_list = [filter_to_search(ors[0])]
+            search_list.append(filter_to_search(ors[0]))
         else:
-            search_list = [{
+            search_list.append({
                 "$or": list(map(filter_to_search, ors))
-            }]
-
+            })
     if auth_filter:
         search_list.append(auth_filter)
     if params_filter:
