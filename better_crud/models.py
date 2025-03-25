@@ -1,6 +1,7 @@
 from typing import (
     List,
     Optional,
+    Union,
     Any,
     Dict,
     Callable,
@@ -81,7 +82,7 @@ class QueryOptions(BaseModel):
     joins: Optional[JoinOptions] = None
     soft_delete: Optional[bool] = None
     allow_include_deleted: Optional[bool] = False
-    filter: Optional[Dict] | Callable[[Any], Dict] = None
+    filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortModel]] = None
 
 

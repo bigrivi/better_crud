@@ -104,7 +104,7 @@ class QueryOptionsDict(TypedDict, total=False):
     joins: Optional[Dict[str, JoinOptionsDict]] = None
     soft_delete: Optional[bool] = None
     allow_include_deleted: Optional[bool] = False
-    filter: Optional[Dict] | Callable[[Any], Dict] = None
+    filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortDict]] = None
 
 
