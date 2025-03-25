@@ -3,6 +3,27 @@
 ## Introduction
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
+
+___
+## [0.0.9] - Mar 25, 2025
+
+#### Added
+- query filter support lambda function,it can realize the purpose of query condition transformation
+```python
+@crud(
+    user_router,
+    feature="user",
+    query={
+        "filter": lambda x: {"$and": [*x["$and"], {
+            "is_active": True,
+        }]}
+    },
+    serialize={
+        "base": UserPublic,
+    }
+)
+```
+
 ___
 ## [0.0.8] - Mar 24, 2025
 #### Fixed

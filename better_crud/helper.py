@@ -1,4 +1,4 @@
-from typing import Optional, Callable, List, TypeVar, Dict
+from typing import Optional, Callable, List, TypeVar, Dict, Any
 from fastapi import Request
 import json
 from fastapi_pagination.api import resolve_params
@@ -50,11 +50,11 @@ def parse_query_search(
     search_spec: Optional[Dict] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
-    option_filter: Optional[Dict] = None,
+    query_filter: Optional[Dict] | Callable[[Any], Dict] = None,
     auth_filter: Optional[Dict] = None,
     params_filter: Optional[Dict] = None
 ):
-    search = None
+    search = {"$and": []}
     search_list = []
     if search_spec:
         search_list = [search_spec]
@@ -92,15 +92,21 @@ def parse_query_search(
                 "$or": list(map(filter_to_search, ors))
             }]
 
-    if option_filter:
-        search_list.append(option_filter)
     if auth_filter:
         search_list.append(auth_filter)
     if params_filter:
         search_list.append(params_filter)
     if len(search_list) > 0:
-        search = {"$and": search_list}
-    return search
+        search["$and"] = search_list
+    if query_filter is not None:
+        if isinstance(query_filter, Callable):
+            search = query_filter(search)
+        else:
+            # ignore any other query search conditions
+            search["$and"] = [{**query_filter}]
+    if search["$and"]:
+        return search
+    return None
 
 
 def parse_query_sort(
