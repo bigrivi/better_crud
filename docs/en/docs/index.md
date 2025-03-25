@@ -249,6 +249,7 @@ Congratulations, your first CRUD route has been created！
 
 ![OpenAPI Route Overview](https://raw.githubusercontent.com/bigrivi/better_crud/main/resources/RouteOverview.png)
 
+⭐️ If you find BetterCRUD useful, you can contribute to its growth by giving it a star on [GitHub](https://github.com/bigrivi/better_crud)
 
 ## License
 
