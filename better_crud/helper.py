@@ -1,4 +1,4 @@
-from typing import Optional, Callable, List, TypeVar, Dict, Any
+from typing import Optional, Callable, List, TypeVar, Dict, Any, Union
 from fastapi import Request
 import json
 from fastapi_pagination.api import resolve_params
@@ -50,7 +50,7 @@ def parse_query_search(
     search_spec: Optional[Dict] = None,
     ors: Optional[List[str]] = None,
     filters: Optional[List[str]] = None,
-    query_filter: Optional[Dict] | Callable[[Any], Dict] = None,
+    query_filter: Union[Optional[Dict], Callable[[Any], Dict]] = None,
     auth_filter: Optional[Dict] = None,
     params_filter: Optional[Dict] = None
 ):

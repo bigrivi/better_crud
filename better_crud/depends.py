@@ -1,4 +1,4 @@
-from typing import Callable, Optional, List, Dict, Any
+from typing import Callable, Optional, List, Dict, Any, Union
 from fastapi import Query, Request
 from .helper import parse_query_search, parse_query_sort, get_params_filter
 from pydantic.types import Json
@@ -17,7 +17,7 @@ class GetQuerySearch:
 
     def __init__(
         self,
-        query_filter: Optional[Dict] | Callable[[Any], Dict] = None
+        query_filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     ):
         self.query_filter = query_filter
 
