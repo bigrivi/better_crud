@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../crud/">
+        <link rel="prev" href="../relationship/">
       
       
-        <link rel="next" href="../query_params/">
+        <link rel="next" href="../../changelog/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Routing - BetterCRUD</title>
+        <title>Override - BetterCRUD</title>
       
     
     
@@ -75,11 +75,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#default-routes" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -112,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Routing
+              Override
             
           </span>
         </div>
@@ -281,13 +276,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../global_config/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../usage/global_config/" class="md-tabs__link">
           
   
     
@@ -303,11 +296,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../advanced/acl_guard/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../acl_guard/" class="md-tabs__link">
           
   
     
@@ -476,10 +471,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -494,20 +487,17 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -519,7 +509,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Usage
@@ -533,7 +523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../global_config/" class="md-nav__link">
+      <a href="../../usage/global_config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -555,7 +545,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../crud/" class="md-nav__link">
+      <a href="../../usage/crud/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -574,29 +564,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Routing
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../usage/routing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -606,75 +577,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#default-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Default Routes
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#disabling-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Disabling Routes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Disabling Routes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-globally-disable" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Globally disable
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-disable-in-specific-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Disable in specific routes
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overriding-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Overriding Routes
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -687,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../query_params/" class="md-nav__link">
+      <a href="../../usage/query_params/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -713,8 +615,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -733,17 +637,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -755,7 +662,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Advanced
@@ -769,7 +676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/acl_guard/" class="md-nav__link">
+      <a href="../acl_guard/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -791,7 +698,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/function_based_view/" class="md-nav__link">
+      <a href="../function_based_view/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -813,7 +720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/joins/" class="md-nav__link">
+      <a href="../joins/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -835,7 +742,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/hooks/" class="md-nav__link">
+      <a href="../hooks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -857,7 +764,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/relationship/" class="md-nav__link">
+      <a href="../relationship/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -876,10 +783,17 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../advanced/override/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -889,6 +803,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -940,65 +855,6 @@
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#default-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Default Routes
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#disabling-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Disabling Routes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Disabling Routes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-globally-disable" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Globally disable
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-disable-in-specific-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Disable in specific routes
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overriding-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Overriding Routes
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1016,104 +872,84 @@
   
 
 
-  <h1>Routing</h1>
+  <h1>Override</h1>
 
-<p>The following are the routes that BetterCRUD automatically generates. You can disable and rewrite them.</p>
-<h2 id="default-routes">Default Routes<a class="headerlink" href="#default-routes" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Route</th>
-<th>Method</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>/resource</td>
-<td><strong>GET</strong></td>
-<td>Get Many</td>
-</tr>
-<tr>
-<td>/resource/{id}</td>
-<td><strong>GET</strong></td>
-<td>Get One</td>
-</tr>
-<tr>
-<td>/resource</td>
-<td><strong>POST</strong></td>
-<td>Create One</td>
-</tr>
-<tr>
-<td>/resource/bulk</td>
-<td><strong>POST</strong></td>
-<td>Create Many</td>
-</tr>
-<tr>
-<td>/resource/{id}</td>
-<td><strong>PUT</strong></td>
-<td>Update One</td>
-</tr>
-<tr>
-<td>/resource/{ids}/bulk</td>
-<td><strong>PUT</strong></td>
-<td>Update Many</td>
-</tr>
-<tr>
-<td>/resource/{ids}</td>
-<td><strong>DELETE</strong></td>
-<td>Delete Many</td>
-</tr>
-</tbody>
-</table>
-<h2 id="disabling-routes">Disabling Routes<a class="headerlink" href="#disabling-routes" title="Permanent link">&para;</a></h2>
-<h3 id="1-globally-disable">1. Globally disable<a class="headerlink" href="#1-globally-disable" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">BetterCrudGlobalConfig</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">routes</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="s2">&quot;exclude&quot;</span><span class="p">:[</span><span class="s2">&quot;update_many&quot;</span><span class="p">,</span><span class="s2">&quot;create_many&quot;</span><span class="p">]</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">}</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
+<p>In some cases, the query conditions are so complex that they are difficult to express in the way that the JSON filtering is currently provided.
+For example, we might encounter conditional queries based on cases
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">case</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">case_stmt</span> <span class="o">=</span> <span class="n">case</span><span class="p">((</span><span class="n">SomeModel</span><span class="o">.</span><span class="n">user_pick_type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">SomeModel</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">user_id</span><span class="p">),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">else_</span><span class="o">=</span><span class="n">SomeModel</span><span class="o">.</span><span class="n">position_id</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">position_ids</span><span class="p">))</span>
 </span></code></pre></div>
-<h3 id="2-disable-in-specific-routes">2. Disable in specific routes<a class="headerlink" href="#2-disable-in-specific-routes" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@crud</span><span class="p">(</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">routes</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="s2">&quot;exclude&quot;</span><span class="p">:[</span><span class="s2">&quot;update_many&quot;</span><span class="p">,</span><span class="s2">&quot;create_many&quot;</span><span class="p">]</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="p">}</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">)</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">class</span> <span class="nc">PetController</span><span class="p">():</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">service</span><span class="p">:</span> <span class="n">PetService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">PetService</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="overriding-routes">Overriding Routes<a class="headerlink" href="#overriding-routes" title="Permanent link">&para;</a></h2>
-<p>Sometimes you want to rewrite some routes</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">Depends</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">better_crud</span> <span class="kn">import</span> <span class="n">crud</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span> <span class="nn">.schema</span> <span class="kn">import</span> <span class="n">PetCreate</span><span class="p">,</span> <span class="n">PetUpdate</span><span class="p">,</span> <span class="n">PetPublic</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span> <span class="nn">.service</span> <span class="kn">import</span> <span class="n">PetService</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">pet_router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">()</span>
+At this point, we need to override the default behavior completely</p>
+<p>First, let's rewrite the routing method
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">better_crud</span> <span class="kn">import</span> <span class="n">crud</span><span class="p">,</span> <span class="n">Page</span><span class="p">,</span> <span class="n">GetQuerySearch</span><span class="p">,</span> <span class="n">GetQuerySorts</span><span class="p">,</span> <span class="n">QuerySortDict</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">fastapi_pagination</span> <span class="kn">import</span> <span class="n">pagination_ctx</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span> <span class="nn">app.models.user</span> <span class="kn">import</span> <span class="n">UserPublic</span><span class="p">,</span> <span class="n">UserCreate</span><span class="p">,</span> <span class="n">UserUpdate</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span> <span class="nn">app.services.user</span> <span class="kn">import</span> <span class="n">UserService</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="hll"><span class="nd">@crud</span><span class="p">(</span>
+</span></span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="hll">    <span class="n">router</span><span class="p">,</span>
+</span></span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="hll">    <span class="n">dto</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;create&quot;</span><span class="p">:</span> <span class="n">UserCreate</span><span class="p">,</span> <span class="s2">&quot;update&quot;</span><span class="p">:</span> <span class="n">UserUpdate</span><span class="p">},</span>
+</span></span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">routes</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="s2">&quot;exclude&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;get_many&quot;</span><span class="p">]</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="p">},</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">serialize</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;base&quot;</span><span class="p">:</span> <span class="n">UserPublic</span><span class="p">}</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="hll">
+</span></span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="hll"><span class="k">class</span> <span class="nc">UserController</span><span class="p">():</span>
+</span></span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="hll">    <span class="n">service</span><span class="p">:</span> <span class="n">UserService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">UserService</span><span class="p">)</span>
+</span></span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="hll">    <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="n">Depends</span><span class="p">(</span><span class="n">pagination_ctx</span><span class="p">(</span><span class="n">Page</span><span class="p">)),</span> <span class="n">DependsJwtAuth</span><span class="p">])</span>
+</span></span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="hll">    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span>
+</span></span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">search</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">GetQuerySearch</span><span class="p">()),</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="n">sorts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">QuerySortDict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">GetQuerySorts</span><span class="p">()),</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseModel</span><span class="p">[</span><span class="n">Page</span><span class="p">[</span><span class="n">BudgetCompileConfigList</span><span class="p">]</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">BudgetCompileConfigList</span><span class="p">]]:</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>       <span class="k">pass</span>
+</span></code></pre></div></p>
+<p>Then explicitly call the crud_get_many method of service,and set the corresponding query and join parameters</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">better_crud</span> <span class="kn">import</span> <span class="n">crud</span><span class="p">,</span> <span class="n">Page</span><span class="p">,</span> <span class="n">GetQuerySearch</span><span class="p">,</span> <span class="n">GetQuerySorts</span><span class="p">,</span> <span class="n">QuerySortDict</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">fastapi_pagination</span> <span class="kn">import</span> <span class="n">pagination_ctx</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span> <span class="nn">app.models.user</span> <span class="kn">import</span> <span class="n">UserPublic</span><span class="p">,</span> <span class="n">UserCreate</span><span class="p">,</span> <span class="n">UserUpdate</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span> <span class="nn">app.services.user</span> <span class="kn">import</span> <span class="n">UserService</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nd">@crud</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">pet_router</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">dto</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="s2">&quot;create&quot;</span><span class="p">:</span> <span class="n">PetCreate</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;update&quot;</span><span class="p">:</span> <span class="n">PetUpdate</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">router</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">dto</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;create&quot;</span><span class="p">:</span> <span class="n">UserCreate</span><span class="p">,</span> <span class="s2">&quot;update&quot;</span><span class="p">:</span> <span class="n">UserUpdate</span><span class="p">},</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">routes</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;exclude&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;get_many&quot;</span><span class="p">]</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="p">},</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">serialize</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="s2">&quot;base&quot;</span><span class="p">:</span> <span class="n">PetPublic</span><span class="p">,</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="p">},</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">summary_vars</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;cat&quot;</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="p">}</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="p">)</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">class</span> <span class="nc">PetController</span><span class="p">():</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="n">service</span><span class="p">:</span> <span class="n">PetService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">PetService</span><span class="p">)</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="hll">    <span class="nd">@pet_router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span></span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="hll">    <span class="k">async</span> <span class="k">def</span> <span class="nf">override_get_many</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span></span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="hll">        <span class="k">return</span> <span class="p">[]</span>
-</span></span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="hll">
-</span></span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="hll">    <span class="nd">@pet_router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/</span><span class="si">{id}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span></span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="hll">    <span class="k">def</span> <span class="nf">override_get_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-</span></span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="hll">        <span class="k">return</span> <span class="s1">&#39;return one&#39;</span>
-</span></span></code></pre></div>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">serialize</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;base&quot;</span><span class="p">:</span> <span class="n">UserPublic</span><span class="p">}</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">class</span> <span class="nc">UserController</span><span class="p">():</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">service</span><span class="p">:</span> <span class="n">UserService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">UserService</span><span class="p">)</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="n">Depends</span><span class="p">(</span><span class="n">pagination_ctx</span><span class="p">(</span><span class="n">Page</span><span class="p">)),</span> <span class="n">DependsJwtAuth</span><span class="p">])</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="n">search</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">GetQuerySearch</span><span class="p">()),</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="n">sorts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">QuerySortDict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">GetQuerySorts</span><span class="p">()),</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseModel</span><span class="p">[</span><span class="n">Page</span><span class="p">[</span><span class="n">UserPublic</span><span class="p">]</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">UserPublic</span><span class="p">]]:</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="hll">        <span class="n">joins</span> <span class="o">=</span> <span class="p">[(</span><span class="n">UserProfile</span><span class="p">,</span> <span class="n">UserProfile</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">User</span><span class="o">.</span><span class="n">profile_id</span><span class="p">)]</span>
+</span></span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="hll">        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">joinedload</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">profile</span><span class="p">),</span> <span class="n">joinedload</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">roles</span><span class="p">)]</span>
+</span></span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="hll">        <span class="n">criterions</span> <span class="o">=</span> <span class="p">[</span><span class="n">UserProfile</span><span class="o">.</span><span class="n">gender</span> <span class="o">==</span> <span class="s2">&quot;female&quot;</span><span class="p">]</span>
+</span></span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="hll">        <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">user_service</span><span class="o">.</span><span class="n">crud_get_many</span><span class="p">(</span>
+</span></span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="hll">            <span class="n">joins</span><span class="o">=</span><span class="n">joins</span><span class="p">,</span>
+</span></span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="hll">            <span class="n">criterions</span><span class="o">=</span><span class="n">criterions</span><span class="p">,</span>
+</span></span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="hll">            <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+</span></span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>            <span class="n">search</span><span class="o">=</span><span class="n">search</span><span class="p">,</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>            <span class="n">sorts</span><span class="o">=</span><span class="n">sorts</span>
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>        <span class="p">)</span>
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>        <span class="k">return</span> <span class="n">data</span>
+</span></code></pre></div>
+<ul>
+<li><strong>criterions</strong> embedded query criteria</li>
+<li><strong>options</strong> load options</li>
+<li><strong>joins</strong> relationship joins</li>
+</ul>
+<p>You'll end up with the same endpoint as the default get_many route, but the query conditions, join, load options are all based on SQLAlchemy's native way</p>
 
 
 
@@ -1149,7 +985,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../crud/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CRUD Decorator">
+          <a href="../relationship/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Relationship Storage">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1159,20 +995,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                CRUD Decorator
+                Relationship Storage
               </div>
             </div>
           </a>
         
         
           
-          <a href="../query_params/" class="md-footer__link md-footer__link--next" aria-label="Next: Query params">
+          <a href="../../changelog/" class="md-footer__link md-footer__link--next" aria-label="Next: Changelog">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Query params
+                Changelog
               </div>
             </div>
             <div class="md-footer__button md-icon">
