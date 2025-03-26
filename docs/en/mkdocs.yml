@@ -57,6 +57,7 @@ nav:
       - Joining Models: advanced/joins.md
       - CRUD Hooks: advanced/hooks.md
       - Relationship Storage: advanced/relationship.md
+      - Override: advanced/override.md
   - Changelog: changelog.md
 
 markdown_extensions:

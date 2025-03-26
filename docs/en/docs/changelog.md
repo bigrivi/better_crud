@@ -11,7 +11,7 @@ ___
 - Add some parameters to crud_get_many method
   - **criterions** embedded query criteria
   - **options** load options
-  - **joins** relationship Joins
+  - **joins** relationship joins
 ```python
 joins = [(UserProfile, UserProfile.id == User.profile_id)]
 options = [joinedload(User.profile), joinedload(User.roles)]
