@@ -18,7 +18,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         include_deleted: Optional[bool] = False,
         soft_delete: Optional[bool] = False,
         sorts: List[QuerySortDict] = None,
-        joins: Optional[JoinOptions] = None,
+        join_options: Optional[JoinOptions] = None,
     ) -> Union[AbstractPage[ModelType], List[ModelType]]:
         raise NotImplementedError
 
@@ -27,7 +27,7 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         self,
         request: Request,
         id: ID_TYPE,
-        joins: Optional[JoinOptions] = None,
+        join_options: Optional[JoinOptions] = None,
     ) -> ModelType:
         raise NotImplementedError
 

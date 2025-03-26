@@ -5,6 +5,26 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.1] - Mar 26, 2025
+
+#### Features
+- Add some parameters to crud_get_many method
+  - **criterions** embedded query criteria
+  - **options** load options
+  - **joins** relationship Joins
+```python
+joins = [(UserProfile, UserProfile.id == User.profile_id)]
+options = [joinedload(User.profile), joinedload(User.roles)]
+criterions = [UserProfile.gender == "female"]
+fetched_records = await user_service.crud_get_many(
+    test_request,
+    joins=joins,
+    criterions=criterions,
+    options=options,
+    db_session=async_session
+)
+```
+___
 ## [0.1.0] - Mar 25, 2025
 
 #### Added

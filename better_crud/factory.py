@@ -70,7 +70,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         search: Dict = Depends(
             GetQuerySearch(options.query.filter)
         ),
-        joins: JoinOptions = Depends(
+        join_options: JoinOptions = Depends(
             GetQueryJoins(options.query.joins)
         ),
         sorts: List[QuerySortDict] = Depends(
@@ -78,7 +78,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     ):
         return await self.service.crud_get_many(
             request=request,
-            joins=joins,
+            join_options=join_options,
             search=search,
             sorts=sorts,
             soft_delete=options.query.soft_delete,
@@ -89,7 +89,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     async def get_one(
         self,
         request: Request,
-        joins: JoinOptions = Depends(
+        join_options: JoinOptions = Depends(
             GetQueryLoads(options.query.joins)
         ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
@@ -98,7 +98,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             return await self.service.crud_get_one(
                 request,
                 id,
-                joins=joins
+                join_options=join_options
             )
         except NotFoundException:
             raise HTTPException(
