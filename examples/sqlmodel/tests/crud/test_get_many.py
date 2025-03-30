@@ -177,7 +177,7 @@ async def test_get_many_basic_filter_with_and(async_session, test_user_data, tes
             join=False
         ),
     }
-    fetched_records = await user_service.crud_get_many(test_request, search=search, join_options=joins, db_session=async_session)
+    fetched_records = await user_service.crud_get_many(test_request, search=search, joins=joins, db_session=async_session)
     assert len(fetched_records) == expected_count
 
 
@@ -236,7 +236,7 @@ async def test_get_many_filter_with_operator(
             operator: value
         }
     }
-    fetched_records = await user_service.crud_get_many(test_request, search=search, join_options=joins, db_session=async_session)
+    fetched_records = await user_service.crud_get_many(test_request, search=search, joins=joins, db_session=async_session)
     assert len(fetched_records) == expected_count
 
 
@@ -347,46 +347,6 @@ async def test_get_relations_with_only_detail(async_session, test_user_data, tes
         ),
     }
     exist_user_id = test_user_data[0]["id"]
-    fetched_record = await user_service.crud_get_many(test_request, exist_user_id, db_session=async_session, join_options=joins)
+    fetched_record = await user_service.crud_get_many(test_request, exist_user_id, db_session=async_session, joins=joins)
     assert fetched_record is not None
     assert len(fetched_record[0].roles) == 0
-
-
-@pytest.mark.asyncio
-async def test_get_many_filter_with_criterions(
-    async_session,
-    test_request,
-    init_data
-):
-    user_service = UserService()
-    joins = [User.profile]
-    options = [joinedload(User.profile), joinedload(User.roles)]
-    criterions = [UserProfile.gender.in_(["male", "female"])]
-    fetched_records = await user_service.crud_get_many(
-        test_request,
-        joins=joins,
-        criterions=criterions,
-        options=options,
-        db_session=async_session
-    )
-    assert len(fetched_records) == 4
-
-
-@pytest.mark.asyncio
-async def test_get_many_filter_with_tuple_join(
-    async_session,
-    test_request,
-    init_data
-):
-    user_service = UserService()
-    joins = [(UserProfile, UserProfile.id == User.profile_id)]
-    options = [joinedload(User.profile), joinedload(User.roles)]
-    criterions = [UserProfile.gender == "female"]
-    fetched_records = await user_service.crud_get_many(
-        test_request,
-        joins=joins,
-        criterions=criterions,
-        options=options,
-        db_session=async_session
-    )
-    assert len(fetched_records) == 1

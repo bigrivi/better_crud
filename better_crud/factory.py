@@ -70,7 +70,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         search: Dict = Depends(
             GetQuerySearch(options.query.filter)
         ),
-        join_options: JoinOptions = Depends(
+        joins: JoinOptions = Depends(
             GetQueryJoins(options.query.joins)
         ),
         sorts: List[QuerySortDict] = Depends(
@@ -78,7 +78,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     ):
         return await self.service.crud_get_many(
             request=request,
-            join_options=join_options,
+            joins=joins,
             search=search,
             sorts=sorts,
             soft_delete=options.query.soft_delete,
@@ -89,7 +89,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     async def get_one(
         self,
         request: Request,
-        join_options: JoinOptions = Depends(
+        joins: JoinOptions = Depends(
             GetQueryLoads(options.query.joins)
         ),
         id: Union[int, str] = Path(..., title="The ID of the item to get")
@@ -98,7 +98,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             return await self.service.crud_get_one(
                 request,
                 id,
-                join_options=join_options
+                joins=joins
             )
         except NotFoundException:
             raise HTTPException(
@@ -108,7 +108,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
 
     async def create_one(
         self,
-        model: Annotated[create_schema_type, Body()],
+        model: Annotated[create_schema_type, Body()],  # type: ignore
         request: Request,
         background_tasks: BackgroundTasks
     ):
@@ -120,7 +120,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
 
     async def create_many(
         self,
-        model: Annotated[List[create_schema_type], Body()],
+        model: Annotated[List[create_schema_type], Body()],  # type: ignore
         request: Request,
         background_tasks: BackgroundTasks
     ):
@@ -132,7 +132,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
 
     async def update_one(
         self,
-        model: Annotated[update_schema_type, Body()],
+        model: Annotated[update_schema_type, Body()],  # type: ignore
         request: Request,
         background_tasks: BackgroundTasks,
         id: Union[int, str] = Path(..., title="The ID of the item to get")
@@ -153,7 +153,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     async def update_many(
         self,
         request: Request,
-        models: Annotated[List[update_schema_type], Body()],
+        models: Annotated[List[update_schema_type], Body()],  # type: ignore
         background_tasks: BackgroundTasks,
         ids: str = Path(...,
                         description="Primary key values, use commas to separate multiple values")

@@ -5,6 +5,10 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.2] - Mar 30, 2025
+- Some design refactoring
+- Remove the crud_get_many parameters criteria, options, joins
+___
 ## [0.1.1] - Mar 26, 2025
 
 #### Features

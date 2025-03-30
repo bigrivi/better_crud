@@ -170,11 +170,11 @@ def get_params_filter(params: Dict[str, PathParamModel], request: Request):
     return params_filter
 
 
-def build_join_option_tree(raw_join_options: JoinOptions):
-    if raw_join_options is None:
+def build_join_options_tree(join_options: JoinOptions) -> List[Dict]:
+    if join_options is None:
         return []
-    join_options = dict(sorted(raw_join_options.items()))
-    nodes = []
+    join_options = dict(sorted(join_options.items()))
+    join_tree_nodes = []
     node_dict: Dict[str,] = {}
     for field_key, config in join_options.items():
         segments = field_key.split(".")
@@ -186,10 +186,10 @@ def build_join_option_tree(raw_join_options: JoinOptions):
         }
         if parent_key == "":
             node_dict[field_key] = node_data
-            nodes.append(node_dict[field_key])
+            join_tree_nodes.append(node_dict[field_key])
         else:
             parent_node = node_dict.get(parent_key)
             if parent_node:
                 node_dict[field_key] = node_data
                 parent_node.get("children").append(node_dict[field_key])
-    return nodes
+    return join_tree_nodes
