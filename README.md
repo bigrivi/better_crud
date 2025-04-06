@@ -278,6 +278,13 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## Credits
+
+This project draws inspiration from the following frameworks:
+
+- [nestjsx-crud](https://github.com/nestjsx/crud)
+
+
 ## License
 
 [MIT](LICENSE)

@@ -251,6 +251,13 @@ Congratulations, your first CRUD route has been created！
 
 ⭐️ If you find BetterCRUD useful, you can contribute to its growth by giving it a star on [GitHub](https://github.com/bigrivi/better_crud)
 
+## Credits
+
+This project draws inspiration from the following frameworks:
+
+- [nestjsx-crud](https://github.com/nestjsx/crud)
+
+
 ## License
 
 [MIT](LICENSE)
