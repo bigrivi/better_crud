@@ -209,6 +209,22 @@ async def test_get_many_basic_filter_with_and(async_session, test_user_data, tes
         ("user_name", "$length", 3, 3),
         ("roles", "$any", 1, 2),
         ("roles", "$notany", 1, 2),
+        ("user_name", "$starts", "Alice", 0),
+        ("user_name", "$startsL", "Alice", 1),
+        ("user_name", "$ends", "Tom", 0),
+        ("user_name", "$endsL", "Tom", 1),
+        ("user_name", "$cont", "Lice", 0),
+        ("user_name", "$contL", "Lice", 1),
+        ("user_name", "$excl", "Ice", 4),
+        ("user_name", "$exclL", "Ice", 3),
+        ("staff.position", "$eq", "CEo", 0),
+        ("staff.position", "$eqL", "ceo", 1),
+        ("staff.position", "$ne", "CEo", 4),
+        ("staff.position", "$neL", "ceo", 3),
+        ("staff.position", "$in", "CEo,CFo", 0),
+        ("staff.position", "$inL", "ceo,cfo", 2),
+        ("staff.position", "$notin", "CEo,CFo", 4),
+        ("staff.position", "$notinL", "ceo,cfo", 2),
     ]
 )
 async def test_get_many_filter_with_operator(
@@ -223,6 +239,10 @@ async def test_get_many_filter_with_operator(
     user_service = UserService()
     joins = {
         "profile": JoinOptionModel(
+            select=False,
+            join=True
+        ),
+        "staff": JoinOptionModel(
             select=False,
             join=True
         ),

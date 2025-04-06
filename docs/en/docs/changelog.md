@@ -5,6 +5,18 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.3] - Apr 6, 2025
+- Add more filter operators
+  - $startsL (starts with,not case sensitive )
+  - $endsL (ends with,not case sensitive )
+  - $contL (contains,not case sensitive )
+  - $exclL (not contains,not case sensitive )
+  - $eqL (=,not case sensitive )
+  - $neL (!=,not case sensitive )
+  - $inL (IN, in range, accepts multiple values ​​separated by commas,not case sensitive )
+  - $notinL (NOT IN, not in range, accepts multiple values ​​separated by commas,not case sensitive )
+
+___
 ## [0.1.2] - Mar 30, 2025
 - Some design refactoring
 - Remove the crud_get_many parameters criteria, options, joins

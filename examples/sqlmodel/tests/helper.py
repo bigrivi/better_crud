@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlmodel import SQLModel
 from sqlalchemy.orm import sessionmaker
 from contextlib import asynccontextmanager
@@ -13,6 +14,7 @@ async def setup_database(url: str) -> AsyncGenerator[AsyncSession, None]:
     async with session_maker() as session:
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
+            await conn.execute(text("PRAGMA case_sensitive_like = true;"))
         try:
             yield session
         finally:

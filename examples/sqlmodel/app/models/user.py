@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlmodel import Field, SQLModel, Relationship, Column, DateTime
+from sqlmodel import Field, SQLModel, Relationship, Column, DateTime, collate
 from datetime import datetime
 from .user_profile import UserProfile, UserProfileList, UserProfileCreate
 from .company import Company, CompanyPublic
@@ -19,7 +19,7 @@ class UserBase(SQLModel):
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_name: str
+    user_name: str = None
     hashed_password: str
     profile_id: Optional[int] = Field(
         default=None, foreign_key="user_profile.id")
@@ -70,6 +70,7 @@ class UserCreate(UserBase):
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
     projects: Optional[List[int]] = None
+
 
 class UserCreateWithRolesDict(UserBase):
     user_name: str

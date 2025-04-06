@@ -632,6 +632,22 @@ class SqlalchemyCrudService(
             if not primary_key:
                 raise NotSupportRelationshipQueryException(operator)
             return func.not_(field.any(**{primary_key: value}))
+        elif operator == "$startsL":
+            return field.istartswith(value)
+        elif operator == "$endsL":
+            return field.iendswith(value)
+        elif operator == "$contL":
+            return field.ilike('%{}%'.format(value))
+        elif operator == "$exclL":
+            return field.notilike('%{}%'.format(value))
+        elif operator == "$eqL":
+            return func.lower(field) == value
+        elif operator == "$neL":
+            return func.lower(field) != value
+        elif operator == "$inL":
+            return func.lower(field).in_(value.split(","))
+        elif operator == "$notinL":
+            return func.lower(field).notin_(value.split(","))
         else:
             raise NotSupportOperatorException(operator)
 

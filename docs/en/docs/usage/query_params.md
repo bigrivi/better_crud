@@ -215,6 +215,14 @@ Of course, unlimited nesting is also supported
 - $between (BETWEEN, between, accepts two values)
 - $notbetween (NOT BETWEEN, not between, accepts two values)
 - $length (string length matching)
+- $startsL (starts with,not case sensitive )
+- $endsL (ends with,not case sensitive )
+- $contL (contains,not case sensitive )
+- $exclL (not contains,not case sensitive )
+- $eqL (=,not case sensitive )
+- $neL (!=,not case sensitive )
+- $inL (IN, in range, accepts multiple values ​​separated by commas,not case sensitive )
+- $notinL (NOT IN, not in range, accepts multiple values ​​separated by commas,not case sensitive )
 
 ## filter
 
