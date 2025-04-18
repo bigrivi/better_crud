@@ -76,3 +76,35 @@ class PetController():
         return 'return one'
 
 ```
+
+## Nested Routes
+
+The following implements a nested route to get user tasks by user_id
+
+```python hl_lines="10-15 20"
+
+app = FastAPI()
+user_task_router = APIRouter()
+@crud(
+    user_task_router,
+    feature="user_task",
+    dto={"create": UserTaskCreateWithoutId,"update": UserTaskCreateWithoutId},
+    serialize={
+        "base": UserTaskPublic,
+    },
+    params={
+        "user_id": {
+            "field": "user_id",
+            "type": "int"
+        }
+    }
+)
+class UserTaskController():
+    service: UserTaskService = Depends(UserTaskService)
+api_router = APIRouter()
+api_router.include_router(user_task_router, prefix="/user/{user_id}/user_task")
+app.include_router(api_router)
+
+```
+
+![Nested Router](https://raw.githubusercontent.com/bigrivi/better_crud/main/resources/NestedRouter.png)
