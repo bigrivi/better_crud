@@ -45,6 +45,7 @@ class RouteOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     dependencies: Optional[Sequence[Any]] = None
     summary: Optional[str] = None
+    action: Optional[str] = None
 
 
 class RoutesModel(BaseModel):

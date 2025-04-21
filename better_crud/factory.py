@@ -280,6 +280,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             dependencies=[
                 Depends(CrudAction(
                     options.feature,
+                    route_options.action if route_options else None,
                     BetterCrudGlobalConfig.action_map,
                     router_name
                 )),

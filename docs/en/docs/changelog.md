@@ -5,6 +5,10 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.4] - Apr 21, 2025
+- RouteOptions add custom action
+
+___
 ## [0.1.3] - Apr 6, 2025
 - Add more filter operators
   - $startsL (starts with,not case sensitive )

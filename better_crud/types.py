@@ -50,6 +50,7 @@ class RouteSchema(TypedDict):
 class RouteOptionsDict(TypedDict, total=False):
     dependencies: Optional[Sequence[params.Depends]] = None
     summary: Optional[str] = None
+    action: Optional[str] = None
 
 
 class RoutesModelDict(TypedDict, total=False):

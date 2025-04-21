@@ -113,14 +113,16 @@ class GetQueryLoads:
 
 class CrudAction():
 
-    def __init__(self, feature: str, action_map: Dict, router_name: str):
+    def __init__(self, feature: str, action: str, action_map: Dict, router_name: str):
         self.feature = feature
         self.action_map = action_map
         self.router_name = router_name
+        self.action = action
 
     def __call__(self, request: Request):
         request.state.feature = self.feature
-        request.state.action = self.action_map.get(self.router_name).value
+        request.state.action = self.action or self.action_map.get(
+            self.router_name).value
 
 
 class StateAction():
