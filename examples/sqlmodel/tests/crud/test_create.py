@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from app.models.user import User, UserCreate,UserCreateWithRolesDict
 from app.models.role import RoleCreate, Role
+from app.models.zone import Zone
 from app.models.user_task import UserTaskCreateWithoutId
 from app.services.user import UserService
 from app.services.role import RoleService
@@ -149,6 +150,30 @@ async def test_create_by_many_to_many_dict(async_session, test_request, test_use
         for key, value in role_item.items():
             assert getattr(fetched_record.roles[index], key) == value
         assert fetched_record.roles[index].id == fetched_roles_with_id[index]["id"]
+
+
+
+@pytest.mark.asyncio
+async def test_create_by_many_to_many_single_object(async_session, test_request, test_user_data,test_zone_data):
+    test_zone = test_zone_data[0]
+    zone = Zone(**test_zone)
+    async_session.add(zone)
+    await async_session.commit()
+    user_service = UserService()
+    new_data = UserCreate(
+        **test_user_data[0],
+        zone=test_zone["id"]
+    )
+    await user_service.crud_create_one(test_request, new_data, db_session=async_session)
+    stmt = select(User).where(User.email == test_user_data[0]["email"])
+    stmt = stmt.options(joinedload(User.zone))
+    result = await async_session.execute(stmt)
+    fetched_record: User = result.unique().scalar_one_or_none()
+    assert fetched_record is not None
+    for key, value in test_zone.items():
+        assert getattr(fetched_record.zone, key) == value
+
+
 
 @pytest.mark.asyncio
 async def test_create_by_auth_persist(async_session, test_request):

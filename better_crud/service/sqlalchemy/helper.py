@@ -13,16 +13,20 @@ class Provide:
 async def create_many_to_many_instances(
     session: AsyncSession,
     relation_cls,
-    data: List[Union[Dict, int]]
-) -> List[Any]:
+    data: Union[List[Union[Dict, int, str]], int, str]
+) -> Any:
     primary_key = relation_cls.__mapper__.primary_key[0].name
-    if len(data) > 0 and isinstance(data[0], dict):
-        data = [elem[primary_key] for elem in data]
-    instances = [
-        await session.get(relation_cls, primary_value)
-        for primary_value in data
-    ]
-    return instances
+    if isinstance(data, list):
+        if len(data) > 0 and isinstance(data[0], dict):
+            data = [elem[primary_key] for elem in data]
+        instances = [
+            await session.get(relation_cls, primary_value)
+            for primary_value in data
+        ]
+        return instances
+    # Many to many may not be an array, but an object,pass in the primary key value
+    instance = await session.get(relation_cls, data)
+    return instance
 
 
 async def create_one_to_many_instances(

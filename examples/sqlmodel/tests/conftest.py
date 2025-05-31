@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
@@ -20,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from .helper import setup_database
 import pytest_asyncio
 import pytest
-from .data import USER_DATA, ROLE_DATA, COMPANY_DATA, PROJECT_DATA
+from .data import USER_DATA, ROLE_DATA, COMPANY_DATA, PROJECT_DATA,ZONE_DATA
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -50,6 +51,9 @@ def test_company_data() -> list[dict]:
 def test_project_data() -> list[dict]:
     return PROJECT_DATA
 
+@pytest.fixture(scope="function")
+def test_zone_data() -> list[dict]:
+    return ZONE_DATA
 
 @pytest_asyncio.fixture(scope="function")
 async def init_data(async_session, test_user_data, test_role_data, test_company_data, test_project_data):
@@ -114,7 +118,6 @@ def client(
         }
     )
     from app.routers.users import router as user_router
-    from app.routers.company import router as company_router
     api_router = APIRouter()
     api_router.include_router(user_router, prefix="/user")
     app.include_router(api_router)

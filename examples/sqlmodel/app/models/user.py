@@ -1,10 +1,13 @@
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship, Column, DateTime, collate
 from datetime import datetime
+
 from .user_profile import UserProfile, UserProfileList, UserProfileCreate
 from .company import Company, CompanyPublic
 from .user_role import UserRoleLink
 from .user_project import UserProjectLink
+from .user_zone import UserZoneLink
+from .zone import Zone
 from .role import Role, RolePublic
 from .project import Project, ProjectPublic
 from .user_task import UserTask, UserTaskList, UserTaskCreate
@@ -39,6 +42,11 @@ class User(UserBase, table=True):
                                        "lazy": "noload"}, link_model=UserRoleLink)
     projects: List["Project"] = Relationship(back_populates="users", sa_relationship_kwargs={
         "lazy": "noload"}, link_model=UserProjectLink)
+    zone: Optional[Zone] = Relationship(
+        sa_relationship_kwargs={
+            "lazy": "noload", "uselist": False},
+        link_model=UserZoneLink
+    )
     deleted_at: Optional[datetime] = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
@@ -70,6 +78,7 @@ class UserCreate(UserBase):
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
     projects: Optional[List[int]] = None
+    zone:Optional[int] = None
 
 
 class UserCreateWithRolesDict(UserBase):
@@ -81,6 +90,7 @@ class UserCreateWithRolesDict(UserBase):
     staff: Optional[StaffCreate] = None
     company_id: Optional[int] = None
     projects: Optional[List[int]] = None
+
 
 
 class UserUpdate(UserBase):

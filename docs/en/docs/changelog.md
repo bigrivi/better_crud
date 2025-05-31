@@ -5,6 +5,47 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.5] - May 31, 2025
+- Support many-to-many relationships in object mode
+```python
+
+
+class Zone(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: Optional[str] = None
+    description: Optional[str] = Field(default=None)
+    is_active: Optional[bool] = Field(default=True)
+
+
+class UserZoneLink(SQLModel, table=True):
+    __tablename__ = "user_zone"
+    user_id: Optional[int] = Field(
+        default=None, foreign_key="user.id", primary_key=True
+    )
+    zone_id: Optional[int] = Field(
+        default=None, foreign_key="zone.id", primary_key=True
+    )
+
+
+
+class User(UserBase, table=True):
+    ...
+    zone: Optional[Zone] = Relationship(
+        sa_relationship_kwargs={
+            "lazy": "noload", "uselist": False},
+        link_model=UserZoneLink
+    )
+    ...
+
+class UserCreate(UserBase):
+    ...
+    zone:Optional[int] = None
+
+```
+You can post zone data by passing zone_id
+client.post("/user", json={**user_data,"zone":zone_id})
+
+___
 ## [0.1.4] - Apr 21, 2025
 - RouteOptions add custom action
 
