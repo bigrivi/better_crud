@@ -122,7 +122,7 @@ class CrudAction():
     def __call__(self, request: Request):
         request.state.feature = self.feature
         request.state.action = self.action or self.action_map.get(
-            self.router_name).value
+            self.router_name)
 
 
 class StateAction():

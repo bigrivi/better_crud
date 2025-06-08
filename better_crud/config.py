@@ -21,13 +21,13 @@ from .enums import RoutesEnum, CrudActions
 DEFAULT_SOFT_DELETED_FIELD_KEY = "deleted_at"
 
 DEFAULT_ACTION_MAP = {
-    RoutesEnum.get_many: CrudActions.read_all,
-    RoutesEnum.get_one: CrudActions.read_one,
-    RoutesEnum.create_one: CrudActions.create_one,
-    RoutesEnum.create_many: CrudActions.create_many,
-    RoutesEnum.update_one: CrudActions.update_one,
-    RoutesEnum.update_many: CrudActions.update_many,
-    RoutesEnum.delete_many: CrudActions.delete_many
+    RoutesEnum.get_many: CrudActions.read_all.value,
+    RoutesEnum.get_one: CrudActions.read_one.value,
+    RoutesEnum.create_one: CrudActions.create_one.value,
+    RoutesEnum.create_many: CrudActions.create_many.value,
+    RoutesEnum.update_one: CrudActions.update_one.value,
+    RoutesEnum.update_many: CrudActions.update_many.value,
+    RoutesEnum.delete_many: CrudActions.delete_many.value
 }
 
 
@@ -76,7 +76,7 @@ class BetterCrudGlobalConfig:
     delim_config: ClassVar[Optional[QueryDelimOptions]] = None
     soft_deleted_field_key: ClassVar[Optional[str]
                                      ] = DEFAULT_SOFT_DELETED_FIELD_KEY
-    action_map: ClassVar[Optional[Dict[str, str]]] = None
+    action_map: ClassVar[Optional[Dict[RoutesEnum, str]]] = None
     page_schema: ClassVar[Optional[AbstractPage]] = Page
     response_schema: ClassVar[Optional[AbstractResponseModel]] = None
     backend_config: ClassVar[BackendConfigModel] = None
@@ -90,7 +90,7 @@ class BetterCrudGlobalConfig:
         routes: Optional[RoutesModelDict] = {},
         delim_config: Optional[QueryDelimOptionsDict] = {},
         soft_deleted_field_key: Optional[str] = None,
-        action_map: Optional[Dict[str, str]] = None,
+        action_map: Optional[Dict[RoutesEnum, str]] = None,
         page_schema: Optional[AbstractPage] = Page,
         response_schema: Optional[AbstractResponseModel] = None
     ) -> None:

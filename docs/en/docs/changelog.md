@@ -5,6 +5,11 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.6] - Jun 8, 2025
+fixed issues
+ - BetterCrudGlobalConfig DEFAULT_ACTION_MAP value should be str,should not be an enumeration value
+
+___
 ## [0.1.5] - May 31, 2025
 - Support many-to-many relationships in object mode
 ```python

@@ -7,6 +7,7 @@ from .pagination import Page, AbstractPage
 from .depends import GetQuerySearch, GetQuerySorts, GetQueryJoins, GetQueryLoads
 from .generator import crud_generator
 from .backend import register_backend
+from .enums import RoutesEnum, CrudActions, QuerySortType
 from .exceptions import *
 
 from ._version import (
@@ -36,5 +37,8 @@ __all__ = [
     "GetQuerySearch",
     "GetQuerySorts",
     "GetQueryJoins",
-    "GetQueryLoads"
+    "GetQueryLoads",
+    "RoutesEnum",
+    "CrudActions",
+    "QuerySortType"
 ]
