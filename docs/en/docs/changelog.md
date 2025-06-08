@@ -7,6 +7,7 @@ The Changelog documents all notable changes made to BetterCRUD. This includes ne
 ___
 ## [0.1.6] - Jun 8, 2025
 fixed issues
+
  - BetterCrudGlobalConfig DEFAULT_ACTION_MAP value should be str,should not be an enumeration value
 
 ___
