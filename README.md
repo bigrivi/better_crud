@@ -284,6 +284,11 @@ This project draws inspiration from the following frameworks:
 
 - [nestjsx-crud](https://github.com/nestjsx/crud)
 
+## UseCases
+
+BetterCrud was used in the following projects:
+
+- [black-panther](https://github.com/bigrivi/black-panther)
 
 ## License
 
