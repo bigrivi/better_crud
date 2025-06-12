@@ -5,6 +5,12 @@
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 
 ___
+## [0.1.7] - Jun 12, 2025
+feature
+
+ - Expose registered crud routes
+
+___
 ## [0.1.6] - Jun 8, 2025
 fixed issues
 

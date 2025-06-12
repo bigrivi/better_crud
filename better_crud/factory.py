@@ -3,6 +3,7 @@ from typing import (
     Any,
     Callable,
     List,
+    Tuple,
     Type,
     TypeVar,
     Annotated,
@@ -52,6 +53,8 @@ UNBIND_KIND_TYPE = (
 )
 INCLUDE_DELETED_KEY = "include_deleted"
 
+_crud_routes: List[Tuple[APIRouter, Type, CrudOptions]] = []
+
 
 def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
     create_schema_type = cast(CreateSchemaType, options.dto.create)
@@ -63,6 +66,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     )
 
     serialize = options.serialize
+    _crud_routes.append((router, cls, options))
 
     async def get_many(
         self,
@@ -328,3 +332,7 @@ def _update_route_endpoint_signature(
 
     new_signature = old_signature.replace(parameters=new_parameters)
     setattr(endpoint, "__signature__", new_signature)
+
+
+def get_crud_routes():
+    return _crud_routes
