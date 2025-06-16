@@ -310,7 +310,16 @@ def _update_route_endpoint_signature(
         parameter.replace(kind=inspect.Parameter.KEYWORD_ONLY)
         for parameter in old_parameters[1:]
     ]
-    if options.params:
+    is_crud_route = endpoint in [
+        cls.get_many,
+        cls.create_one,
+        cls.create_many,
+        cls.update_one,
+        cls.update_many,
+        cls.delete_many,
+        cls.get_one
+    ]
+    if is_crud_route and options.params:
         for key, param in options.params.items():
             new_param = inspect.Parameter(
                 key,
