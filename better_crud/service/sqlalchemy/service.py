@@ -358,7 +358,7 @@ class SqlalchemyCrudService(
         entity: ModelType = self.entity(**model_data)
         db_session.add(entity)
         await db_session.flush()
-        await self.on_after_create(entity, background_tasks=background_tasks)
+        await self.on_after_create(entity, model=model, background_tasks=background_tasks)
         await db_session.commit()
         return entity
 
@@ -448,7 +448,7 @@ class SqlalchemyCrudService(
             setattr(entity, key, value)
         db_session.add(entity)
         await db_session.commit()
-        await self.on_after_update(entity, background_tasks=background_tasks)
+        await self.on_after_update(entity, model=model, background_tasks=background_tasks)
         return entity
 
     @inject_db_session
@@ -550,6 +550,7 @@ class SqlalchemyCrudService(
     async def on_after_create(
         self,
         entity: ModelType,
+        model: CreateSchemaType,
         background_tasks: BackgroundTasks
     ) -> None:
         pass
@@ -565,6 +566,7 @@ class SqlalchemyCrudService(
     async def on_after_update(
         self,
         entity: ModelType,
+        model: UpdateSchemaType,
         background_tasks: BackgroundTasks
     ) -> None:
         pass

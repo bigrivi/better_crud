@@ -61,7 +61,7 @@ async def test_hooks_create_call(async_session, test_request, entity_service):
         entity_create, background_tasks=None)
     entity_service.on_after_create.assert_called()
     entity_service.on_after_create.assert_called_once_with(
-        entity, background_tasks=None)
+        entity, model=entity_create, background_tasks=None)
     stmt = select(Entity).where(Entity.name == entity_name)
     result = await async_session.execute(stmt)
     fetched_record: Entity = result.scalar_one_or_none()
@@ -83,7 +83,7 @@ async def test_hooks_update_call(async_session, test_request, entity_service):
         entity, entity_update, background_tasks=None)
     entity_service.on_after_update.assert_called()
     entity_service.on_after_update.assert_called_once_with(
-        entity, background_tasks=None)
+        entity, model=entity_update, background_tasks=None)
     stmt = select(Entity).where(Entity.id == entity.id)
     result = await async_session.execute(stmt)
     fetched_record: Entity = result.scalar_one_or_none()
