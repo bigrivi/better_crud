@@ -1,10 +1,10 @@
-fastapi>=0.128.8,<0.141.0
-sqlalchemy==2.0.51
+fastapi==0.128.8
+sqlalchemy==2.0.30
 greenlet
-fastapi_pagination==0.15.16
-pydantic==2.13.4
+fastapi_pagination==0.12.24
+pydantic==2.7.3
 
-sqlmodel==0.0.39
+sqlmodel==0.0.22
 sqlalchemy_utils==0.41.2
 passlib==1.7.4
 bcrypt<5
@@ -16,4 +16,3 @@ pytest
 pytest-asyncio
 pytest-cov
 pytest-order
-
