@@ -3,6 +3,11 @@
 ## Introduction
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
+___
+## [0.2.0] - Nov 10, 2025
+fixed issues
+
+ - $notany operator support empty
 
 ___
 ## [0.1.8] - Jun 16, 2025
