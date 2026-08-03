@@ -5,8 +5,8 @@ import setuptools
 INSTALL_REQUIRES = [
     "fastapi>=0.111.0,<1.0",
     "sqlalchemy>=2.0.30,<3.0",
-    "fastapi_pagination>=0.15.0,<1.0",
-    "pydantic>=2.9.0,<3.0"
+    "fastapi_pagination>=0.12.24,<1.0",
+    "pydantic>=2.7.3,<3.0"
 ]
 about = {}
 here = os.path.abspath(os.path.dirname(__file__))
