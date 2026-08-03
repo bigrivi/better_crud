@@ -1,4 +1,4 @@
-fastapi==0.141.1
+fastapi>=0.128.8,<0.141.0
 sqlalchemy==2.0.51
 greenlet
 fastapi_pagination==0.15.16
