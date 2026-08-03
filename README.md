@@ -74,6 +74,26 @@ pip install better-crud
 - Automated relationship support, query and storage
 - Extensible custom backend
 
+## Why BetterCRUD over fastapi-crudrouter?
+
+The long-time de-facto CRUD library for FastAPI, [fastapi-crudrouter](https://github.com/awtkns/fastapi-crudrouter), has been **unmaintained since Nov 2023**. BetterCRUD is actively maintained and provides a strict superset of its features:
+
+| Feature | BetterCRUD | fastapi-crudrouter |
+| ------- | :--------: | :----------------: |
+| Actively maintained (2026) | ✅ | ❌ (stalled since 2023) |
+| FastAPI 0.141+ support | ✅ | ❌ |
+| SQLAlchemy 2.0 async | ✅ | ✅ |
+| Rich filter operators (`$eq` `$cont` `$notany` `$in` …) | ✅ | ❌ |
+| Nested relationship queries & joins | ✅ | ❌ |
+| Many-to-many relationship storage | ✅ | ❌ |
+| Lifecycle hooks (`on_after_create/update/...`) | ✅ | ❌ |
+| ACL / permission guards | ✅ | ❌ |
+| Pagination | ✅ | ✅ |
+| Class views & function views | ✅ | ✅ |
+| Test coverage | 99% | — |
+
+> 💡 **Migrating from fastapi-crudrouter?** The route layout is nearly identical (`GET/POST /resource`, `GET/PUT/DELETE /resource/{id}`), so switching is mostly a drop-in change. A dedicated migration guide is on the roadmap.
+
 
 ## Default Routes
 
