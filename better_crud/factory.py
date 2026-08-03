@@ -23,6 +23,7 @@ from fastapi import (
     HTTPException,
     BackgroundTasks
 )
+from fastapi.params import Depends as DependsParam
 from .enums import RoutesEnum
 from .models import (
     CrudOptions,
@@ -54,6 +55,16 @@ UNBIND_KIND_TYPE = (
 INCLUDE_DELETED_KEY = "include_deleted"
 
 _crud_routes: List[Tuple[APIRouter, Type, CrudOptions]] = []
+
+
+def _restore_depends(dep: Any) -> Any:
+    if isinstance(dep, dict) and "dependency" in dep:
+        return DependsParam(
+            dep["dependency"],
+            use_cache=dep.get("use_cache", True),
+            scope=dep.get("scope"),
+        )
+    return dep
 
 
 def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -> Type[T]:
@@ -267,6 +278,12 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
             dependencies = [*route_options.dependencies]
         if dependencies is None and options.routes.dependencies:
             dependencies = [*options.routes.dependencies]
+
+        # pydantic model_dump() serializes fastapi Depends instances into
+        # dicts ({"dependency": ..., "use_cache": ..., "scope": ...}); restore
+        # them so that fastapi >=0.141 route registration works again.
+        if dependencies:
+            dependencies = [_restore_depends(dep) for dep in dependencies]
 
         if dependencies is None:
             dependencies = []

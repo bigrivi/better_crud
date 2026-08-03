@@ -1,11 +1,13 @@
-fastapi
-sqlalchemy==2.0.30
-fastapi_pagination==0.12.24
-pydantic==2.7.3
+fastapi==0.141.1
+sqlalchemy==2.0.51
+greenlet
+fastapi_pagination==0.15.16
+pydantic==2.13.4
 
-sqlmodel==0.0.22
+sqlmodel==0.0.39
 sqlalchemy_utils==0.41.2
 passlib==1.7.4
+bcrypt<5
 aiosqlite==0.20.0
 httpx
 
