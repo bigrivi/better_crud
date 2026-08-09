@@ -9,7 +9,7 @@ from .generator import crud_generator
 from .backend import register_backend
 from .enums import RoutesEnum, CrudActions, QuerySortType
 from .exceptions import *
-from .factory import get_crud_routes
+from .factory import get_crud_routes, crud_action
 
 from ._version import (
     __author__,
@@ -44,5 +44,6 @@ __all__ = [
     "RoutesEnum",
     "CrudActions",
     "QuerySortType",
-    "get_crud_routes"
+    "get_crud_routes",
+    "crud_action"
 ]

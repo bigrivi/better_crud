@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa: E402
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from typing import AsyncGenerator, List, Dict
-from better_crud import BetterCrudGlobalConfig, crud
+from better_crud import BetterCrudGlobalConfig, crud, crud_action
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, Depends, APIRouter
 from starlette.requests import Request
@@ -543,6 +543,45 @@ def soft_delete_no_recover_client(
     )
     class UserController():
         service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+class ActionUserService(UserService):
+    pass
+
+
+@pytest.fixture
+def action_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: ActionUserService = Depends(ActionUserService)
+
+        @crud_action(method="POST", path="/{id}/adopt", action="adopt")
+        async def adopt(self, id: int):
+            return {"id": id, "adopted": True}
+
     api_router = APIRouter()
     api_router.include_router(user_router, prefix="/user")
     app.include_router(api_router)

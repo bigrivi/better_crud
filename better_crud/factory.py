@@ -9,7 +9,9 @@ from typing import (
     Annotated,
     cast,
     Union,
-    Dict
+    Dict,
+    Literal,
+    Optional
 )
 from functools import wraps
 from fastapi import (
@@ -54,8 +56,31 @@ UNBIND_KIND_TYPE = (
     inspect.Parameter.VAR_KEYWORD
 )
 INCLUDE_DELETED_KEY = "include_deleted"
+CRUD_ACTION_KEY = "__crud_action__"
 
 _crud_routes: List[Tuple[APIRouter, Type, CrudOptions]] = []
+
+
+def crud_action(
+    method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"],
+    path: str,
+    *,
+    response_model: Optional[Any] = None,
+    action: Optional[str] = None,
+    summary: Optional[str] = None,
+    dependencies: Optional[List[Any]] = None,
+) -> Callable[[Callable], Callable]:
+    def decorator(func: Callable) -> Callable:
+        setattr(func, CRUD_ACTION_KEY, {
+            "method": method,
+            "path": path,
+            "response_model": response_model,
+            "action": action,
+            "summary": summary,
+            "dependencies": dependencies,
+        })
+        return func
+    return decorator
 
 
 def _restore_depends(dep: Any) -> Any:
@@ -246,6 +271,63 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     for func in functions_set:
         _update_route_endpoint_signature(cls, func, options)
 
+    for name, member in inspect.getmembers(cls, inspect.isfunction):
+        action_meta = getattr(member, CRUD_ACTION_KEY, None)
+        if not action_meta:
+            continue
+        action_path = action_meta["path"]
+        action_method = action_meta["method"]
+        overrides = list(filter(lambda route: route.path ==
+                         action_path and action_method in route.methods, router.routes))
+        if overrides:
+            continue
+        endpoint = getattr(cls, name)
+
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            async def wrapper(*args: Any, **kwargs: Any) -> Any:
+                if options.params:
+                    for key in options.params.keys():
+                        kwargs.pop(key)
+                endpoint_output = await func(*args, **kwargs)
+                if response_schema_type:
+                    return response_schema_type.create(endpoint_output)
+                return endpoint_output
+            return wrapper
+        endpoint_wrapper = decorator(endpoint)
+
+        action_response_model = action_meta["response_model"]
+        if response_schema_type:
+            if action_response_model is None:
+                action_response_model = get_serialize_model(
+                    serialize, RoutesEnum.get_one)
+            action_response_model = response_schema_type[action_response_model]
+
+        action_dependencies = None
+        if action_meta["dependencies"]:
+            action_dependencies = [
+                _restore_depends(dep) for dep in action_meta["dependencies"]]
+        if action_dependencies is None:
+            action_dependencies = []
+
+        router.add_api_route(
+            action_path,
+            endpoint_wrapper,
+            methods=[action_method],
+            summary=action_meta["summary"],
+            dependencies=[
+                Depends(CrudAction(
+                    options.feature,
+                    action_meta["action"] or name,
+                    BetterCrudGlobalConfig.action_map,
+                    name
+                )),
+                *action_dependencies,
+                Depends(StateAction(options.auth, options.params)),
+            ],
+            response_model=action_response_model,
+        )
+
     for schema in RoutesSchema:
         router_name = schema["name"].value
         path = schema["path"]
@@ -351,6 +433,8 @@ def _update_route_endpoint_signature(
     old_signature = inspect.signature(endpoint)
     old_parameters: List[inspect.Parameter] = list(
         old_signature.parameters.values())
+    if not old_parameters:
+        return
     old_first_parameter = old_parameters[0]
     new_first_parameter = old_first_parameter.replace(default=Depends(cls))
     new_parameters = [new_first_parameter] + [
