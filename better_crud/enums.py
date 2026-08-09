@@ -9,6 +9,7 @@ class RoutesEnum(str, Enum):
     update_one = 'update_one'
     update_many = 'update_many'
     delete_many = 'delete_many'
+    recover_one = 'recover_one'
 
 
 class CrudActions(str, Enum):
@@ -19,6 +20,7 @@ class CrudActions(str, Enum):
     update_one = 'update',
     update_many = 'update',
     delete_many = 'delete'
+    recover_one = 'recover'
 
 
 class QuerySortType(str, Enum):

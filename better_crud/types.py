@@ -22,7 +22,8 @@ RoutesEnumType = Literal[
     "create_many",
     "update_one",
     "update_many",
-    "delete_many"
+    "delete_many",
+    "recover_one"
 ]
 
 BackendType = Literal[
@@ -64,6 +65,7 @@ class RoutesModelDict(TypedDict, total=False):
     update_one: Optional[RouteOptionsDict] = None
     update_many: Optional[RouteOptionsDict] = None
     delete_many: Optional[RouteOptionsDict] = None
+    recover_one: Optional[RouteOptionsDict] = None
 
 
 class QueryCriterion(TypedDict, total=False):
@@ -105,6 +107,7 @@ class QueryOptionsDict(TypedDict, total=False):
     joins: Optional[Dict[str, JoinOptionsDict]] = None
     soft_delete: Optional[bool] = None
     allow_include_deleted: Optional[bool] = False
+    allow_recover: Optional[bool] = False
     filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortDict]] = None
 
@@ -126,7 +129,9 @@ class SerializeModelDict(TypedDict, total=False):
     create_one: Optional[Any] = None
     create_many: Optional[Any] = None
     update_one: Optional[Any] = None
+    update_many: Optional[Any] = None
     delete_many: Optional[Any] = None
+    recover_one: Optional[Any] = None
 
 
 class SqlalchemyBackendDict(TypedDict):

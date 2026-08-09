@@ -314,6 +314,22 @@ class SqlalchemyCrudService(
         background_tasks: Optional[BackgroundTasks] = None,
         db_session: Optional[AsyncSession] = Provide()
     ) -> ModelType:
+        entity = await self._create_one_entity(
+            request,
+            model,
+            db_session=db_session,
+            background_tasks=background_tasks
+        )
+        await db_session.commit()
+        return entity
+
+    async def _create_one_entity(
+        self,
+        request: Request,
+        model: CreateSchemaType,
+        db_session: AsyncSession,
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> ModelType:
         relationships = self.entity.__mapper__.relationships
         extra_data = await self.on_before_create(
             model,
@@ -359,7 +375,6 @@ class SqlalchemyCrudService(
         db_session.add(entity)
         await db_session.flush()
         await self.on_after_create(entity, model=model, background_tasks=background_tasks)
-        await db_session.commit()
         return entity
 
     @inject_db_session
@@ -371,15 +386,20 @@ class SqlalchemyCrudService(
         db_session: Optional[AsyncSession] = Provide()
     ) -> List[ModelType]:
         entities = []
-        for model in models:
-            entity = await self.crud_create_one(
-                request,
-                model=model,
-                db_session=db_session,
-                background_tasks=background_tasks
-            )
-            entities.append(entity)
-        return entities
+        try:
+            for model in models:
+                entity = await self._create_one_entity(
+                    request,
+                    model,
+                    db_session=db_session,
+                    background_tasks=background_tasks
+                )
+                entities.append(entity)
+            await db_session.commit()
+            return entities
+        except Exception:
+            await db_session.rollback()
+            raise
 
     @inject_db_session
     async def crud_update_one(
@@ -390,6 +410,25 @@ class SqlalchemyCrudService(
         db_session: Optional[AsyncSession] = Provide(),
         background_tasks: Optional[BackgroundTasks] = None
     ):
+        entity = await self._update_one_entity(
+            id,
+            model,
+            request=request,
+            db_session=db_session,
+            background_tasks=background_tasks
+        )
+        await db_session.commit()
+        await self.on_after_update(entity, model=model, background_tasks=background_tasks)
+        return entity
+
+    async def _update_one_entity(
+        self,
+        id: ID_TYPE,
+        model: UpdateSchemaType,
+        db_session: AsyncSession,
+        request: Optional[Request] = None,
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> ModelType:
         model_data = model.model_dump(exclude_unset=True)
         relationship_fields = self._guess_should_load_relationship_fields(
             model_data
@@ -447,8 +486,6 @@ class SqlalchemyCrudService(
                     )
             setattr(entity, key, value)
         db_session.add(entity)
-        await db_session.commit()
-        await self.on_after_update(entity, model=model, background_tasks=background_tasks)
         return entity
 
     @inject_db_session
@@ -463,16 +500,23 @@ class SqlalchemyCrudService(
         if len(ids) != len(models):
             raise Exception("The id and models length do not match")
         entities = []
-        for index, model in enumerate(models):
-            entity = await self.crud_update_one(
-                request,
-                id=ids[index],
-                model=model,
-                db_session=db_session,
-                background_tasks=background_tasks
-            )
-            entities.append(entity)
-        return entities
+        try:
+            for index, model in enumerate(models):
+                entity = await self._update_one_entity(
+                    ids[index],
+                    model,
+                    request=request,
+                    db_session=db_session,
+                    background_tasks=background_tasks
+                )
+                entities.append(entity)
+            await db_session.commit()
+            for entity, model in zip(entities, models):
+                await self.on_after_update(entity, model=model, background_tasks=background_tasks)
+            return entities
+        except Exception:
+            await db_session.rollback()
+            raise
 
     @inject_db_session
     async def crud_delete_many(
@@ -497,6 +541,24 @@ class SqlalchemyCrudService(
             )
         await self.on_after_delete(entities, background_tasks=background_tasks)
         return entities
+
+    @inject_db_session
+    async def crud_recover_one(
+        self,
+        request: Request,
+        id: ID_TYPE,
+        background_tasks: Optional[BackgroundTasks] = None,
+        db_session: Optional[AsyncSession] = Provide()
+    ) -> ModelType:
+        entity = await self._get(id, db_session)
+        if not entity:
+            raise NotFoundException()
+        await self.on_before_recover(entity, background_tasks=background_tasks)
+        setattr(entity, BetterCrudGlobalConfig.soft_deleted_field_key, None)
+        db_session.add(entity)
+        await db_session.commit()
+        await self.on_after_recover(entity, background_tasks=background_tasks)
+        return entity
 
     def _guess_should_load_relationship_fields(self, model_data: Dict):
         relationships = self.entity.__mapper__.relationships
@@ -581,7 +643,21 @@ class SqlalchemyCrudService(
     async def on_after_delete(
         self,
         entities: List[ModelType],
-        background_tasks: BackgroundTasks
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> None:
+        pass
+
+    async def on_before_recover(
+        self,
+        entity: ModelType,
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> None:
+        pass
+
+    async def on_after_recover(
+        self,
+        entity: ModelType,
+        background_tasks: Optional[BackgroundTasks] = None
     ) -> None:
         pass
 

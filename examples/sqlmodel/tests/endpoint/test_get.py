@@ -337,3 +337,41 @@ async def test_get_one_load_relation(join_config_client: TestClient, test_user_d
     data = response.json()
     assert len(data["roles"]) == len(test_user_data[0]["role_ids"])
     assert data["company"]["name"] == test_company_data[0]["name"]
+
+
+@pytest.mark.asyncio
+async def test_recover_route_absent_when_soft_delete_only(
+    soft_delete_no_recover_client: TestClient, test_user_data, init_data
+):
+    response = soft_delete_no_recover_client.patch("/user/1/recover")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_recover_route_absent_on_plain_client(
+    client: TestClient, test_user_data, init_data
+):
+    response = client.patch("/user/1/recover")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_recover_flow(recover_enabled_client: TestClient, test_user_data, init_data):
+    exist_user_id = test_user_data[0]["id"]
+    response = recover_enabled_client.delete(f"/user/{exist_user_id}")
+    assert response.status_code == 200
+    response = recover_enabled_client.get("/user")
+    data = response.json()
+    assert len(data) == len(test_user_data) - 1
+    response = recover_enabled_client.patch(f"/user/{exist_user_id}/recover")
+    assert response.status_code == 200
+    assert response.json()["id"] == exist_user_id
+    response = recover_enabled_client.get("/user")
+    data = response.json()
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_recover_non_existent_record(recover_enabled_client: TestClient, test_user_data, init_data):
+    response = recover_enabled_client.patch("/user/9999/recover")
+    assert response.status_code == 404

@@ -481,3 +481,70 @@ def per_route_override_client(
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def recover_enabled_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        query={
+            "soft_delete": True,
+            "allow_recover": True
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def soft_delete_no_recover_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        }
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        query={
+            "soft_delete": True,
+        },
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client

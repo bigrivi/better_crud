@@ -197,3 +197,29 @@ async def test_create_by_params_filter(async_session, test_request):
     }
     res = await user_task_service.crud_create_one(test_request, new_data, db_session=async_session)
     assert res.user_id == 1
+
+
+class FailOnSecondCreateUserService(UserService):
+    """Raises on the second item's on_before_create to test atomicity."""
+
+    def __init__(self):
+        super().__init__()
+        self._create_count = 0
+
+    async def on_before_create(self, user_create, **kwargs):
+        self._create_count += 1
+        if self._create_count == 2:
+            raise Exception("simulated failure on second item")
+        return await UserService.on_before_create(self, user_create, **kwargs)
+
+
+@pytest.mark.asyncio
+async def test_create_many_atomic_rollback(async_session, test_request, test_user_data):
+    user_service = FailOnSecondCreateUserService()
+    new_data = [UserCreate(**item) for item in test_user_data[:2]]
+    with pytest.raises(Exception, match="simulated failure"):
+        await user_service.crud_create_many(test_request, new_data, db_session=async_session)
+    stmt = select(User)
+    result = await async_session.execute(stmt)
+    fetched_records = result.unique().scalars().all()
+    assert len(fetched_records) == 0

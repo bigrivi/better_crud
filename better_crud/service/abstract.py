@@ -78,3 +78,12 @@ class AbstractCrudService(Generic[ModelType], abc.ABC):
         background_tasks: Optional[BackgroundTasks] = None
     ) -> List[ModelType]:
         raise NotImplementedError
+
+    @abc.abstractmethod
+    async def crud_recover_one(
+        self,
+        request: Request,
+        id: ID_TYPE,
+        background_tasks: Optional[BackgroundTasks] = None
+    ) -> ModelType:
+        raise NotImplementedError

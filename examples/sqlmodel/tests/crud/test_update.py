@@ -208,3 +208,24 @@ async def test_update_many_id_model_length_mismatch(async_session, test_user_dat
     ]
     with pytest.raises(Exception) as exc_info:
         await user_service.crud_update_many(test_request, exist_user_ids, update_data, db_session=async_session)
+
+
+@pytest.mark.asyncio
+async def test_update_many_atomic_rollback(async_session, test_user_data, test_request, init_data):
+    """Second id does not exist -> first update must roll back too."""
+    user_service = UserService()
+    exist_user_id = test_user_data[0]["id"]
+    original_email = test_user_data[0]["email"]
+    ids = [exist_user_id, 9999]
+    update_data = [
+        UserUpdate(email="rolled-back@email.com"),
+        UserUpdate(email="never-applied@email.com"),
+    ]
+    with pytest.raises(NotFoundException):
+        await user_service.crud_update_many(test_request, ids, update_data, db_session=async_session)
+    stmt = select(User).where(User.id == exist_user_id)
+    stmt = stmt.execution_options(populate_existing=True)
+    result = await async_session.execute(stmt)
+    fetched_record: User = result.scalar_one_or_none()
+    assert fetched_record is not None
+    assert fetched_record.email == original_email

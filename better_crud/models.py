@@ -39,6 +39,7 @@ class SerializeModel(BaseModel):
     update_one: Optional[Any] = None
     update_many: Optional[Any] = None
     delete_many: Optional[Any] = None
+    recover_one: Optional[Any] = None
 
 
 class RouteOptions(BaseModel):
@@ -60,6 +61,7 @@ class RoutesModel(BaseModel):
     update_one: Optional[RouteOptions] = None
     update_many: Optional[RouteOptions] = None
     delete_many: Optional[RouteOptions] = None
+    recover_one: Optional[RouteOptions] = None
 
 
 class QuerySortModel(BaseModel):
@@ -83,6 +85,7 @@ class QueryOptions(BaseModel):
     joins: Optional[JoinOptions] = None
     soft_delete: Optional[bool] = None
     allow_include_deleted: Optional[bool] = False
+    allow_recover: Optional[bool] = False
     filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortModel]] = None
 

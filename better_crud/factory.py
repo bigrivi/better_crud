@@ -123,6 +123,22 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 detail="No data found"
             )
 
+    async def recover_one(
+        self,
+        request: Request,
+        id: Union[int, str] = Path(..., title="The ID of the item to recover")
+    ):
+        try:
+            return await self.service.crud_recover_one(
+                request,
+                id,
+            )
+        except NotFoundException:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="No data found"
+            )
+
     async def create_one(
         self,
         model: Annotated[create_schema_type, Body()],  # type: ignore
@@ -222,6 +238,8 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     cls.update_many = update_many
     cls.delete_many = delete_many
     cls.get_one = get_one
+    if options.query.soft_delete and options.query.allow_recover:
+        cls.recover_one = recover_one
 
     function_members = inspect.getmembers(cls, inspect.isfunction)
     functions_set = set(func for _, func in function_members)
@@ -237,6 +255,9 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 continue
         if options.routes and options.routes.exclude:
             if router_name in options.routes.exclude:
+                continue
+        if router_name == RoutesEnum.recover_one:
+            if not (options.query.soft_delete and options.query.allow_recover):
                 continue
         overrides = list(filter(lambda route: route.path ==
                          path and method in route.methods, router.routes))

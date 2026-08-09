@@ -27,7 +27,8 @@ DEFAULT_ACTION_MAP = {
     RoutesEnum.create_many: CrudActions.create_many.value,
     RoutesEnum.update_one: CrudActions.update_one.value,
     RoutesEnum.update_many: CrudActions.update_many.value,
-    RoutesEnum.delete_many: CrudActions.delete_many.value
+    RoutesEnum.delete_many: CrudActions.delete_many.value,
+    RoutesEnum.recover_one: CrudActions.recover_one.value
 }
 
 
@@ -66,6 +67,11 @@ RoutesSchema: List[RouteSchema] = [
         "name": RoutesEnum.delete_many,
         "path": '/{ids}',
         "method": "DELETE"
+    },
+    {
+        "name": RoutesEnum.recover_one,
+        "path": '/{id}/recover',
+        "method": "PATCH"
     }
 ]
 
