@@ -325,6 +325,23 @@
   
   
     <li class="md-tabs__item">
+      <a href="../../release-notes/" class="md-tabs__link">
+        
+  
+    
+  
+  Release Notes
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../../changelog/" class="md-tabs__link">
         
   
@@ -794,18 +811,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-addadditional_filter_fnadd-some-additional-query-conditions-to-your-own-association-conditions" class="md-nav__link">
+  <a href="#4-additional_filter_fn-add-some-additional-query-conditions-to-your-own-association-conditions" class="md-nav__link">
     <span class="md-ellipsis">
-      4. addadditional_filter_fn(Add some additional query conditions to your own association conditions)
+      4. additional_filter_fn (Add some additional query conditions to your own association conditions)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-alias" class="md-nav__link">
+  <a href="#5-alias" class="md-nav__link">
     <span class="md-ellipsis">
-      4. alias
+      5. alias
     </span>
   </a>
   
@@ -867,6 +884,27 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release-notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release Notes
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -944,18 +982,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-addadditional_filter_fnadd-some-additional-query-conditions-to-your-own-association-conditions" class="md-nav__link">
+  <a href="#4-additional_filter_fn-add-some-additional-query-conditions-to-your-own-association-conditions" class="md-nav__link">
     <span class="md-ellipsis">
-      4. addadditional_filter_fn(Add some additional query conditions to your own association conditions)
+      4. additional_filter_fn (Add some additional query conditions to your own association conditions)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-alias" class="md-nav__link">
+  <a href="#5-alias" class="md-nav__link">
     <span class="md-ellipsis">
-      4. alias
+      5. alias
     </span>
   </a>
   
@@ -1066,7 +1104,7 @@ These relationships are not loaded by default,They are all configured with noloa
 <h3 id="1-select-determines-whether-to-load-relations-in-a-query">1. select (Determines whether to load relations in a query)<a class="headerlink" href="#1-select-determines-whether-to-load-relations-in-a-query" title="Permanent link">&para;</a></h3>
 <h3 id="2-join-determine-which-relationships-will-be-joined">2. join (Determine which relationships will be joined)<a class="headerlink" href="#2-join-determine-which-relationships-will-be-joined" title="Permanent link">&para;</a></h3>
 <h3 id="3-select_only_detail-is-it-only-loaded-in-the-get-one-route">3. select_only_detail (Is it only loaded in the <strong>Get One</strong> route?)<a class="headerlink" href="#3-select_only_detail-is-it-only-loaded-in-the-get-one-route" title="Permanent link">&para;</a></h3>
-<h3 id="4-addadditional_filter_fnadd-some-additional-query-conditions-to-your-own-association-conditions">4. addadditional_filter_fn(Add some additional query conditions to your own association conditions)<a class="headerlink" href="#4-addadditional_filter_fnadd-some-additional-query-conditions-to-your-own-association-conditions" title="Permanent link">&para;</a></h3>
+<h3 id="4-additional_filter_fn-add-some-additional-query-conditions-to-your-own-association-conditions">4. additional_filter_fn (Add some additional query conditions to your own association conditions)<a class="headerlink" href="#4-additional_filter_fn-add-some-additional-query-conditions-to-your-own-association-conditions" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@crud</span><span class="p">(</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">query</span><span class="o">=</span><span class="p">{</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="s2">&quot;joins&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1081,7 +1119,7 @@ These relationships are not loaded by default,They are all configured with noloa
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">class</span> <span class="nc">UserController</span><span class="p">():</span>
 </span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">service</span><span class="p">:</span> <span class="n">UserService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">UserService</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="4-alias">4. alias<a class="headerlink" href="#4-alias" title="Permanent link">&para;</a></h3>
+<h3 id="5-alias">5. alias<a class="headerlink" href="#5-alias" title="Permanent link">&para;</a></h3>
 <p>Sometimes your model has multiple properties that reference the same relationship
 At this time you need to set it aliased</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">aliased</span>
