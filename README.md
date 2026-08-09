@@ -1,9 +1,9 @@
 <div align="center">
-  <h1>BetterCRUD</h1>
+  <h1>⚡ BetterCRUD</h1>
 </div>
 <p align="center" markdown=1>
-  <i>A better CRUD library for FastAPI.</i></br>
-  <sub>FastAPI CRUD routing library based on class view, you can control everything</sub>
+  <i>Stop writing CRUD boilerplate. Generate a complete, production-ready CRUD API from one decorator.</i></br>
+  <sub>FastAPI CRUD routing library — class-based, fully async, fully testable.</sub>
 </p>
 <p align="center" markdown=1>
 <a href="https://github.com/bigrivi/better_crud/actions/workflows/pytest.yml" target="_blank">
@@ -28,30 +28,35 @@
 
 ---
 
-BetterCRUD is a library that can quickly generate CRUD routes for you without any intrusion to your code. You can still control everything. When you are troubled by a large number of repeated CRUD routes, I believe it can help you, saving you a lot of time and allowing you to focus more on business logic.
+## 🎯 The Problem
 
-BetterCRUD is reliable, fully tested, and used in project production environments.
+Every FastAPI project needs the same endpoints — `GET/POST /resource`, `GET/PUT/DELETE /resource/{id}`. And every project writes them by hand, over and over. The result: thousands of lines of nearly identical code, with filtering, pagination, and permissions bolted on inconsistently.
 
-BetterCRUD is a way to dynamically generate routes by combining your model with the crud decorator,I believe bring you a different development experience
+**BetterCRUD eliminates that entire category of boilerplate.** Define your model, write one decorator, and get a complete CRUD API — with rich filtering, pagination, sorting, relationship queries, soft delete, ACL hooks, and lifecycle events — all generated for you, while you stay in full control.
 
-You only need to configure some crud options and define your model to produce powerful CRUD functions
+## ✨ What You Get
 
 ```python
+from better_crud import crud
+
 @crud(
-    router,
-    dto={
-        "create": PetCreate,
-        "update": PetUpdate
-    },
-    serialize={
-        "base": PetPublic,
-    },
-    **other_options
+    pet_router,
+    dto={"create": PetCreate, "update": PetUpdate},
+    serialize={"base": PetPublic},
 )
 class PetController():
     service: PetService = Depends(PetService)
-
 ```
+
+This one decorator generates **8 routes** with:
+
+- 🚀 **Rich filtering** — 27 operators (`$eq` `$cont` `$in` `$between` `$any` …), nested `$and`/`$or`, relationship queries
+- 📄 **Pagination** — offset pagination, plus `always` / `optional` / `disabled` modes
+- 🔗 **Relationship queries & storage** — joins, loads, many-to-many / one-to-many / many-to-one / one-to-one
+- 🔐 **ACL hooks** — `get_feature` / `get_action` for permission guards, row-scoping via `auth.filter`
+- ♻️ **Lifecycle hooks** — `on_before/after_create/update/delete`, plus soft delete with recover
+- 🧩 **Custom endpoints** — `@crud_action` decorator for business actions like `adopt` / `approve`
+- 🛠️ **Extensible** — custom backends, custom response schemas, custom pagination models
 
 ## Requirements
 - **Python:** Version 3.9 or newer.
@@ -63,16 +68,6 @@ class PetController():
 ```bash
 pip install better-crud
 ```
-
-## Features
-- Fully Async, Synchronization is not supported
-- Less boilerplate code
-- Configuring static type support
-- More flexible custom configuration，Less invasive
-- Compatible with both class views and functional views
-- Rich filter, pagination, and sorting support
-- Automated relationship support, query and storage
-- Extensible custom backend
 
 ## Why BetterCRUD over fastapi-crudrouter?
 
@@ -88,11 +83,33 @@ The long-time de-facto CRUD library for FastAPI, [fastapi-crudrouter](https://gi
 | Many-to-many relationship storage | ✅ | ❌ |
 | Lifecycle hooks (`on_after_create/update/...`) | ✅ | ❌ |
 | ACL / permission guards | ✅ | ❌ |
+| Soft delete + recover | ✅ | ❌ |
+| Custom endpoints (`@crud_action`) | ✅ | ❌ |
 | Pagination | ✅ | ✅ |
 | Class views & function views | ✅ | ✅ |
 | Test coverage | 99% | — |
 
-> 💡 **Migrating from fastapi-crudrouter?** The route layout is nearly identical (`GET/POST /resource`, `GET/PUT/DELETE /resource/{id}`), so switching is mostly a drop-in change. A dedicated migration guide is on the roadmap.
+> 💡 **Migrating from fastapi-crudrouter?** The route layout is nearly identical (`GET/POST /resource`, `GET/PUT/DELETE /resource/{id}`), so switching is mostly a drop-in change:
+
+```python
+# Before (fastapi-crudrouter)
+from fastapi_crudrouter import SQLAlchemyCRUDRouter
+router = SQLAlchemyCRUDRouter(schema=PetCreate, create_schema=PetCreate,
+                              update_schema=PetUpdate, db_model=Pet,
+                              db=get_session)
+
+# After (better-crud)
+from better_crud import crud
+pet_router = APIRouter()
+
+@crud(pet_router,
+      dto={"create": PetCreate, "update": PetUpdate},
+      serialize={"base": PetPublic})
+class PetController():
+    service: PetService = Depends(PetService)
+```
+
+Same routes, same REST semantics — but you gain filtering, pagination modes, ACL, soft delete, and a service layer you can override with business logic.
 
 
 ## Default Routes
@@ -111,7 +128,8 @@ The long-time de-facto CRUD library for FastAPI, [fastapi-crudrouter](https://gi
 
 ## Minimal Example
 
-Prerequisites,Prepare our db, Only asynchronous mode is supported,aiomysql or aiosqlite
+> Prerequisites: prepare your database. Only asynchronous mode is supported — use aiomysql or aiosqlite.
+
 **db.py**
 ```python
 from sqlalchemy.orm import DeclarativeBase, declared_attr
@@ -275,7 +293,7 @@ register_router()
 
 ```
 
-Congratulations, your first CRUD route has been created！
+Congratulations, your first CRUD route has been created! 🎉
 
 
 ![OpenAPI Route Overview](https://raw.githubusercontent.com/bigrivi/better_crud/main/resources/RouteOverview.png)
@@ -290,7 +308,6 @@ Congratulations, your first CRUD route has been created！
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -306,9 +323,17 @@ This project draws inspiration from the following frameworks:
 
 ## UseCases
 
-BetterCrud was used in the following projects:
+BetterCRUD is used in production by:
 
-- [black-panther](https://github.com/bigrivi/black-panther)
+- [black-panther](https://github.com/bigrivi/black-panther) — a real-world FastAPI project
+
+## ⭐️ Support
+
+If BetterCRUD saves you time, please help more developers discover it:
+
+- **Give the repo a star ⭐️** — it directly helps others find the project
+- Report bugs or request features via [issues](https://github.com/bigrivi/better_crud/issues)
+- Share it in your team or community
 
 ## License
 
