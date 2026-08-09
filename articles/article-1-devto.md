@@ -267,6 +267,13 @@ Full docs: [https://bigrivi.github.io/better_crud/](https://bigrivi.github.io/be
 
 Source: [https://github.com/bigrivi/better_crud](https://github.com/bigrivi/better_crud)
 
+## Next steps
+
+- ⭐ **Star the repo** on GitHub if BetterCRUD saves you time — it directly helps more developers find it
+- 📖 **Read the full docs** for deep dives: relationship storage, custom backends, response schemas, and more
+- 🐛 **Report bugs or request features** via [issues](https://github.com/bigrivi/better_crud/issues)
+- 💬 **Migrating from fastapi-crudrouter?** See the [migration guide](https://dev.to/bigrivi/fastapi-crudrouter-is-dead-heres-how-to-migrate-to-bettercrud)
+
 ---
 
 *If BetterCRUD saves you time, give it a ⭐ on GitHub — it helps more developers discover it.*
