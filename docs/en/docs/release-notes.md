@@ -1,5 +1,69 @@
 # Release Notes
 
+## v0.2.1
+
+**BetterCRUD v0.2.1** adds optional pagination to the `get_many` route. List endpoints can now return a full array (no pagination) when the caller omits pagination params — ideal for small datasets like enum-like tables, reference data, and dropdown options.
+
+### 🚀 Highlights
+
+- **Optional pagination** — `GET /{resource}` now supports three modes via `pagination_mode`, configurable globally or per-route.
+- **Backward compatible by default** — the default `"optional"` mode matches previous behavior exactly (no pagination params → full array; `page`/`size` → paginated response). All 165 tests pass.
+
+### ✨ Enhancements
+
+#### `pagination_mode` global config
+
+`BetterCrudGlobalConfig.init()` accepts a new `pagination_mode` option:
+
+```python
+BetterCrudGlobalConfig.init(
+    backend_config={"sqlalchemy": {"db_session": get_session}},
+    pagination_mode="optional",   # "always" | "optional" | "disabled"
+)
+```
+
+| Mode      | No `page`/`size`                 | `?page=1&size=20`                |
+|-----------|----------------------------------|----------------------------------|
+| `always`  | Paginated (default `page=1, size=50`) | Paginated                   |
+| `optional` (default) | Full array                 | Paginated                        |
+| `disabled` | Full array                       | Full array (params ignored)      |
+
+#### Per-route override
+
+Individual `@crud` decorators can override the global mode:
+
+```python
+@crud(
+    router,
+    serialize={"base": PetPublic},
+    pagination_mode="always",
+)
+class PetController():
+    service: PetService = Depends(PetService)
+```
+
+#### Response format
+
+- **Paginated:** `{items: [...], total, page, size, pages}`
+- **Non-paginated:** `[...]` — plain array of all matching records
+
+`filter`/`s`/`sort` work identically in both modes. Frontends should check whether the response is an array or an object:
+
+```js
+const data = await res.json();
+const items = Array.isArray(data) ? data : data.items;
+```
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.1
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.0
 
 **BetterCRUD v0.2.0** brings full compatibility with the latest FastAPI releases, more powerful lifecycle hooks, and a cleaner dependency footprint — all backed by a fully passing test suite (154 tests).

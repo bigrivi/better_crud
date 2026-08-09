@@ -4,6 +4,7 @@ import math
 from typing import Generic, Sequence, TypeVar, Optional, Any
 from fastapi import Query
 from fastapi_pagination.bases import AbstractPage, AbstractParams, RawParams
+from fastapi_pagination.customization import CustomizedPage, UseOptionalParams, UseParamsFields
 from pydantic import BaseModel
 
 
@@ -52,3 +53,13 @@ class Page(AbstractPage[T], Generic[T]):
         else:
             pages = None
         return cls(items=items, total=total, page=page, size=size, pages=pages)
+
+
+# For pagination_mode="always" — page/size have default values, always paginates
+PageAlways = CustomizedPage[Page, UseParamsFields(
+    page=Query(1, ge=1),
+    size=Query(50, ge=1, le=100),
+)]
+
+# For pagination_mode="optional" — page/size are optional, missing → return all
+PageOptional = CustomizedPage[Page, UseOptionalParams()]

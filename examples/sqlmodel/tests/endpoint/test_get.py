@@ -166,6 +166,100 @@ async def test_get_many_pagination(
 
 
 @pytest.mark.asyncio
+async def test_get_many_always_no_params(always_pagination_client: TestClient, test_user_data, init_data):
+    response = always_pagination_client.get("/user")
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data["total"] == len(test_user_data)
+    assert len(data["items"]) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_get_many_always_with_params(always_pagination_client: TestClient, test_user_data, init_data):
+    response = always_pagination_client.get("/user", params={"page": 1, "size": 2})
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data["total"] == len(test_user_data)
+    assert len(data["items"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_many_optional_no_params(optional_pagination_client: TestClient, test_user_data, init_data):
+    response = optional_pagination_client.get("/user")
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_get_many_optional_with_params(optional_pagination_client: TestClient, test_user_data, init_data):
+    response = optional_pagination_client.get("/user", params={"page": 1, "size": 2})
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data["total"] == len(test_user_data)
+    assert len(data["items"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_many_disabled_no_params(disabled_pagination_client: TestClient, test_user_data, init_data):
+    response = disabled_pagination_client.get("/user")
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_get_many_disabled_with_params(disabled_pagination_client: TestClient, test_user_data, init_data):
+    response = disabled_pagination_client.get("/user", params={"page": 1, "size": 2})
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_get_many_per_route_override(per_route_override_client: TestClient, test_user_data, init_data):
+    response = per_route_override_client.get("/user")
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
+async def test_get_many_optional_filter_no_pagination(optional_pagination_client: TestClient, test_user_data, init_data):
+    response = optional_pagination_client.get("/user", params={
+        "filter": ["is_active||$eq||1"],
+        "sort": "id,ASC",
+    })
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == 3
+
+
+@pytest.mark.asyncio
+async def test_get_many_always_filter_no_params(always_pagination_client: TestClient, test_user_data, init_data):
+    response = always_pagination_client.get("/user", params={
+        "filter": ["is_active||$eq||1"],
+    })
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data["total"] == 3
+
+
+@pytest.mark.asyncio
+async def test_get_many_optional_boundary_page_zero(optional_pagination_client: TestClient, test_user_data, init_data):
+    response = optional_pagination_client.get("/user", params={"page": 0, "size": 2})
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_get_many_optional_boundary_size_zero(optional_pagination_client: TestClient, test_user_data, init_data):
+    response = optional_pagination_client.get("/user", params={"page": 1, "size": 0})
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == len(test_user_data)
+
+
+@pytest.mark.asyncio
 async def test_get_many_select_relation(join_config_client: TestClient, test_user_data, test_company_data, init_data):
     response = join_config_client.get("/user", params={
         "load": ["roles", "company"]

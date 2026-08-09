@@ -1,4 +1,4 @@
-from typing import Dict, Optional, ClassVar, List
+from typing import Dict, Optional, ClassVar, List, Literal
 from importlib import import_module
 from .models import (
     GlobalQueryOptions,
@@ -78,6 +78,7 @@ class BetterCrudGlobalConfig:
                                      ] = DEFAULT_SOFT_DELETED_FIELD_KEY
     action_map: ClassVar[Optional[Dict[RoutesEnum, str]]] = None
     page_schema: ClassVar[Optional[AbstractPage]] = Page
+    pagination_mode: ClassVar[Literal["always", "optional", "disabled"]] = "optional"
     response_schema: ClassVar[Optional[AbstractResponseModel]] = None
     backend_config: ClassVar[BackendConfigModel] = None
 
@@ -92,6 +93,7 @@ class BetterCrudGlobalConfig:
         soft_deleted_field_key: Optional[str] = None,
         action_map: Optional[Dict[RoutesEnum, str]] = None,
         page_schema: Optional[AbstractPage] = Page,
+        pagination_mode: Literal["always", "optional", "disabled"] = "optional",
         response_schema: Optional[AbstractResponseModel] = None
     ) -> None:
         cls.query = GlobalQueryOptions(**query)
@@ -100,6 +102,7 @@ class BetterCrudGlobalConfig:
         if soft_deleted_field_key:
             cls.soft_deleted_field_key = soft_deleted_field_key
         cls.page_schema = page_schema
+        cls.pagination_mode = pagination_mode
         cls.response_schema = response_schema
         cls.action_map = action_map or DEFAULT_ACTION_MAP
         cls.backend_config = BackendConfigModel(**backend_config)

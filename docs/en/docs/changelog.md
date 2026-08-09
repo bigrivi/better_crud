@@ -4,6 +4,12 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.1] - Aug 09, 2026
+feature
+
+ - Support optional pagination mode for get_many (pagination_mode: always/optional/disabled)
+
+___
 ## [0.2.0] - Nov 10, 2025
 fixed issues
 

@@ -3,7 +3,7 @@ from .models import AbstractResponseModel, JoinOptionModel
 from .config import BetterCrudGlobalConfig
 from .helper import get_feature, get_action, decide_should_paginate
 from .types import QuerySortDict
-from .pagination import Page, AbstractPage
+from .pagination import Page, PageAlways, PageOptional, AbstractPage
 from .depends import GetQuerySearch, GetQuerySorts, GetQueryJoins, GetQueryLoads
 from .generator import crud_generator
 from .backend import register_backend
@@ -34,6 +34,8 @@ __all__ = [
     "register_backend",
     "QuerySortDict",
     "Page",
+    "PageAlways",
+    "PageOptional",
     "AbstractPage",
     "GetQuerySearch",
     "GetQuerySorts",

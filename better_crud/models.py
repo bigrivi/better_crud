@@ -102,6 +102,7 @@ class CrudOptions(BaseModel):
     auth: Optional[AuthModel] = None
     summary_vars: Dict = None
     params: Optional[Dict[str, PathParamModel]] = None
+    pagination_mode: Optional[Literal["always", "optional", "disabled"]] = None
 
 
 class GlobalQueryOptions(BaseModel):

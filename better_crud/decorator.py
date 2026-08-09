@@ -6,6 +6,7 @@ from typing import (
     List,
     Type,
     TypeVar,
+    Literal,
     get_type_hints,
     Dict
 )
@@ -46,6 +47,7 @@ def crud(
     query: Optional[QueryOptionsDict] = {},
     summary_vars: Optional[Dict] = {},
     feature: Optional[str] = "",
+    pagination_mode: Optional[Literal["always", "optional", "disabled"]] = None,
 ) -> Callable[[Type[T]], Type[T]]:
     def decorator(cls: Type[T]) -> Type[T]:
         options = CrudOptions(
@@ -56,7 +58,8 @@ def crud(
             serialize=serialize,
             summary_vars=summary_vars,
             routes={**BetterCrudGlobalConfig.routes.model_dump(), **routes},
-            query={**BetterCrudGlobalConfig.query.model_dump(), **query}
+            query={**BetterCrudGlobalConfig.query.model_dump(), **query},
+            pagination_mode=pagination_mode if pagination_mode is not None else BetterCrudGlobalConfig.pagination_mode,
         )
         _init_cbv(cls)
         return crud_routes_factory(router, cls, options)

@@ -44,6 +44,7 @@ from .depends import (
 )
 from fastapi_pagination import pagination_ctx
 from fastapi_pagination.bases import AbstractPage
+from .pagination import PageAlways, PageOptional
 from .exceptions import NotFoundException
 
 T = TypeVar("T")
@@ -78,6 +79,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
 
     serialize = options.serialize
     _crud_routes.append((router, cls, options))
+    pagination_mode = options.pagination_mode or BetterCrudGlobalConfig.pagination_mode
 
     async def get_many(
         self,
@@ -288,11 +290,18 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         if dependencies is None:
             dependencies = []
         if router_name == RoutesEnum.get_many:
-            dependencies.append(
-                Depends(
-                    pagination_ctx(BetterCrudGlobalConfig.page_schema)
+            if pagination_mode == "always":
+                page_cls = PageAlways
+            elif pagination_mode == "optional":
+                page_cls = PageOptional
+            else:
+                page_cls = None
+            if page_cls is not None:
+                dependencies.append(
+                    Depends(
+                        pagination_ctx(page_cls)
+                    )
                 )
-            )
         router.add_api_route(
             path,
             endpoint_wrapper,

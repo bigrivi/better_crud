@@ -356,3 +356,128 @@ def join_config_client(
     app.include_router(api_router)
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def always_pagination_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        },
+        pagination_mode="always"
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def optional_pagination_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        },
+        pagination_mode="optional"
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def disabled_pagination_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        },
+        pagination_mode="disabled"
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        serialize={
+            "base": UserPublic,
+        }
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def per_route_override_client(
+    async_session
+):
+    app = FastAPI()
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        },
+        pagination_mode="always"
+    )
+    user_router = APIRouter()
+
+    @crud(
+        user_router,
+        feature="user",
+        serialize={
+            "base": UserPublic,
+        },
+        pagination_mode="optional"
+    )
+    class UserController():
+        service: UserService = Depends(UserService)
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app.include_router(api_router)
+    with TestClient(app) as test_client:
+        yield test_client
