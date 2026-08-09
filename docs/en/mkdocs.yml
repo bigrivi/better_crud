@@ -53,6 +53,7 @@ nav:
       - Query params: usage/query_params.md
   - Advanced:
       - ACL Guard: advanced/acl_guard.md
+      - Custom Actions: advanced/crud_action.md
       - Function based view: advanced/function_based_view.md
       - Joining Models: advanced/joins.md
       - CRUD Hooks: advanced/hooks.md

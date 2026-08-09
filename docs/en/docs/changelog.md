@@ -4,6 +4,14 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.2] - Aug 09, 2026
+feature
+
+ - Add crud_action decorator for custom endpoints
+ - Make bulk create/update operations atomic (single transaction with rollback)
+ - Add soft-delete recover route (PATCH /{id}/recover, opt-in via allow_recover)
+
+___
 ## [0.2.1] - Aug 09, 2026
 feature
 

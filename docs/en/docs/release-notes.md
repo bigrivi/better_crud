@@ -1,5 +1,64 @@
 # Release Notes
 
+## v0.2.2
+
+**BetterCRUD v0.2.2** adds custom endpoints via a new `crud_action` decorator, makes bulk operations atomic, and completes the soft-delete story with an opt-in recover route — all fully tested (177 tests).
+
+### 🚀 Highlights
+
+- **`crud_action` decorator** — attach business endpoints (`adopt`, `approve`, `reset`, ...) to your generated routes while keeping them inside the CRUD ecosystem: `service` injection, ACL action names, response schema wrapping, and `request.state` scoping all work automatically.
+- **Atomic bulk operations** — `crud_create_many` / `crud_update_many` now run in a single transaction. A mid-batch failure rolls back every item instead of leaving partial data.
+- **Soft-delete recover route** — `PATCH /{resource}/{id}/recover` restores soft-deleted records. Opt-in via `query={"soft_delete": True, "allow_recover": True}`; routes are not generated otherwise (zero footprint).
+
+### ✨ Enhancements
+
+#### `crud_action` custom endpoints
+
+```python
+from better_crud import crud, crud_action
+
+@crud(pet_router, serialize={"base": PetPublic})
+class PetController():
+    service: PetService = Depends(PetService)
+
+    @crud_action(method="POST", path="/{id}/adopt", action="adopt")
+    async def adopt(self, id: int):
+        return {"id": id, "adopted": True}
+```
+
+See [Custom Actions](advanced/crud_action.md) for the full guide.
+
+#### Atomic bulk operations
+
+`crud_create_many` and `crud_update_many` now wrap the batch in a single transaction. On any failure, all changes are rolled back — no partial writes.
+
+#### Recover route
+
+```python
+@crud(
+    router,
+    serialize={"base": UserPublic},
+    query={
+        "soft_delete": True,
+        "allow_recover": True,     # exposes PATCH /{id}/recover
+    }
+)
+```
+
+### 🐛 Bug Fixes
+
+- Bulk `create_many`/`update_many` were non-atomic (per-item commits) — a mid-batch failure left partial data. Now fully transactional.
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.2
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.1
 
 **BetterCRUD v0.2.1** adds optional pagination to the `get_many` route. List endpoints can now return a full array (no pagination) when the caller omits pagination params — ideal for small datasets like enum-like tables, reference data, and dropdown options.
