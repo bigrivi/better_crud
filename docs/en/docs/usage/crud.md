@@ -236,7 +236,7 @@ Now the summary inside the get_many route will be 'Get Many for cat'
 
 ## feature
 
-Used to set the value returned by the corresponding route get_feature function in [ACL Guard](/advanced/acl_guard)
+Used to set the value returned by the corresponding route get_feature function in [ACL Guard](../advanced/acl_guard.md)
 
 ## pagination_mode
 

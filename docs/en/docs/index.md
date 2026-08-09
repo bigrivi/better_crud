@@ -97,4 +97,4 @@ This project draws inspiration from the following frameworks:
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/bigrivi/better_crud/blob/main/LICENSE)

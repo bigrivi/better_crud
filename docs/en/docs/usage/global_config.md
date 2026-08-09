@@ -324,7 +324,7 @@ BetterCrudGlobalConfig.init(
 
 ```
 
-Used to set the value returned by the corresponding route get_action function in [ACL Guard](/advanced/acl_guard)
+Used to set the value returned by the corresponding route get_action function in [ACL Guard](../advanced/acl_guard.md)
 
 
 ## page_schema
