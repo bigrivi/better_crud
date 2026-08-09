@@ -18,6 +18,7 @@ def init(
     soft_deleted_field_key: Optional[str] = None,
     action_map: Optional[Dict[str, str]] = None,
     page_schema: Optional[AbstractPage] = Page,
+    pagination_mode: Literal["always", "optional", "disabled"] = "optional",
     response_schema: Optional[AbstractResponseModel] = None
 ) -> None:
 ```
@@ -55,6 +56,7 @@ register_router()
 - [soft\_deleted\_field\_key](#soft_deleted_field_key)
 - [action\_map](#action_map)
 - [page\_schema](#page_schema)
+- [pagination\_mode](#pagination_mode)
 - [response\_schema](#response_schema)
 
 
@@ -367,7 +369,7 @@ class Params(BaseModel, AbstractParams):
 
 
 class Page(AbstractPage[T], Generic[T]):
-    records: Sequence[T]
+    items: Sequence[T]
     total: int
     page: int
     size: int
@@ -391,7 +393,7 @@ class Page(AbstractPage[T], Generic[T]):
             pages = math.ceil(total / size)
         else:
             pages = None
-        return cls(records=items, total=total, page=page, size=size, pages=pages)
+        return cls(items=items, total=total, page=page, size=size, pages=pages)
 
 ```
 
@@ -402,6 +404,30 @@ BetterCrudGlobalConfig.init(
 )
 
 ```
+
+## pagination_mode
+
+Controls how the `get_many` route handles pagination. Configurable globally or per-route via the [crud decorator](crud.md).
+
+| Mode        | No `page`/`size`                  | `?page=1&size=20`           |
+| ----------- | --------------------------------- | --------------------------- |
+| `always`    | Paginated (default `page=1, size=50`) | Paginated              |
+| `optional` (default) | Full array                 | Paginated              |
+| `disabled`  | Full array                        | Full array (params ignored) |
+
+```python
+
+BetterCrudGlobalConfig.init(
+    pagination_mode="always"
+)
+
+```
+
+- `always` — the response is always a paginated object `{items, total, page, size, pages}`, even without query params.
+- `optional` — pagination params are optional. Omitting them returns a plain array of all matching records; passing `page`/`size` returns a paginated object.
+- `disabled` — pagination is disabled. `page`/`size` are ignored and a plain array is always returned.
+
+`filter`/`s`/`sort` work identically in all modes. The default is `optional`, which preserves the previous behavior.
 
 ## response_schema
 

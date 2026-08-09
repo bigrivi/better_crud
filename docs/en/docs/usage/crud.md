@@ -42,6 +42,7 @@ def crud(
     query: Optional[QueryOptionsDict] = {},
     summary_vars: Optional[Dict] = {},
     feature: Optional[str] = "",
+    pagination_mode: Optional[Literal["always", "optional", "disabled"]] = None,
 ) -> Callable[[Type[T]], Type[T]]:
 
 ```
@@ -54,6 +55,7 @@ def crud(
 - [query](#query)
 - [summary\_vars](#summary_vars)
 - [feature](#feature)
+- [pagination\_mode](#pagination_mode)
 
 
 
@@ -70,6 +72,7 @@ class SerializeModelDict(TypedDict, total=False):
     create_one: Optional[Any] = None
     create_many: Optional[Any] = None
     update_one: Optional[Any] = None
+    update_many: Optional[Any] = None
     delete_many: Optional[Any] = None
 ```
 
@@ -234,4 +237,20 @@ Now the summary inside the get_many route will be 'Get Many for cat'
 ## feature
 
 Used to set the value returned by the corresponding route get_feature function in [ACL Guard](/advanced/acl_guard)
+
+## pagination_mode
+
+Overrides the global [pagination_mode](global_config.md/#pagination_mode) for this route.
+
+```python
+@crud(
+    router,
+    serialize={
+        "base": PetPublic,
+    },
+    pagination_mode="always"
+)
+```
+
+The default value is `None`, which means the global setting from `BetterCrudGlobalConfig.init()` is used.
 

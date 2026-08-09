@@ -32,6 +32,7 @@ async def on_before_create(
 async def on_after_create(
     self,
     entity: ModelType,
+    model: CreateSchemaType,
     background_tasks: BackgroundTasks
 ) -> None:
     pass
@@ -47,6 +48,7 @@ async def on_before_update(
 async def on_after_update(
     self,
     entity: ModelType,
+    model: UpdateSchemaType,
     background_tasks: BackgroundTasks
 ) -> None:
     pass

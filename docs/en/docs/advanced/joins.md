@@ -97,7 +97,7 @@ class JoinOptionsDict(TypedDict, total=False):
 ### 1. select (Determines whether to load relations in a query)
 ### 2. join (Determine which relationships will be joined)
 ### 3. select_only_detail (Is it only loaded in the **Get One** route?)
-### 4. addadditional_filter_fn(Add some additional query conditions to your own association conditions)
+### 4. additional_filter_fn (Add some additional query conditions to your own association conditions)
 
 ```python
 
@@ -117,7 +117,7 @@ class UserController():
 
 ```
 
-### 4. alias
+### 5. alias
 
 Sometimes your model has multiple properties that reference the same relationship
 At this time you need to set it aliased

@@ -253,14 +253,34 @@ or
 
 Current page, starting from 1
 
-
 ## size
 
 Pagination size per page
 
-
 !!! tip
     If neither page nor size is provided, the query will not be paginated.
+
+## pagination_mode
+
+Whether the `page`/`size` params are honored depends on the configured [pagination_mode](global_config.md/#pagination_mode):
+
+- `optional` (default) — omitting `page`/`size` returns a plain array of all records; providing them returns a paginated object.
+- `always` — the response is always a paginated object `{items, total, page, size, pages}`, even without `page`/`size`.
+- `disabled` — `page`/`size` are ignored; a plain array is always returned.
+
+Response format when paginated:
+
+```json
+{
+  "items": [...],
+  "total": 100,
+  "page": 1,
+  "size": 20,
+  "pages": 5
+}
+```
+
+When not paginated, the response is a plain JSON array of all matching records.
 
 ## load
 

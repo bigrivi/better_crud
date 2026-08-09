@@ -3,7 +3,7 @@ If you use SQLModel, please go directly to the [SQLModel](sqlmodel.md) chapter
 ## Minimal Example
 
 !!! warning
-    Prerequisites,Prepare our db, Only asynchronous mode is supported,aiomysql or aiosqlite
+    Prerequisites: prepare your database. Only asynchronous mode is supported — use aiomysql or aiosqlite.
 
 ```python title="db.py"
 from sqlalchemy.orm import DeclarativeBase, declared_attr
@@ -100,8 +100,8 @@ class PetService(SqlalchemyCrudService[Pet]):
 
 ```
 
-Next we need to define the controller and decorate it with the crud decorator
-Sure the controller is just a normal class,The crud decorator gives it super powers
+Next we need to define the controller and decorate it with the crud decorator.
+The controller is just a normal class — the crud decorator gives it super powers.
 
 ```python title="controller.py"
 from fastapi import APIRouter, Depends

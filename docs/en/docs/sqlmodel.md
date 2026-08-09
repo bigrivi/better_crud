@@ -3,14 +3,15 @@
 Since SQLModel combines the functionality of sqlalchemy and pydantic, all you need to do is replace the model with SQLModel
 
 !!! warning
-    Prerequisites,Prepare our db, Only asynchronous mode is supported,aiomysql or aiosqlite
+    Prerequisites: prepare your database. Only asynchronous mode is supported — use aiomysql or aiosqlite.
 
 ```python title="db.py"
 from typing import AsyncGenerator
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 DATABASE_URL = "sqlite+aiosqlite:///crud.db"
 
 engine = create_async_engine(
@@ -81,8 +82,8 @@ class PetService(SqlalchemyCrudService[Pet]):
 
 ```
 
-Next we need to define the controller and decorate it with the crud decorator
-Sure the controller is just a normal class,The crud decorator gives it super powers
+Next we need to define the controller and decorate it with the crud decorator.
+The controller is just a normal class — the crud decorator gives it super powers.
 
 ```python title="controller.py"
 from fastapi import APIRouter, Depends
