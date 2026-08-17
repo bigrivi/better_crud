@@ -1,4 +1,5 @@
 import inspect
+import warnings
 from typing import (
     Any,
     Callable,
@@ -11,8 +12,15 @@ from typing import (
     Union,
     Dict,
     Literal,
-    Optional
+    Optional,
+    get_type_hints,
+    get_origin,
+    get_args,
 )
+try:
+    from types import UnionType  # Python 3.10+
+except ImportError:  # pragma: no cover
+    UnionType = None
 from functools import wraps
 from fastapi import (
     APIRouter,
@@ -81,6 +89,52 @@ def crud_action(
         })
         return func
     return decorator
+
+
+def _extract_inner_model(hint: Any) -> Optional[Any]:
+    """Extract inner model from a return type annotation.
+
+    - Response shell (AbstractResponseModel subclass, e.g. ResponseModel[X]) -> X
+    - Optional[X] / Union[X, None] -> preserved as-is so None responses stay
+      valid, unless the non-None branch is itself a response shell (then its
+      inner model is used)
+    - Container types (List[X] / Page[X]) are preserved as-is
+    - None / NoneType / non-parameterized response model -> None (no data)
+    """
+    if hint is None or hint is type(None):
+        return None
+    pydantic_args = getattr(hint, "__pydantic_generic_metadata__", {}).get("args", ())
+    if pydantic_args and len(pydantic_args) == 1:
+        inner = pydantic_args[0]
+        origin_cls = getattr(hint, "__pydantic_generic_metadata__", {}).get("origin")
+        if isinstance(origin_cls, type) and issubclass(origin_cls, AbstractResponseModel):
+            return inner
+        return hint
+    if isinstance(hint, type) and hasattr(hint, "__pydantic_generic_metadata__"):
+        if hint.__pydantic_generic_metadata__["parameters"]:
+            return None
+        return hint
+    origin = get_origin(hint)
+    if origin is not None:
+        args = get_args(hint)
+        if origin is Union or (UnionType is not None and origin is UnionType):
+            non_none = [arg for arg in args if arg is not type(None)]
+            if len(non_none) == 1:
+                inner = non_none[0]
+                inner_args = getattr(
+                    inner, "__pydantic_generic_metadata__", {}).get("args", ())
+                origin_cls = getattr(
+                    inner, "__pydantic_generic_metadata__", {}).get("origin")
+                if (inner_args and len(inner_args) == 1
+                        and isinstance(origin_cls, type)
+                        and issubclass(origin_cls, AbstractResponseModel)):
+                    return inner_args[0]
+                return hint
+            return None
+        if args and len(args) == 1:
+            return hint
+        return None
+    return hint
 
 
 def _restore_depends(dep: Any) -> Any:
@@ -290,7 +344,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                     for key in options.params.keys():
                         kwargs.pop(key)
                 endpoint_output = await func(*args, **kwargs)
-                if response_schema_type:
+                if response_schema_type and not isinstance(endpoint_output, response_schema_type):
                     return response_schema_type.create(endpoint_output)
                 return endpoint_output
             return wrapper
@@ -299,9 +353,25 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
         action_response_model = action_meta["response_model"]
         if response_schema_type:
             if action_response_model is None:
-                action_response_model = get_serialize_model(
-                    serialize, RoutesEnum.get_one)
-            action_response_model = response_schema_type[action_response_model]
+                try:
+                    hint = get_type_hints(endpoint).get("return", None)
+                    action_response_model = _extract_inner_model(hint)
+                except (NameError, TypeError) as e:
+                    # Annotation may be unresolvable at import time (e.g.
+                    # `from __future__ import annotations` + a local model).
+                    # Fall back to the bare response_schema (data unconstrained)
+                    # rather than crash the app at route registration.
+                    warnings.warn(
+                        "Failed to resolve return annotation for %s: %s. "
+                        "Falling back to the bare response schema."
+                        % (endpoint.__qualname__, e)
+                    )
+            if action_response_model is None:
+                response_model = response_schema_type
+            else:
+                response_model = response_schema_type[action_response_model]
+        else:
+            response_model = action_response_model
 
         action_dependencies = None
         if action_meta["dependencies"]:
@@ -325,7 +395,7 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                 *action_dependencies,
                 Depends(StateAction(options.auth, options.params)),
             ],
-            response_model=action_response_model,
+            response_model=response_model,
         )
 
     for schema in RoutesSchema:
