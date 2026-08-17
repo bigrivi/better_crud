@@ -4,6 +4,15 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.3] - Aug 17, 2026
+feature
+
+ - Infer crud_action response model from the return type annotation when response_schema is configured (instead of always falling back to serialize.base)
+ - Skip response schema wrapping when the endpoint already returns a response schema instance (no more double-wrapped payloads)
+ - Preserve Optional[X] / X | None return annotations so None responses stay valid
+ - Fix route registration crashing with NameError/TypeError when a crud_action return annotation cannot be resolved at import time (e.g. `from __future__ import annotations` referencing a non-global model); falls back to the bare response_schema (data unconstrained) and emits a warning
+
+___
 ## [0.2.2] - Aug 09, 2026
 feature
 

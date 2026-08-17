@@ -36,10 +36,38 @@ This registers `POST /pet/{id}/adopt` automatically. The method behaves like any
 | ----------------- | --------------------------- | -------------------------------------------------------- |
 | `method`          | `"GET"/"POST"/"PUT"/"PATCH"/"DELETE"` | HTTP method for the route                      |
 | `path`            | `str`                       | Route path, relative to the router prefix                |
-| `response_model`  | `Any`                       | Optional explicit response model. Defaults to `None` (FastAPI infers from the return value) |
+| `response_model`  | `Any`                       | Optional explicit response model. Defaults to `None` (see [Response Model Inference](#response-model-inference)) |
 | `action`          | `str`                       | ACL action name returned by `get_action()`. Defaults to the method name |
 | `summary`         | `str`                       | OpenAPI summary                                          |
 | `dependencies`    | `Sequence[Depends]`         | Extra route dependencies                                 |
+
+## Response Model Inference
+
+When a global `response_schema` is configured, the inner response model is inferred from the endpoint's return type annotation:
+
+```python
+from pydantic import BaseModel
+
+class PetSummary(BaseModel):
+    adopted: int
+    available: int
+
+@crud_action(method="GET", path="/summary")
+async def summary(self) -> PetSummary:   # -> ResponseModel[PetSummary]
+    return PetSummary(adopted=3, available=7)
+```
+
+Inference rules:
+
+| Return annotation                    | Registered response model                  |
+| ------------------------------------ | ------------------------------------------ |
+| `-> X`                               | `ResponseModel[X]`                         |
+| `-> Optional[X]` / `-> X \| None`     | `ResponseModel[Optional[X]]` (None stays valid) |
+| `-> List[X]` / `-> Page[X]`          | `ResponseModel[List[X]]` / `ResponseModel[Page[X]]` |
+| no annotation / unresolvable         | bare `ResponseModel` (data unconstrained; `UserWarning` if unresolvable) |
+| no `response_schema` configured      | FastAPI infers from the return value       |
+
+An explicit `response_model=...` always wins over inference. If an annotation cannot be resolved at import time (e.g. `from __future__ import annotations` referencing a model that is not in the module globals), route registration falls back to the bare `ResponseModel` (data unconstrained) and emits a `UserWarning` instead of crashing.
 
 ## Static Paths
 

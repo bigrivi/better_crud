@@ -1,5 +1,63 @@
 # Release Notes
 
+## v0.2.3
+
+**BetterCRUD v0.2.3** makes `crud_action` response models follow your type annotations, fixes a route-registration crash on unresolvable annotations, and stops double-wrapping payloads — all fully tested (183 tests).
+
+### 🚀 Highlights
+
+- **Annotation-driven response models** — when a global `response_schema` is configured, `crud_action` now infers the inner response model from the endpoint's return annotation instead of always falling back to `serialize.base`. Return `-> CustomResult` and the OpenAPI schema becomes `ResponseModel[CustomResult]`.
+- **No more double-wrapped payloads** — endpoints that already return a response schema instance are passed through as-is instead of being wrapped a second time.
+- **Robust annotation resolution** — a return annotation that cannot be resolved at import time (e.g. `from __future__ import annotations` referencing a model that is not in the module globals) no longer crashes route registration; it falls back to the bare `response_schema` (data unconstrained) and emits a `UserWarning` so you notice the untyped endpoint.
+
+### ✨ Enhancements
+
+#### `crud_action` response model inference
+
+```python
+from pydantic import BaseModel
+from better_crud import crud, crud_action
+
+class PetSummary(BaseModel):
+    adopted: int
+    available: int
+
+@crud(pet_router, serialize={"base": PetPublic})
+class PetController():
+    service: PetService = Depends(PetService)
+
+    @crud_action(method="GET", path="/summary")
+    async def summary(self) -> PetSummary:
+        return PetSummary(adopted=3, available=7)
+```
+
+With `response_schema=ResponseModel` configured globally, this registers with `response_model=ResponseModel[PetSummary]` — the payload is validated against `PetSummary`, and OpenAPI documents it precisely. Previously it would have been typed as `ResponseModel[PetPublic]` regardless of what the endpoint actually returned.
+
+Inference rules:
+
+- `-> X` → `ResponseModel[X]`
+- `-> Optional[X]` / `-> X | None` → `ResponseModel[Optional[X]]` (a `None` response stays valid)
+- `-> List[X]` / `-> Page[X]` → preserved as containers
+- no annotation, or an annotation that cannot be resolved → bare `ResponseModel` (data unconstrained, with a `UserWarning` in the unresolvable case)
+- no `response_schema` configured → FastAPI infers from the return value as before
+
+You can still force a model explicitly with `crud_action(..., response_model=...)` — the explicit value always wins.
+
+### 🐛 Bug Fixes
+
+- **Route registration crash** — `crud_action` endpoints with unresolvable return annotations (string annotations referencing non-global names) raised `NameError`/`TypeError` at import time, taking down the whole app. Now caught: the endpoint registers with the bare `response_schema` and a `UserWarning` is emitted.
+- **Double-wrapped payloads** — an endpoint returning a response schema instance produced `{code, msg, data: {code, msg, data: ...}}`. Now passed through untouched.
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.3
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.2
 
 **BetterCRUD v0.2.2** adds custom endpoints via a new `crud_action` decorator, makes bulk operations atomic, and completes the soft-delete story with an opt-in recover route — all fully tested (177 tests).

@@ -1,4 +1,4 @@
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 __title__ = "better_crud"
 __author__ = "bigrivi"
 __author_email__ = "sunjianghong@gmail.com"
