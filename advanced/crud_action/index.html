@@ -1306,7 +1306,7 @@
 <tr>
 <td><code>response_model</code></td>
 <td><code>Any</code></td>
-<td>Optional explicit response model. Defaults to <code>None</code> (see <a href="#response-model-inference">Response Model Inference</a>)</td>
+<td>Optional explicit <strong>final</strong> response model, used as-is (e.g. <code>ResponseModel[CurrentUser]</code>). Defaults to <code>None</code> (see <a href="#response-model-inference">Response Model Inference</a>)</td>
 </tr>
 <tr>
 <td><code>action</code></td>
@@ -1368,7 +1368,7 @@
 </tr>
 </tbody>
 </table>
-<p>An explicit <code>response_model=...</code> always wins over inference. If an annotation cannot be resolved at import time (e.g. <code>from __future__ import annotations</code> referencing a model that is not in the module globals), route registration falls back to the bare <code>ResponseModel</code> (data unconstrained) and emits a <code>UserWarning</code> instead of crashing.</p>
+<p>An explicit <code>response_model=...</code> always wins over inference and is used as the <strong>final response shape as-is</strong> — pass the parameterized response shell (e.g. <code>ResponseModel[CurrentUser]</code>), not a bare inner model. If an annotation cannot be resolved at import time (e.g. <code>from __future__ import annotations</code> referencing a model that is not in the module globals), route registration falls back to the bare <code>ResponseModel</code> (data unconstrained) and emits a <code>UserWarning</code> instead of crashing.</p>
 <h2 id="static-paths">Static Paths<a class="headerlink" href="#static-paths" title="Permanent link">&para;</a></h2>
 <p>Static action paths (e.g. <code>/summary</code>) are registered <strong>before</strong> the generated routes, so they are matched before the dynamic <code>/{id}</code> segment. You don't need to worry about route ordering:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@crud_action</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"GET"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"/summary"</span><span class="p">)</span>
