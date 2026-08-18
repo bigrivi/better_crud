@@ -366,10 +366,13 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                         "Falling back to the bare response schema."
                         % (endpoint.__qualname__, e)
                     )
-            if action_response_model is None:
-                response_model = response_schema_type
+                if action_response_model is None:
+                    response_model = response_schema_type
+                else:
+                    response_model = response_schema_type[action_response_model]
             else:
-                response_model = response_schema_type[action_response_model]
+                # Explicit response_model is the final response shape; use as-is.
+                response_model = action_response_model
         else:
             response_model = action_response_model
 

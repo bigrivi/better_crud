@@ -36,7 +36,7 @@ This registers `POST /pet/{id}/adopt` automatically. The method behaves like any
 | ----------------- | --------------------------- | -------------------------------------------------------- |
 | `method`          | `"GET"/"POST"/"PUT"/"PATCH"/"DELETE"` | HTTP method for the route                      |
 | `path`            | `str`                       | Route path, relative to the router prefix                |
-| `response_model`  | `Any`                       | Optional explicit response model. Defaults to `None` (see [Response Model Inference](#response-model-inference)) |
+| `response_model`  | `Any`                       | Optional explicit **final** response model, used as-is (e.g. `ResponseModel[CurrentUser]`). Defaults to `None` (see [Response Model Inference](#response-model-inference)) |
 | `action`          | `str`                       | ACL action name returned by `get_action()`. Defaults to the method name |
 | `summary`         | `str`                       | OpenAPI summary                                          |
 | `dependencies`    | `Sequence[Depends]`         | Extra route dependencies                                 |
@@ -67,7 +67,7 @@ Inference rules:
 | no annotation / unresolvable         | bare `ResponseModel` (data unconstrained; `UserWarning` if unresolvable) |
 | no `response_schema` configured      | FastAPI infers from the return value       |
 
-An explicit `response_model=...` always wins over inference. If an annotation cannot be resolved at import time (e.g. `from __future__ import annotations` referencing a model that is not in the module globals), route registration falls back to the bare `ResponseModel` (data unconstrained) and emits a `UserWarning` instead of crashing.
+An explicit `response_model=...` always wins over inference and is used as the **final response shape as-is** — pass the parameterized response shell (e.g. `ResponseModel[CurrentUser]`), not a bare inner model. If an annotation cannot be resolved at import time (e.g. `from __future__ import annotations` referencing a model that is not in the module globals), route registration falls back to the bare `ResponseModel` (data unconstrained) and emits a `UserWarning` instead of crashing.
 
 ## Static Paths
 

@@ -4,6 +4,12 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.4] - Aug 18, 2026
+fixed issues
+
+ - Use an explicit crud_action response_model as the final response shape as-is (passing ResponseModel[CurrentUser] no longer gets wrapped into ResponseModel[ResponseModel[CurrentUser]])
+
+___
 ## [0.2.3] - Aug 17, 2026
 feature
 

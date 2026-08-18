@@ -1,5 +1,43 @@
 # Release Notes
 
+## v0.2.4
+
+**BetterCRUD v0.2.4** fixes explicit `response_model` handling in `crud_action`: the value you pass is now the **final response shape, used as-is** — no more silent double-wrapping — all fully tested (184 tests).
+
+### 🐛 Bug Fixes
+
+- **Explicit `response_model` no longer double-wrapped** — passing a full parameterized response shell like `response_model=ResponseModel[CurrentUser]` used to register `ResponseModel[ResponseModel[CurrentUser]]` (a nested shell). The explicit value is now used as the final response model as-is.
+
+### ✨ Enhancements
+
+#### `crud_action` explicit response model
+
+`response_model` is the final response shape. Pass the parameterized response shell directly (`ResponseModel` below is the response schema configured globally via `BetterCrudGlobalConfig.init(response_schema=ResponseModel)`):
+
+```python
+from better_crud import crud, crud_action
+
+@crud(pet_router, serialize={"base": PetPublic})
+class PetController():
+    service: PetService = Depends(PetService)
+
+    @crud_action(method="GET", path="/summary", response_model=ResponseModel[PetSummary])
+    async def summary(self) -> PetSummary:
+        return PetSummary(adopted=3, available=7)
+```
+
+The registered route's `response_model` is exactly `ResponseModel[PetSummary]` — matching your OpenAPI docs and runtime validation.
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.4
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.3
 
 **BetterCRUD v0.2.3** makes `crud_action` response models follow your type annotations, fixes a route-registration crash on unresolvable annotations, and stops double-wrapping payloads — all fully tested (183 tests).

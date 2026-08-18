@@ -501,3 +501,80 @@ def test_crud_action_list_annotation_keeps_container(async_session):
         response = client.get("/user/all")
         assert response.status_code == 200
         assert response.json()["data"] == [{"count": 1}]
+
+
+def _make_shell_app(async_session, response_model):
+    from typing import Generic, TypeVar, Optional
+    from pydantic import BaseModel, ConfigDict
+    from better_crud import AbstractResponseModel
+
+    T = TypeVar("T")
+
+    class TestResponse(AbstractResponseModel, BaseModel, Generic[T]):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        code: int = 200
+        msg: str = "success"
+        data: Optional[T] = None
+
+        @classmethod
+        def create(cls, content):
+            return cls(data=content)
+
+    BetterCrudGlobalConfig.init(
+        backend_config={
+            "sqlalchemy": {
+                "db_session": lambda: async_session
+            }
+        },
+        response_schema=TestResponse,
+    )
+
+    class CustomResult(BaseModel):
+        count: int
+
+    user_router = APIRouter()
+
+    @crud(user_router, feature="user", serialize={"base": UserPublic})
+    class UserController():
+        service: UserService = Depends(UserService)
+
+        @crud_action(method="GET", path="/explicit", response_model=response_model)
+        async def explicit(self):
+            return CustomResult(count=1)
+
+    api_router = APIRouter()
+    api_router.include_router(user_router, prefix="/user")
+    app = FastAPI()
+    app.include_router(api_router)
+    return app
+
+
+def test_crud_action_explicit_shell_response_model_used_as_is(async_session):
+    """An explicit response_model (the full parameterized response shell, e.g. ResponseModel[CurrentUser]) is used as-is and not wrapped a second time."""
+    from typing import Generic, TypeVar, Optional
+    from pydantic import BaseModel, ConfigDict
+    from better_crud import AbstractResponseModel
+
+    T = TypeVar("T")
+
+    class TestResponse(AbstractResponseModel, BaseModel, Generic[T]):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        code: int = 200
+        msg: str = "success"
+        data: Optional[T] = None
+
+        @classmethod
+        def create(cls, content):
+            return cls(data=content)
+
+    class CustomResult(BaseModel):
+        count: int
+
+    app = _make_shell_app(async_session, TestResponse[CustomResult])
+    route = next(r for r in app.routes if getattr(r, "path", "") == "/user/explicit")
+    rm = route.response_model
+    assert getattr(rm, "__pydantic_generic_metadata__", {}).get("args", ()) == (CustomResult,)
+    with TestClient(app) as client:
+        response = client.get("/user/explicit")
+        assert response.status_code == 200
+        assert response.json()["data"] == {"count": 1}
