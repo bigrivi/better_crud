@@ -157,6 +157,29 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
     )
 
     serialize = options.serialize
+    query_filters = options.query.filters or {}
+    if query_filters:
+        reserved_names = {
+            "request", "search", "sorts", "joins",
+            INCLUDE_DELETED_KEY,
+            *((options.params or {}).keys()),
+        }
+        query_joins = options.query.joins or {}
+        for filter_name, filter_cfg in query_filters.items():
+            if filter_name in reserved_names:
+                raise ValueError(
+                    f"[better-crud] query.filters[{filter_name!r}] collides "
+                    f"with a reserved get_many parameter name"
+                )
+            if "." in filter_cfg.field:
+                top = filter_cfg.field.split(".")[0]
+                join_cfg = query_joins.get(top)
+                if not join_cfg or not getattr(join_cfg, "join", False):
+                    raise ValueError(
+                        f"[better-crud] query.filters[{filter_name!r}] field "
+                        f"{filter_cfg.field!r} references relationship {top!r}, "
+                        f"which must be declared in query.joins with join=True"
+                    )
     _crud_routes.append((router, cls, options))
     pagination_mode = options.pagination_mode or BetterCrudGlobalConfig.pagination_mode
 
@@ -428,6 +451,17 @@ def crud_routes_factory(router: APIRouter, cls: Type[T], options: CrudOptions) -
                         kwargs.pop(key)
                 if INCLUDE_DELETED_KEY in kwargs:
                     kwargs.pop(INCLUDE_DELETED_KEY)
+                if query_filters:
+                    forced: Dict[str, Any] = {}
+                    for filter_name, filter_cfg in query_filters.items():
+                        if filter_name in kwargs:
+                            filter_value = kwargs.pop(filter_name)
+                            if filter_value is not None:
+                                forced[filter_cfg.field] = filter_value
+                    if forced:
+                        base_search = kwargs.get("search")
+                        parts = [part for part in (base_search, forced) if part]
+                        kwargs["search"] = {"$and": parts}
                 endpoint_output = await func(*args, **kwargs)
                 if response_schema_type:
                     return response_schema_type.create(endpoint_output)
@@ -542,6 +576,24 @@ def _update_route_endpoint_signature(
                     description="include deleted data")]
             )
             new_parameters.append(new_param)
+        query_filters = options.query.filters or {}
+        filter_type_map = {"str": str, "int": int, "float": float, "bool": bool}
+        for filter_name, filter_cfg in query_filters.items():
+            filter_type = filter_type_map[filter_cfg.type]
+            if filter_cfg.required:
+                new_parameters.append(inspect.Parameter(
+                    filter_name,
+                    inspect.Parameter.KEYWORD_ONLY,
+                    default=Query(description=filter_cfg.description),
+                    annotation=filter_type,
+                ))
+            else:
+                new_parameters.append(inspect.Parameter(
+                    filter_name,
+                    inspect.Parameter.KEYWORD_ONLY,
+                    default=Query(None, description=filter_cfg.description),
+                    annotation=Optional[filter_type],
+                ))
 
     new_signature = old_signature.replace(parameters=new_parameters)
     setattr(endpoint, "__signature__", new_signature)

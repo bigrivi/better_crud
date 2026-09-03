@@ -21,6 +21,7 @@ By default, we support these param names:
 - [filter operator](#filter-operator)
 - [filter](#filter)
 - [or](#or)
+- [filters (declared)](#filters-declared)
 - [page](#page)
 - [size](#size)
 - [load](#load)
@@ -247,6 +248,44 @@ Syntax:
 or
 
 > ?or=relation.field||$operator||value
+
+
+## filters (declared)
+
+> Note: `query.filter` (singular) is a static server-side search condition; `query.filters` (plural) declares typed, documented query-string parameters for `get_many`.
+
+Declare explicit `Query` parameters that automatically participate in `WHERE`:
+
+```python
+@crud(
+    router,
+    feature="user",
+    serialize={"base": UserPublic},
+    query={
+        "filters": {
+            "company_id": {"field": "company_id", "type": "int", "description": "filter by company"},
+            "by_company": {"field": "company.name", "type": "str", "description": "filter by company name"},
+        },
+        "joins": {"company": {"join": True, "select": False}},
+    }
+)
+```
+
+Each entry generates `name: type | None = Query(None, description=...)` on `get_many`, so it appears in OpenAPI with type checking (`?company_id=abc` returns 422). Non-empty values are AND-combined with the generic `?filter=` / `?s=` conditions as `field == value`.
+
+Each filter supports:
+
+| Key           | Type                          | Description                                             |
+| ------------- | ----------------------------- | ------------------------------------------------------- |
+| `field`       | `str`                         | Model field path, e.g. `company_id` or `company.name`   |
+| `type`        | `"str"/"int"/"float"/"bool"`  | Query value type (OpenAPI + validation)                 |
+| `description` | `str`                         | OpenAPI description                                     |
+| `required`    | `bool`                        | Reject requests omitting it (422). Defaults to `False` |
+
+Rules:
+
+- A `field` containing `.` references a relationship and **must** be declared in `query.joins` with `join=True`, otherwise route registration raises `ValueError` (a `WHERE` on an unjoined table would silently cross-join).
+- A filter name must not collide with reserved `get_many` parameters (`request`, `search`, `sorts`, `joins`, `include_deleted`, path params).
 
 
 ## page

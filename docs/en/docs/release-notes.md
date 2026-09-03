@@ -1,5 +1,66 @@
 # Release Notes
 
+## v0.2.5
+
+**BetterCRUD v0.2.5** adds `query.filters` — declarative, typed, OpenAPI-visible query parameters for `get_many` that automatically participate in `WHERE` — all fully tested (193 tests).
+
+### 🚀 Highlights
+
+- **Declared query filters** — expose business filters like `?period_id=` / `?company_id=` as first-class `Query` parameters: documented in OpenAPI, validated by FastAPI, and AND-combined into the query automatically. Previously the only options were `auth.filter` or `joins.*.additional_filter_fn`, neither of which is visible in `/docs`.
+- **Relationship fields supported** — filter through a join (`company.name`) without hand-writing the endpoint.
+- **Fail-fast configuration** — misconfiguration is caught at route registration, not in production queries.
+
+### ✨ Enhancements
+
+#### `query.filters`
+
+```python
+@crud(
+    router,
+    feature="user",
+    serialize={"base": UserPublic},
+    query={
+        "filters": {
+            "company_id": {"field": "company_id", "type": "int", "description": "filter by company"},
+            "by_company": {"field": "company.name", "type": "str", "description": "filter by company name"},
+        },
+        "joins": {"company": {"join": True, "select": False}},
+    }
+)
+class UserController():
+    service: UserService = Depends(UserService)
+```
+
+`GET /user?company_id=1&filter=user_name||$eq||bob` now works out of the box: `company_id` appears in `/docs` as an integer parameter, `?company_id=abc` returns 422, and the value is AND-combined with the generic `filter`/`s` conditions.
+
+Each filter accepts:
+
+| Key           | Type                          | Description                                             |
+| ------------- | ----------------------------- | ------------------------------------------------------- |
+| `field`       | `str`                         | Model field path, e.g. `company_id` or `company.name`   |
+| `type`        | `"str"/"int"/"float"/"bool"`  | Query value type (OpenAPI + validation)                 |
+| `description` | `str`                         | OpenAPI description                                     |
+| `required`    | `bool`                        | Reject requests omitting it (422). Defaults to `False`  |
+
+Registration-time validation:
+
+- A `field` containing `.` references a relationship and **must** be declared in `query.joins` with `join=True` — otherwise a `WHERE` on an unjoined table would silently cross-join. Raises `ValueError`.
+- Filter names must not collide with reserved `get_many` parameters (`request`, `search`, `sorts`, `joins`, `include_deleted`, path params). Raises `ValueError`.
+
+Existing routes are unaffected: with no `query.filters` configured, the code path is skipped entirely.
+
+See [Query params](usage/query_params.md#filters-declared) for the full guide.
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.5
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.4
 
 **BetterCRUD v0.2.4** fixes explicit `response_model` handling in `crud_action`: the value you pass is now the **final response shape, used as-is** — no more silent double-wrapping — all fully tested (184 tests).

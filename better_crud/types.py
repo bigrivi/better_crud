@@ -103,6 +103,13 @@ class JoinOptionsDict(TypedDict, total=False):
     alias: Optional[Any] = None
 
 
+class QueryFilterDict(TypedDict, total=False):
+    field: str
+    type: Optional[Literal["str", "int", "float", "bool"]] = None
+    description: Optional[str] = None
+    required: Optional[bool] = None
+
+
 class QueryOptionsDict(TypedDict, total=False):
     joins: Optional[Dict[str, JoinOptionsDict]] = None
     soft_delete: Optional[bool] = None
@@ -110,6 +117,7 @@ class QueryOptionsDict(TypedDict, total=False):
     allow_recover: Optional[bool] = False
     filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortDict]] = None
+    filters: Optional[Dict[str, QueryFilterDict]] = None
 
 
 class AuthModelDict(TypedDict, total=False):

@@ -4,6 +4,13 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.5] - Aug 18, 2026
+feature
+
+ - Add query.filters for declaring typed, OpenAPI-visible query parameters on get_many that automatically participate in WHERE (supports base fields and relationship fields such as company.name)
+ - Validate query.filters at route registration: reject names colliding with reserved get_many parameters, and require relationship fields to be declared in query.joins with join=True
+
+___
 ## [0.2.4] - Aug 18, 2026
 fixed issues
 

@@ -80,6 +80,17 @@ class JoinOptionModel(BaseModel):
 JoinOptions = Dict[str, JoinOptionModel]
 
 
+class QueryFilterModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    field: str
+    type: Literal["str", "int", "float", "bool"] = "str"
+    description: Optional[str] = None
+    required: bool = False
+
+
+QueryFilters = Dict[str, QueryFilterModel]
+
+
 class QueryOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     joins: Optional[JoinOptions] = None
@@ -88,6 +99,7 @@ class QueryOptions(BaseModel):
     allow_recover: Optional[bool] = False
     filter: Union[Optional[Dict], Callable[[Any], Dict]] = None
     sort: Optional[List[QuerySortModel]] = None
+    filters: Optional[QueryFilters] = None
 
 
 class PathParamModel(BaseModel):
