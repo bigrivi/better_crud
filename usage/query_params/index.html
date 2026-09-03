@@ -851,6 +851,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#filters-declared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filters (declared)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#page" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1355,6 +1366,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#filters-declared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filters (declared)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#page" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1495,6 +1517,7 @@
 <li><a href="#filter-operator">filter operator</a></li>
 <li><a href="#filter">filter</a></li>
 <li><a href="#or">or</a></li>
+<li><a href="#filters-declared">filters (declared)</a></li>
 <li><a href="#page">page</a></li>
 <li><a href="#size">size</a></li>
 <li><a href="#load">load</a></li>
@@ -1683,6 +1706,62 @@ The following SQL statement is expressed
 <blockquote>
 <p>?or=relation.field||$operator||value</p>
 </blockquote>
+<h2 id="filters-declared">filters (declared)<a class="headerlink" href="#filters-declared" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Note: <code>query.filter</code> (singular) is a static server-side search condition; <code>query.filters</code> (plural) declares typed, documented query-string parameters for <code>get_many</code>.</p>
+</blockquote>
+<p>Declare explicit <code>Query</code> parameters that automatically participate in <code>WHERE</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nd">@crud</span><span class="p">(</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">router</span><span class="p">,</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">feature</span><span class="o">=</span><span class="s2">"user"</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">serialize</span><span class="o">=</span><span class="p">{</span><span class="s2">"base"</span><span class="p">:</span> <span class="n">UserPublic</span><span class="p">},</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">query</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="s2">"filters"</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>            <span class="s2">"company_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"field"</span><span class="p">:</span> <span class="s2">"company_id"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"int"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"filter by company"</span><span class="p">},</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>            <span class="s2">"by_company"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"field"</span><span class="p">:</span> <span class="s2">"company.name"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"str"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"filter by company name"</span><span class="p">},</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="p">},</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="s2">"joins"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"company"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"join"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"select"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}},</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="p">}</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Each entry generates <code>name: type | None = Query(None, description=...)</code> on <code>get_many</code>, so it appears in OpenAPI with type checking (<code>?company_id=abc</code> returns 422). Non-empty values are AND-combined with the generic <code>?filter=</code> / <code>?s=</code> conditions as <code>field == value</code>.</p>
+<p>Each filter supports:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>field</code></td>
+<td><code>str</code></td>
+<td>Model field path, e.g. <code>company_id</code> or <code>company.name</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>"str"/"int"/"float"/"bool"</code></td>
+<td>Query value type (OpenAPI + validation)</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>str</code></td>
+<td>OpenAPI description</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td><code>bool</code></td>
+<td>Reject requests omitting it (422). Defaults to <code>False</code></td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li>A <code>field</code> containing <code>.</code> references a relationship and <strong>must</strong> be declared in <code>query.joins</code> with <code>join=True</code>, otherwise route registration raises <code>ValueError</code> (a <code>WHERE</code> on an unjoined table would silently cross-join).</li>
+<li>A filter name must not collide with reserved <code>get_many</code> parameters (<code>request</code>, <code>search</code>, <code>sorts</code>, <code>joins</code>, <code>include_deleted</code>, path params).</li>
+</ul>
 <h2 id="page">page<a class="headerlink" href="#page" title="Permanent link">&para;</a></h2>
 <p>Current page, starting from 1</p>
 <h2 id="size">size<a class="headerlink" href="#size" title="Permanent link">&para;</a></h2>
@@ -1699,45 +1778,45 @@ The following SQL statement is expressed
 <li><code>disabled</code> — <code>page</code>/<code>size</code> are ignored; a plain array is always returned.</li>
 </ul>
 <p>Response format when paginated:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>When not paginated, the response is a plain JSON array of all matching records.</p>
 <h2 id="load">load<a class="headerlink" href="#load" title="Permanent link">&para;</a></h2>
 <p>Sometimes you have some relationships, but you need to load them according to the usage scenario. At this time, you need to use the Load in the query condition</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">UserBase</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">hashed_password</span><span class="p">:</span> <span class="nb">str</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">profile_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">"user_profile.id"</span><span class="p">)</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">company_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">"company.id"</span><span class="p">)</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">profile</span><span class="p">:</span> <span class="n">UserProfile</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">UserTask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>                                <span class="s2">"order_by"</span><span class="p">:</span> <span class="s2">"UserTask.id.asc()"</span><span class="p">,</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>                                <span class="s2">"cascade"</span><span class="p">:</span> <span class="s2">"all, delete-orphan"</span><span class="p">,</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>                                <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="n">staff</span><span class="p">:</span> <span class="n">Staff</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="n">company</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="n">roles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">"Role"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">"users"</span><span class="p">,</span> <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>                                       <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">},</span> <span class="n">link_model</span><span class="o">=</span><span class="n">UserRoleLink</span><span class="p">)</span>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="n">projects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">"Project"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">"users"</span><span class="p">,</span> <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">},</span> <span class="n">link_model</span><span class="o">=</span><span class="n">UserProjectLink</span><span class="p">)</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>    <span class="n">deleted_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>    <span class="p">)</span>
-</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>    <span class="n">created_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>    <span class="p">)</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">UserBase</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">hashed_password</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">profile_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">"user_profile.id"</span><span class="p">)</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">company_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">"company.id"</span><span class="p">)</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">profile</span><span class="p">:</span> <span class="n">UserProfile</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">UserTask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>                                <span class="s2">"order_by"</span><span class="p">:</span> <span class="s2">"UserTask.id.asc()"</span><span class="p">,</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>                                <span class="s2">"cascade"</span><span class="p">:</span> <span class="s2">"all, delete-orphan"</span><span class="p">,</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>                                <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="n">staff</span><span class="p">:</span> <span class="n">Staff</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="n">company</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>        <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"uselist"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">})</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="n">roles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">"Role"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">"users"</span><span class="p">,</span> <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>                                       <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">},</span> <span class="n">link_model</span><span class="o">=</span><span class="n">UserRoleLink</span><span class="p">)</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span class="n">projects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">"Project"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">"users"</span><span class="p">,</span> <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>        <span class="s2">"lazy"</span><span class="p">:</span> <span class="s2">"noload"</span><span class="p">},</span> <span class="n">link_model</span><span class="o">=</span><span class="n">UserProjectLink</span><span class="p">)</span>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>    <span class="n">deleted_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>    <span class="p">)</span>
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    <span class="n">created_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>    <span class="p">)</span>
 </span></code></pre></div>
 The user model has relationships such as profile, tasks, staff, company, roles, and projects.
 These relationships are not loaded by default,They are all configured with noload</p>
@@ -1753,11 +1832,11 @@ These relationships are not loaded by default,They are all configured with noloa
 <p>?join=profile</p>
 </blockquote>
 <p>Once a relationship is associated, you can use the key of the associated relationship as a prefix in your query key.</p>
-<div class="language-JSON highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="err">pro</span><span class="kc">f</span><span class="err">ile.</span><span class="kc">na</span><span class="err">me</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">"$cont"</span><span class="p">:</span><span class="s2">"andy"</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
+<div class="language-JSON highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="err">pro</span><span class="kc">f</span><span class="err">ile.</span><span class="kc">na</span><span class="err">me</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">"$cont"</span><span class="p">:</span><span class="s2">"andy"</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="sort">sort<a class="headerlink" href="#sort" title="Permanent link">&para;</a></h2>
 <p>add sort by field (support multiple fields) and order to query result.</p>
