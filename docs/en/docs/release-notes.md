@@ -1,5 +1,37 @@
 # Release Notes
 
+## v0.2.6
+
+**BetterCRUD v0.2.6** is a packaging, metadata and documentation release — no runtime API changes — all fully tested (193 tests).
+
+### 🐛 Bug Fixes
+
+- **License field corrected** — `_version.py` declared `"Apache License 2.0"`, so PyPI published Apache 2.0 as the project license while the `LICENSE` file and the `License :: OSI Approved :: MIT License` classifier both said MIT. The metadata now agrees with the actual license: **MIT**.
+- **`py.typed` marker added** — the `Typing :: Typed` classifier was declared, but the marker file was missing, so `mypy` and `pyright` treated the package as untyped and every inline annotation was invisible to consumers. Type info is now delivered with the wheel.
+
+### ✨ Enhancements
+
+- **Discoverable PyPI metadata** — the summary now leads with the "FastAPI CRUD" phrase, and keywords grew from 6 to 13 terms (`crudrouter`, `fastapi-crud`, `crud-generator`, `sqlmodel`, `rest`, `rest-api`, `openapi`, …) so the package is reachable from the terms developers actually search for.
+- **Classifiers and project URLs** — added `Topic :: Software Development :: Libraries :: Application Frameworks`, `Topic :: Internet :: WWW/HTTP`, `Topic :: Internet :: WWW/HTTP :: Dynamic Content` and `Framework :: AsyncIO`, plus Changelog and Issue Tracker project URLs.
+
+### 📚 Documentation
+
+- **Docs site metadata** — added `site_url` and `site_description`, so the published `sitemap.xml` is no longer empty and every page now has a canonical URL and meta description.
+
+### 🔧 Infrastructure
+
+- **Wider test matrix** — the pytest workflow ran on Python 3.9 only; it now runs on 3.9, 3.10, 3.11 and 3.12 (the versions the classifiers declare), with `fail-fast: false` so a single version failure does not mask the rest.
+
+### 📦 Installation
+
+```bash
+pip install better-crud==0.2.6
+```
+
+For the complete history, see the [Changelog](changelog.md).
+
+___
+
 ## v0.2.5
 
 **BetterCRUD v0.2.5** adds `query.filters` — declarative, typed, OpenAPI-visible query parameters for `get_many` that automatically participate in `WHERE` — all fully tested (193 tests).

@@ -4,6 +4,17 @@
 
 The Changelog documents all notable changes made to BetterCRUD. This includes new features, bug fixes, and improvements. It's organized by version and date, providing a clear history of the library's development.
 ___
+## [0.2.6] - Oct 11, 2026
+improvements
+
+ - Fix the license field: `_version.py` declared "Apache License 2.0" while the LICENSE file, the classifiers and the repository were MIT, so PyPI published an incorrect license
+ - Improve the PyPI summary to lead with "FastAPI CRUD" and expand keywords with crudrouter, fastapi-crud, sqlmodel and rest so the package is discoverable from the terms people actually search for
+ - Add classifiers for Application Frameworks, WWW/HTTP and AsyncIO, plus Changelog / Issue Tracker project URLs
+ - Add the missing `py.typed` marker: the `Typing :: Typed` classifier was declared but inline types were not visible to mypy or pyright
+ - Configure `site_url` and `site_description` for the docs: the published sitemap.xml was empty and pages had no canonical URL
+ - Expand the test matrix from Python 3.9 only to 3.9-3.12 so CI covers the Python versions the package declares
+
+___
 ## [0.2.5] - Aug 18, 2026
 feature
 
